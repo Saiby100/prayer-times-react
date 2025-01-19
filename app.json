@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.salasaiet.reminder"
     },
     "web": {
       "bundler": "metro",
@@ -33,6 +34,9 @@
     "splash": {
       "image": "./assets/images/splash.png",
       "backgroundColor": "#FEF9B0"
+    },
+    "android": {
+      "package": "com.salasaiet.reminder"
     }
   }
 }
