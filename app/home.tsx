@@ -1,5 +1,8 @@
 import { Text } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 
 export default function Home() {
-  return <Text>Testing Home Layout</Text>;
+  const params = useLocalSearchParams();
+  const { area } = params;
+  return <Text>You chose { area }</Text>;
 }

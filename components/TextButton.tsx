@@ -34,7 +34,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 8,
-    borderRadius: 8
+    borderRadius: 8,
+    alignSelf: 'flex-start',
   },
   shadow: {
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)'

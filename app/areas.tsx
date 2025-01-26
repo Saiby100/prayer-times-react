@@ -1,12 +1,17 @@
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ScrollView, StyleSheet } from "react-native";
+import { StyleSheet, FlatList } from "react-native";
 import TextButton  from '../components/TextButton';
 import { useEffect, useState } from "react";
+import { router } from 'expo-router';
 import PTApi from "../utils/PTApi";
 
 export default function Areas() {
   const api = new PTApi();
   const [areas, setAreas]  = useState([]);
+
+  const navigateHome = (area: string) => {
+    router.push({pathname: '/home', params: { area }});
+  }
 
   const fetchAreas = async () => {
     const fetchedAreas = await api.fetchAreas();
@@ -18,27 +23,41 @@ export default function Areas() {
   }, [])
 
   return (
-    <SafeAreaView>
-      <ScrollView>
-        {areas.map((area: string, index: number) => (
-          <TextButton key={index} title={area} onPress={() => { console.log('area', area); }} />
-        ))}
-      </ScrollView>
+    <SafeAreaView style={styles.container}>
+        <FlatList
+          data={areas}
+          renderItem={
+            ({item, index}) =>
+              <TextButton
+                textStyle={styles.buttonText}
+                style={styles.button}
+                key={index}
+                title={item}
+                onPress={() => {navigateHome(item)}}/>
+          }
+          contentContainerStyle={styles.list}
+        >
+        </FlatList>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  default: {
+  container: {
+    flex: 1,
+    padding: 12,
+  },
+  button: {
+    width: 200,
+    paddingVertical: 8
+  },
+  buttonText: {
+    fontSize: 18
+  },
+  list: {
+    flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 8,
-    borderRadius: 8
-  },
-  shadow: {
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)'
-  },
-  pressed: {
-    opacity: 0.7
+    gap: 12,
   }
 });
