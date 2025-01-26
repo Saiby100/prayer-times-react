@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, {  useState } from "react";
 import { Text, Button } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, router } from 'expo-router';
 import PTApi from "../utils/PTApi";
 import getStorage from "../utils/localStore";
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import TextButton  from '../components/TextButton';
 
 const Stack = createNativeStackNavigator();
 
