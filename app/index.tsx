@@ -4,9 +4,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, router } from 'expo-router';
 import PTApi from "../utils/PTApi";
 import getStorage from "../utils/localStore";
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
-
-const Stack = createNativeStackNavigator();
 
 export default function Index() {
   const [areas, setAreas] = useState<string[]>([]);

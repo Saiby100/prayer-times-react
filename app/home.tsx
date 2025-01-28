@@ -2,12 +2,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams } from 'expo-router';
 import PTApi from "../utils/PTApi";
 import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, FlatList } from "react-native";
-import TextButton  from '../components/TextButton';
+import { StyleSheet, FlatList, Text } from "react-native";
 
 export default function Home() {
   const api = new PTApi();
   const [times, setTimes] =  useState<Array<object>>([]);
+  const day = useRef(0);
   const params = useLocalSearchParams();
   const { area } = params;
 
@@ -20,21 +20,17 @@ export default function Home() {
   }
 
   useEffect(() => {
+    day.current = new Date().getDate();
     fetchData();
   }, [])
 
   return (
     <SafeAreaView style={styles.container}>
         <FlatList
-          data={Object.keys(times[0] ?? {})}
+          data={Object.keys(times[day.current - 1] ?? {})}
           renderItem={
             ({item, index}) =>
-              <TextButton
-                textStyle={styles.buttonText}
-                style={styles.button}
-                key={index}
-                title={`${item} : ${times[0][item]}`}
-                onPress={() => {console.log('item', item)}}/>
+              <Text key={index} style={styles.text}>{`${item} : ${times[day.current - 1][item]}`}</Text>
           }
           contentContainerStyle={styles.list}
           extraData={times}
@@ -50,12 +46,16 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 12,
   },
-  button: {
+  text: {
     width: 200,
-    paddingVertical: 8
-  },
-  buttonText: {
-    fontSize: 18
+    paddingVertical: 8,
+    fontSize: 18,
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+    borderRadius: 8,
+    textAlign: 'center',
+    borderWidth: 1, // Border width
+    borderColor: '#a1855e', // Border color
+    borderStyle: 'solid', // Border style (optional, default is 'solid')
   },
   list: {
     flexGrow: 1,
