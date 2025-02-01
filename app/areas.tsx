@@ -1,9 +1,9 @@
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet, FlatList } from "react-native";
-import TextButton  from '../components/TextButton';
 import { useEffect, useState } from "react";
 import { router } from 'expo-router';
 import PTApi from "../utils/PTApi";
+import { Button } from '@rneui/themed';
 
 export default function Areas() {
   const api = new PTApi();
@@ -28,9 +28,8 @@ export default function Areas() {
           data={areas}
           renderItem={
             ({item, index}) =>
-              <TextButton
-                textStyle={styles.buttonText}
-                style={styles.button}
+              <Button
+                containerStyle={styles.button}
                 key={index}
                 title={item}
                 onPress={() => {navigateHome(item)}}/>
@@ -45,14 +44,14 @@ export default function Areas() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 12,
+    margin: 30,
+    padding: 10,
+    // boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+    // borderRadius: 8,
   },
   button: {
     width: 200,
-    paddingVertical: 8
-  },
-  buttonText: {
-    fontSize: 18
+    borderRadius: 8
   },
   list: {
     flexGrow: 1,

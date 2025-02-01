@@ -27,7 +27,7 @@ export default function Index() {
       <Link replace href="/areas">
         <Button
           onPress={navigateAreas}
-          color="#841584"
+          color="#2089DC"
           accessibilityLabel="Learn more about this purple button"
           title="Choose"
         />
