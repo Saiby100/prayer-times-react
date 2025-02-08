@@ -4,18 +4,22 @@ import { useEffect, useState } from "react";
 import { router } from 'expo-router';
 import PTApi from "../utils/PTApi";
 import { Button } from '@rneui/themed';
+import LoadingList from "@/components/LoadingList";
 
 export default function Areas() {
   const api = new PTApi();
   const [areas, setAreas]  = useState([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const navigateHome = (area: string) => {
     router.push({pathname: '/home', params: { area }});
   }
 
   const fetchAreas = async () => {
+    setIsLoading(true);
     const fetchedAreas = await api.fetchAreas();
     setAreas(fetchedAreas)
+    setIsLoading(false);
   }
 
   useEffect(() => {
@@ -24,6 +28,9 @@ export default function Areas() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {isLoading?
+        <LoadingList />
+        :
         <FlatList
           data={areas}
           renderItem={
@@ -37,6 +44,7 @@ export default function Areas() {
           contentContainerStyle={styles.list}
         >
         </FlatList>
+      }
     </SafeAreaView>
   );
 }
@@ -46,6 +54,7 @@ const styles = StyleSheet.create({
     flex: 1,
     margin: 30,
     padding: 10,
+    justifyContent: 'center',
     // boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
     // borderRadius: 8,
   },

@@ -3,17 +3,19 @@ import { useLocalSearchParams } from 'expo-router';
 import PTApi from "../utils/PTApi";
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, FlatList, Text, View } from "react-native";
-import {  Icon, Button, Skeleton } from '@rneui/themed';
+import {  Icon, Button } from '@rneui/themed';
 import { getNextDay, getPrevDay, dateToString } from "@/utils/date";
+import LoadingList from "@/components/LoadingList";
 
 export default function Home() {
   const api = new PTApi();
+  const date = useRef(new Date());
 
   const [times, setTimes] = useState<Array<object>>([]);
   const [todayTimes, setTodayTimes] = useState<object>({});
-  const [dateString, setDateString] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const date = useRef(new Date());
+
+  const [dateString, setDateString] = useState<string>('');
 
   const params = useLocalSearchParams();
   const { area } = params;
@@ -51,89 +53,55 @@ export default function Home() {
   return (
     <SafeAreaView style={styles.container}>
       {
-        isLoading ? (
-          <View style={{ gap: 8 }}>
-            <Skeleton
-              animation="pulse"
-              width={300}
-              height={50}
-              style={{ marginHorizontal: "auto" }}
-            />
-            <Skeleton
-              animation="pulse"
-              width={300}
-              height={50}
-              style={{ marginHorizontal: "auto" }}
-            />
-            <Skeleton
-              animation="pulse"
-              width={300}
-              height={50}
-              style={{ marginHorizontal: "auto" }}
-            />
-            <Skeleton
-              animation="pulse"
-              width={300}
-              height={50}
-              style={{ marginHorizontal: "auto" }}
-            />
-            <Skeleton
-              animation="pulse"
-              width={300}
-              height={50}
-              style={{ marginHorizontal: "auto" }}
-            />
-          </View>
-        )
+        isLoading ?
+        <LoadingList />
         :
-        (
-          <View style={styles.viewContainer}>
-            <View style={styles.card}>
-              <FlatList
-                data={Object.keys(todayTimes ?? {})}
-                renderItem={
-                  ({item, index}) =>
-                    <Text key={index} style={styles.text}>{`${item} : ${todayTimes[item]}`}</Text>
-                }
-                contentContainerStyle={styles.list}
-                extraData={todayTimes}
-              >
-              </FlatList>
-            </View>
-            <View style={styles.buttonLayout}>
-              <Button
-                size='sm'
-                radius='lg'
-                onPress={() => {
-                  changeDay(-1);
-                }}
-              >
-                <Icon
-                  name='left'
-                  color='white'
-                  type='antdesign'
-                  containerStyle={styles.iconButton}
-                />
-              </Button>
-              <Text style={{padding: 8, fontSize: 18  }}>{dateString}</Text>
-              <Button
-                size='sm'
-                radius='lg'
-                onPress={() => {
-                  changeDay(1);
-                }}
-              >
-                <Icon
-                  name='right'
-                  color='white'
-                  type='antdesign'
-                  containerStyle={styles.iconButton}
-                />
-              </Button>
-            </View>
+        <View style={styles.viewContainer}>
+          <View style={styles.card}>
+            <FlatList
+              data={Object.keys(todayTimes ?? {})}
+              renderItem={
+                ({item, index}) =>
+                  <Text key={index} style={styles.text}>{`${item} : ${todayTimes[item]}`}</Text>
+              }
+              contentContainerStyle={styles.list}
+              extraData={todayTimes}
+            >
+            </FlatList>
           </View>
-        )
-      }
+          <View style={styles.buttonLayout}>
+            <Button
+              size='sm'
+              radius='lg'
+              onPress={() => {
+                changeDay(-1);
+              }}
+              containerStyle={styles.iconButton}
+            >
+              <Icon
+                name='left'
+                color='white'
+                type='antdesign'
+              />
+            </Button>
+            <Text style={{padding: 8, fontSize: 18  }}>{dateString}</Text>
+            <Button
+              size='sm'
+              radius='lg'
+              onPress={() => {
+                changeDay(1);
+              }}
+              containerStyle={styles.iconButton}
+            >
+              <Icon
+                name='right'
+                color='white'
+                type='antdesign'
+              />
+            </Button>
+          </View>
+        </View>
+    }
     </SafeAreaView>
 
   );
@@ -159,7 +127,7 @@ const styles = StyleSheet.create({
   },
   iconButton: {
     backgroundColor: '#2089DC',
-    padding: 8,
+    padding: 6,
     borderRadius: 12,
   },
   text: {
