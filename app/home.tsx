@@ -29,7 +29,7 @@ export default function Home() {
       setDateString(dateToString(date.current));
       return;
     }
-    setTodayTimes(times[date.current.getDate() - 1])
+    setTodayTimes(times[date.current.getDate() - 1]);
     setDateString(dateToString(date.current));
   }
 
@@ -39,7 +39,7 @@ export default function Home() {
       api.setArea(area);
       const times = await api.fetchTimes(new Date());
       setTimes(times ?? []);
-      setTodayTimes(times[date.current.getDate() - 1])
+      setTodayTimes(times[date.current.getDate() - 1]);
       setDateString(dateToString(date.current));
       setIsLoading(false);
     }
