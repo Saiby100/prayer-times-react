@@ -65,7 +65,13 @@ class PTApi {
         });
       });
 
-      return results;
+      return results.map((dayObj: Day) => {
+        delete dayObj['Date'];
+        delete dayObj['Day'];
+
+        return dayObj;
+      })
+
     } catch (error) {
       console.error('Error fetching times:', error);
     }

@@ -4,9 +4,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, router } from 'expo-router';
 import PTApi from "../utils/PTApi";
 import getStorage from "../utils/localStore";
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
-
-const Stack = createNativeStackNavigator();
 
 export default function Index() {
   const [areas, setAreas] = useState<string[]>([]);
@@ -30,7 +27,7 @@ export default function Index() {
       <Link replace href="/areas">
         <Button
           onPress={navigateAreas}
-          color="#841584"
+          color="#2089DC"
           accessibilityLabel="Learn more about this purple button"
           title="Choose"
         />
