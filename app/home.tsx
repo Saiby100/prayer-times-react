@@ -1,7 +1,7 @@
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams } from 'expo-router';
 import PTApi from "../utils/PTApi";
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, FlatList, Text, View } from "react-native";
 import {  Icon, Button } from '@rneui/themed';
 import { getNextDay, getPrevDay, dateToString } from "@/utils/date";
@@ -16,17 +16,29 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [dateString, setDateString] = useState<string>('');
+  const dayString = useCallback(() => {
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return days[date.current.getDay()];
+  }, [dateString]);
 
   const params = useLocalSearchParams();
   const { area } = params;
 
+  const setToday = () => {
+    if (date.current.getMonth() !== new Date().getMonth()) {
+      date.current = new Date();
+      fetchData();
+      return;
+    }
+    date.current = new Date();
+    setTodayTimes(times[date.current.getDate() - 1]);
+    setDateString(dateToString(date.current));
+  }
   const changeDay = (i: number) => {
     const oldMonth = date.current.getMonth();
     date.current = i > 0 ? getNextDay(date.current) : getPrevDay(date.current);
     if (date.current.getMonth() !== oldMonth) {
-      console.log('fetching new month');
       fetchData();
-      setDateString(dateToString(date.current));
       return;
     }
     setTodayTimes(times[date.current.getDate() - 1]);
@@ -56,13 +68,25 @@ export default function Home() {
         isLoading ?
         <LoadingList />
         :
-        <View style={styles.viewContainer}>
+        <View>
+          <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', padding: 4}}>
+            <Text style={styles.defaultText}>{dayString()}</Text>
+            <Button
+              size='sm'
+              radius='lg'
+              type='outline'
+              titleStyle={{padding: 4, fontSize: 14, paddingVertical: 4}}
+              buttonStyle={{borderWidth: 1, padding: 0}}
+              title={JSON.stringify(new Date().getDate())}
+              onPress={() => { setToday() }}
+            />
+          </View>
           <View style={styles.card}>
             <FlatList
               data={Object.keys(todayTimes ?? {})}
               renderItem={
                 ({item, index}) =>
-                  <Text key={index} style={styles.text}>{`${item} : ${todayTimes[item]}`}</Text>
+                  <Text key={index} style={[styles.defaultText, styles.textButton]}>{`${item} : ${todayTimes[item]}`}</Text>
               }
               contentContainerStyle={styles.list}
               extraData={todayTimes}
@@ -84,7 +108,7 @@ export default function Home() {
                 type='antdesign'
               />
             </Button>
-            <Text style={{padding: 8, fontSize: 18  }}>{dateString}</Text>
+            <Text style={[styles.defaultText, { padding: 8}]}>{dateString}</Text>
             <Button
               size='sm'
               radius='lg'
@@ -113,13 +137,14 @@ const styles = StyleSheet.create({
     padding: 42,
     justifyContent: 'center',
   },
-  viewContainer: {
-    gap: 24
+  defaultText: {
+    fontSize: 18,
   },
   card: {
     borderRadius: 12,
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-    padding: 20
+    padding: 20,
+    marginBottom: 24
   },
   buttonLayout: {
     flexDirection: 'row',
@@ -130,10 +155,9 @@ const styles = StyleSheet.create({
     padding: 6,
     borderRadius: 12,
   },
-  text: {
+  textButton: {
     width: 200,
     paddingVertical: 8,
-    fontSize: 18,
     borderRadius: 8,
     textAlign: 'center',
     backgroundColor: '#2089DC',
