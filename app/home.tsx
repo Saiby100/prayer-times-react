@@ -3,32 +3,43 @@ import { useLocalSearchParams } from 'expo-router';
 import PTApi from "../utils/PTApi";
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, FlatList, Text, View } from "react-native";
-import { Button, Icon } from '@rneui/themed';
+import {  Icon, Button, Skeleton } from '@rneui/themed';
+import { getNextDay, getPrevDay, dateToString } from "@/utils/date";
 
 export default function Home() {
   const api = new PTApi();
 
   const [times, setTimes] = useState<Array<object>>([]);
   const [todayTimes, setTodayTimes] = useState<object>({});
+  const [dateString, setDateString] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const date = useRef(new Date());
 
   const params = useLocalSearchParams();
   const { area } = params;
 
   const changeDay = (i: number) => {
-    if (i > 0) {
-      if (date.current.getDate() > times.length) { // TODO: Use custom date class
-        date.current = new Date();
-      }
+    const oldMonth = date.current.getMonth();
+    date.current = i > 0 ? getNextDay(date.current) : getPrevDay(date.current);
+    if (date.current.getMonth() !== oldMonth) {
+      console.log('fetching new month');
+      fetchData();
+      setDateString(dateToString(date.current));
+      return;
     }
+    setTodayTimes(times[date.current.getDate() - 1])
+    setDateString(dateToString(date.current));
   }
 
   const fetchData = async () => {
     if (typeof area === 'string') {
+      setIsLoading(true);
       api.setArea(area);
       const times = await api.fetchTimes(new Date());
       setTimes(times ?? []);
       setTodayTimes(times[date.current.getDate() - 1])
+      setDateString(dateToString(date.current));
+      setIsLoading(false);
     }
   }
 
@@ -39,41 +50,90 @@ export default function Home() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.card}>
-        <FlatList
-          data={Object.keys(todayTimes ?? {})}
-          renderItem={
-            ({item, index}) =>
-              <Text key={index} style={styles.text}>{`${item} : ${todayTimes[item]}`}</Text>
-          }
-          contentContainerStyle={styles.list}
-          extraData={todayTimes}
-        >
-        </FlatList>
-      </View>
-      <View style={styles.buttonLayout}>
-        <Icon
-          name='left'
-          color='white'
-          type='antdesign'
-          containerStyle={styles.iconButton}
-          // onPress={() => {
-          //   date.current.getDate() -= 1;
-          //   setTodayTimes(times[day.current - 1])
-          // }}
-        />
-        <Text></Text>
-        <Icon
-          name='right'
-          color='white'
-          type='antdesign'
-          containerStyle={styles.iconButton}
-          // onPress={() => {
-          //   day.current += 1;
-          //   setTodayTimes(times[day.current - 1])
-          // }}
-        />
-      </View>
+      {
+        isLoading ? (
+          <View style={{ gap: 8 }}>
+            <Skeleton
+              animation="pulse"
+              width={300}
+              height={50}
+              style={{ marginHorizontal: "auto" }}
+            />
+            <Skeleton
+              animation="pulse"
+              width={300}
+              height={50}
+              style={{ marginHorizontal: "auto" }}
+            />
+            <Skeleton
+              animation="pulse"
+              width={300}
+              height={50}
+              style={{ marginHorizontal: "auto" }}
+            />
+            <Skeleton
+              animation="pulse"
+              width={300}
+              height={50}
+              style={{ marginHorizontal: "auto" }}
+            />
+            <Skeleton
+              animation="pulse"
+              width={300}
+              height={50}
+              style={{ marginHorizontal: "auto" }}
+            />
+          </View>
+        )
+        :
+        (
+          <View style={styles.viewContainer}>
+            <View style={styles.card}>
+              <FlatList
+                data={Object.keys(todayTimes ?? {})}
+                renderItem={
+                  ({item, index}) =>
+                    <Text key={index} style={styles.text}>{`${item} : ${todayTimes[item]}`}</Text>
+                }
+                contentContainerStyle={styles.list}
+                extraData={todayTimes}
+              >
+              </FlatList>
+            </View>
+            <View style={styles.buttonLayout}>
+              <Button
+                size='sm'
+                radius='lg'
+                onPress={() => {
+                  changeDay(-1);
+                }}
+              >
+                <Icon
+                  name='left'
+                  color='white'
+                  type='antdesign'
+                  containerStyle={styles.iconButton}
+                />
+              </Button>
+              <Text style={{padding: 8, fontSize: 18  }}>{dateString}</Text>
+              <Button
+                size='sm'
+                radius='lg'
+                onPress={() => {
+                  changeDay(1);
+                }}
+              >
+                <Icon
+                  name='right'
+                  color='white'
+                  type='antdesign'
+                  containerStyle={styles.iconButton}
+                />
+              </Button>
+            </View>
+          </View>
+        )
+      }
     </SafeAreaView>
 
   );
@@ -84,6 +144,8 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 42,
     justifyContent: 'center',
+  },
+  viewContainer: {
     gap: 24
   },
   card: {
