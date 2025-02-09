@@ -55,8 +55,6 @@ const styles = StyleSheet.create({
     margin: 30,
     padding: 10,
     justifyContent: 'center',
-    // boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-    // borderRadius: 8,
   },
   button: {
     width: 200,
