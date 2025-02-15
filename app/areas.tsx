@@ -3,7 +3,7 @@ import { StyleSheet, FlatList } from "react-native";
 import { useEffect, useState } from "react";
 import { router } from 'expo-router';
 import PTApi from "../utils/PTApi";
-import { Button } from '@rneui/themed';
+import { Button, useTheme } from '@rneui/themed';
 import LoadingList from "@/components/LoadingList";
 import getStorage from "../utils/localStore";
 
@@ -26,12 +26,14 @@ export default function Areas() {
     setIsLoading(false);
   }
 
+  const { theme } = useTheme();
+
   useEffect(() => {
     fetchAreas();
   }, [])
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={{ ...styles.container, backgroundColor: theme.colors.background }}>
       {isLoading?
         <LoadingList />
         :
@@ -40,9 +42,12 @@ export default function Areas() {
           renderItem={
             ({item, index}) =>
               <Button
-                containerStyle={styles.button}
+                buttonStyle={styles.button}
+                titleStyle={{color: theme.colors.text}}
                 key={index}
                 title={item}
+                type='outline'
+                radius='lg'
                 onPress={() => {navigateHome(item)}}/>
           }
           contentContainerStyle={styles.list}
@@ -56,13 +61,12 @@ export default function Areas() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    margin: 30,
-    padding: 10,
+    padding: 40,
     justifyContent: 'center',
   },
   button: {
     width: 200,
-    borderRadius: 8
+    borderWidth: 1.5
   },
   list: {
     flexGrow: 1,

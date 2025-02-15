@@ -2,17 +2,19 @@ import React, { useState } from "react";
 import { StyleSheet } from "react-native";
 import { useRouter, useFocusEffect } from 'expo-router';
 import getStorage from "../utils/localStore";
-import Areas from "./areas";
 import LoadingList from "@/components/LoadingList";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useThemeMode } from "@rneui/themed";
 
 export default function Index() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const router = useRouter();
+  const { setMode } = useThemeMode();
 
   useFocusEffect(() => {
     const storage = getStorage();
     const area = storage.getString('area');
+    setMode(storage.getString('themeMode') || 'light');
 
     if (area) {
       router.replace('/areas');
@@ -24,7 +26,7 @@ export default function Index() {
     setIsLoading(false);
   });
 
-  return isLoading ? <SafeAreaView style={styles.container}><LoadingList /></SafeAreaView> : <Areas />;
+  return isLoading ? <SafeAreaView style={styles.container}><LoadingList /></SafeAreaView> : null;
 
 }
 

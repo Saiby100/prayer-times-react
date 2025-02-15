@@ -1,6 +1,7 @@
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams } from 'expo-router';
 import PTApi from "../utils/PTApi";
+import globalStyles from "../utils/globalStyles";
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, FlatList, Text, View } from "react-native";
 import {  Icon, Button } from '@rneui/themed';
@@ -70,12 +71,12 @@ export default function Home() {
         :
         <View>
           <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', padding: 4}}>
-            <Text style={styles.defaultText}>{dayString()}</Text>
+            <Text style={globalStyles.text}>{dayString()}</Text>
             <Button
               size='sm'
               radius='lg'
               type='outline'
-              titleStyle={{padding: 4, fontSize: 14, paddingVertical: 4}}
+              titleStyle={{...globalStyles.text, padding: 4, fontSize: 14, paddingVertical: 4}}
               buttonStyle={{borderWidth: 1, padding: 0}}
               title={JSON.stringify(new Date().getDate())}
               onPress={() => { setToday() }}
@@ -86,7 +87,7 @@ export default function Home() {
               data={Object.keys(todayTimes ?? {})}
               renderItem={
                 ({item, index}) =>
-                  <Text key={index} style={[styles.defaultText, styles.textButton]}>{`${item} : ${todayTimes[item]}`}</Text>
+                  <Text key={index} style={[globalStyles.text, styles.textButton]}>{`${item} : ${todayTimes[item]}`}</Text>
               }
               contentContainerStyle={styles.list}
               extraData={todayTimes}
@@ -108,7 +109,7 @@ export default function Home() {
                 type='antdesign'
               />
             </Button>
-            <Text style={[styles.defaultText, { padding: 8}]}>{dateString}</Text>
+            <Text style={[globalStyles.text, { padding: 8}]}>{dateString}</Text>
             <Button
               size='sm'
               radius='lg'
@@ -136,9 +137,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 42,
     justifyContent: 'center',
-  },
-  defaultText: {
-    fontSize: 18,
   },
   card: {
     borderRadius: 12,
