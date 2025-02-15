@@ -49,7 +49,7 @@ export default function Home() {
     if (typeof area === 'string') {
       setIsLoading(true);
       api.setArea(area);
-      const times = await api.fetchTimes(new Date());
+      const times = await api.fetchTimes(date.current);
       setTimes(times ?? []);
       setTodayTimes(times[date.current.getDate() - 1]);
       setDateString(dateToString(date.current));

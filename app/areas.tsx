@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import PTApi from "../utils/PTApi";
 import { Button } from '@rneui/themed';
 import LoadingList from "@/components/LoadingList";
+import getStorage from "../utils/localStore";
 
 export default function Areas() {
   const api = new PTApi();
@@ -12,6 +13,9 @@ export default function Areas() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const navigateHome = (area: string) => {
+    const storage = getStorage();
+    storage.set('area', area);
+
     router.push({pathname: '/home', params: { area }});
   }
 
@@ -55,8 +59,6 @@ const styles = StyleSheet.create({
     margin: 30,
     padding: 10,
     justifyContent: 'center',
-    // boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-    // borderRadius: 8,
   },
   button: {
     width: 200,
