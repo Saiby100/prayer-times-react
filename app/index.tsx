@@ -1,20 +1,18 @@
 import React, { useState } from "react";
 import { StyleSheet } from "react-native";
 import { useRouter, useFocusEffect } from 'expo-router';
-import PTApi from "../utils/PTApi";
 import getStorage from "../utils/localStore";
 import Areas from "./areas";
 import LoadingList from "@/components/LoadingList";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Index() {
-  const [areas, setAreas] = useState<string[]>([]);
-  const api = new PTApi();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const router = useRouter();
 
   useFocusEffect(() => {
-    const area = 'Cape Town'; // getStorage('area');
+    const storage = getStorage();
+    const area = storage.getString('area');
 
     if (area) {
       router.replace('/areas');
