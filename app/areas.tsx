@@ -1,59 +1,64 @@
-import { SafeAreaView } from "react-native-safe-area-context";
-import { StyleSheet, FlatList } from "react-native";
-import { useEffect, useState } from "react";
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, FlatList } from 'react-native';
+import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
-import PTApi from "../utils/PTApi";
-import { Button, useTheme } from '@rneui/themed';
-import LoadingList from "@/components/LoadingList";
-import getStorage from "../utils/localStore";
+import PTApi from '../utils/PTApi';
+import { Button, useTheme, useThemeMode } from '@rneui/themed';
+import LoadingList from '@/components/LoadingList';
+import getStorage from '../utils/localStore';
 
 export default function Areas() {
   const api = new PTApi();
-  const [areas, setAreas]  = useState([]);
+  const [areas, setAreas] = useState([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const navigateHome = (area: string) => {
     const storage = getStorage();
     storage.set('area', area);
 
-    router.push({pathname: '/home', params: { area }});
-  }
+    router.push({ pathname: '/home', params: { area } });
+  };
 
   const fetchAreas = async () => {
     setIsLoading(true);
     const fetchedAreas = await api.fetchAreas();
-    setAreas(fetchedAreas)
+    setAreas(fetchedAreas);
     setIsLoading(false);
-  }
+  };
 
   const { theme } = useTheme();
+  const { mode } = useThemeMode();
+
+  const shadow = mode == 'light' ? styles.shadow : {};
 
   useEffect(() => {
     fetchAreas();
-  }, [])
+  }, []);
 
   return (
     <SafeAreaView style={{ ...styles.container, backgroundColor: theme.colors.background }}>
-      {isLoading?
+      {isLoading ? (
         <LoadingList />
-        :
+      ) : (
         <FlatList
           data={areas}
-          renderItem={
-            ({item, index}) =>
-              <Button
-                buttonStyle={styles.button}
-                titleStyle={{color: theme.colors.text}}
-                key={index}
-                title={item}
-                type='outline'
-                radius='lg'
-                onPress={() => {navigateHome(item)}}/>
-          }
+          renderItem={({ item, index }) => (
+            <Button
+              buttonStyle={styles.button}
+              containerStyle={[shadow, { backgroundColor: theme.colors.bgLight }]}
+              titleStyle={{ color: theme.colors.text }}
+              key={index}
+              title={item}
+              type="outline"
+              radius="lg"
+              onPress={() => {
+                navigateHome(item);
+              }}
+            />
+          )}
           contentContainerStyle={styles.list}
-        >
-        </FlatList>
-      }
+        ></FlatList>
+      )}
     </SafeAreaView>
   );
 }
@@ -66,12 +71,15 @@ const styles = StyleSheet.create({
   },
   button: {
     width: 200,
-    borderWidth: 1.5
+    borderWidth: 1.5,
+  },
+  shadow: {
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
   },
   list: {
     flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 12,
-  }
+  },
 });
