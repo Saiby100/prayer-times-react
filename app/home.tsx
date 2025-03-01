@@ -11,6 +11,7 @@ import LoadingList from '@/components/LoadingList';
 export default function Home() {
   const api = new PTApi();
   const date = useRef(new Date());
+  const nextTimeSet = useRef(false);
 
   const [times, setTimes] = useState<Array<object>>([]);
   const [todayTimes, setTodayTimes] = useState<object>({});
@@ -53,12 +54,30 @@ export default function Home() {
     if (typeof area === 'string') {
       setIsLoading(true);
       api.setArea(area);
-      const times = await api.fetchTimes(date.current);
-      setTimes(times ?? []);
-      setTodayTimes(times[date.current.getDate() - 1]);
+      const timesData = (await api.fetchTimes(date.current)) ?? [];
+      setTimes(timesData);
+      setTodayTimes(timesData[date.current.getDate() - 1]);
       setDateString(dateToString(date.current));
       setIsLoading(false);
     }
+  };
+
+  // Determine the next prayer time for higlighting
+  const isNextTime = (time: string) => {
+    if (new Date().getDate() !== date.current.getDate() || nextTimeSet.current) return false;
+    const [hour, minutes] = time.split(':');
+    const currentHour = new Date().getHours();
+    const currentMinutes = new Date().getMinutes();
+
+    if (Number(hour) === currentHour) {
+      const value = Number(minutes) > currentMinutes;
+      nextTimeSet.current = value;
+      return value;
+    }
+
+    const value = Number(hour) > currentHour;
+    nextTimeSet.current = value;
+    return value;
   };
 
   useEffect(() => {
@@ -66,7 +85,11 @@ export default function Home() {
     fetchData();
   }, []);
 
-  const shadow = mode == 'light' ? styles.shadow : {};
+  useEffect(() => {
+    nextTimeSet.current = false;
+  }, [todayTimes]);
+
+  const shadow = mode === 'light' ? styles.shadow : {};
 
   return (
     <SafeAreaView style={{ ...styles.container, backgroundColor: theme.colors.background }}>
@@ -113,7 +136,9 @@ export default function Home() {
                     {
                       width: '100%',
                       borderWidth: 1.5,
-                      borderColor: theme.colors.primary,
+                      borderColor: isNextTime(todayTimes[item])
+                        ? theme.colors.primary
+                        : theme.colors.bgLight,
                       color: theme.colors.text,
                     },
                   ]}
