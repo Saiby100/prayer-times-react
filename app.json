@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "reminder",
+    "name": "Reminder",
     "slug": "reminder",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/myicon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -17,10 +17,7 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-    "plugins": [
-      "expo-router",
-      "expo-font"
-    ],
+    "plugins": ["expo-router", "expo-font"],
     "experiments": {
       "typedRoutes": true
     },
@@ -33,8 +30,7 @@
       }
     },
     "splash": {
-      "image": "./assets/images/splash.png",
-      "backgroundColor": "#FEF9B0"
+      "image": "./assets/images/splash.png"
     },
     "android": {
       "package": "com.salasaiet.reminder"
