@@ -1,5 +1,5 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, Stack } from 'expo-router';
 import PTApi from '../utils/PTApi';
 import globalStyles from '../utils/globalStyles';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -24,7 +24,7 @@ export default function Home() {
   }, [dateString]);
 
   const params = useLocalSearchParams();
-  const { area } = params;
+  const { area } = params as { area: string };
 
   const { theme } = useTheme();
   const { mode } = useThemeMode();
@@ -93,6 +93,15 @@ export default function Home() {
 
   return (
     <SafeAreaView style={{ ...styles.container, backgroundColor: theme.colors.background }}>
+      <Stack.Screen
+        name="home"
+        options={{
+          title: area,
+          headerTitleStyle: { ...globalStyles.text, color: theme.colors.text },
+          headerStyle: { backgroundColor: theme.colors.bgLight },
+          headerTintColor: theme.colors.text,
+        }}
+      />
       {isLoading ? (
         <LoadingList />
       ) : (

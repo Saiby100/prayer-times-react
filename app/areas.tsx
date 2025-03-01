@@ -1,11 +1,12 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet, FlatList } from 'react-native';
 import { useEffect, useState } from 'react';
-import { router } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import PTApi from '../utils/PTApi';
 import { Button, useTheme, useThemeMode } from '@rneui/themed';
 import LoadingList from '@/components/LoadingList';
 import getStorage from '../utils/localStore';
+import globalStyles from '@/utils/globalStyles';
 
 export default function Areas() {
   const api = new PTApi();
@@ -37,6 +38,14 @@ export default function Areas() {
 
   return (
     <SafeAreaView style={{ ...styles.container, backgroundColor: theme.colors.background }}>
+      <Stack.Screen
+        name="areas"
+        options={{
+          title: 'Select Area',
+          headerTitleStyle: { ...globalStyles.text, color: theme.colors.text },
+          headerStyle: { backgroundColor: theme.colors.bgLight },
+        }}
+      />
       {isLoading ? (
         <LoadingList />
       ) : (
