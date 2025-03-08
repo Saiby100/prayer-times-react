@@ -27,7 +27,7 @@ export default function Home() {
   const { area } = params as { area: string };
 
   const { theme } = useTheme();
-  const { mode } = useThemeMode();
+  const { mode, setMode } = useThemeMode();
 
   const setToday = () => {
     if (date.current.getMonth() !== new Date().getMonth()) {
@@ -100,6 +100,25 @@ export default function Home() {
           headerTitleStyle: { ...globalStyles.text, color: theme.colors.text },
           headerStyle: { backgroundColor: theme.colors.bgLight },
           headerTintColor: theme.colors.text,
+          headerRight: () => (
+            <Button
+              onPressIn={() => {
+                if (mode === 'light') {
+                  setMode('dark');
+                } else {
+                  setMode('light');
+                }
+              }}
+              icon={
+                <Icon
+                  name={mode === 'light' ? 'moon' : 'sun'}
+                  color={theme.colors.primary}
+                  type="feather"
+                />
+              }
+              color={theme.colors.bgLight}
+            />
+          ),
         }}
       />
       {isLoading ? (
@@ -145,7 +164,7 @@ export default function Home() {
                     {
                       width: '100%',
                       borderWidth: 1.5,
-                      borderColor: isNextTime(todayTimes[item])
+                      borderColor: isNextTime(todayTimes[item]) //TODO: Put in state
                         ? theme.colors.primary
                         : theme.colors.bgLight,
                       color: theme.colors.text,
