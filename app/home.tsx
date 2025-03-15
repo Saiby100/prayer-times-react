@@ -7,9 +7,10 @@ import { StyleSheet, FlatList, Text, View } from 'react-native';
 import { Icon, Button, useTheme, useThemeMode } from '@rneui/themed';
 import { getNextDay, getPrevDay, dateToString } from '@/utils/date';
 import LoadingList from '@/components/LoadingList';
+import getStorage from '../utils/localStore';
 
 export default function Home() {
-  const api = new PTApi();
+  const api = useRef(new PTApi());
   const date = useRef(new Date());
   const nextTimeSet = useRef(false);
 
@@ -53,8 +54,8 @@ export default function Home() {
   const fetchData = async () => {
     if (typeof area === 'string') {
       setIsLoading(true);
-      api.setArea(area);
-      const timesData = (await api.fetchTimes(date.current)) ?? [];
+      api.current.setArea(area);
+      const timesData = (await api.current.fetchTimes(date.current)) ?? [];
       setTimes(timesData);
       setTodayTimes(timesData[date.current.getDate() - 1]);
       setDateString(dateToString(date.current));
@@ -90,6 +91,7 @@ export default function Home() {
   }, [todayTimes]);
 
   const shadow = mode === 'light' ? styles.shadow : {};
+  const storage = useRef(getStorage());
 
   return (
     <SafeAreaView style={{ ...styles.container, backgroundColor: theme.colors.background }}>
@@ -105,8 +107,10 @@ export default function Home() {
               onPressIn={() => {
                 if (mode === 'light') {
                   setMode('dark');
+                  storage.current.set('themeMode', 'dark');
                 } else {
                   setMode('light');
+                  storage.current.set('themeMode', 'light');
                 }
               }}
               icon={

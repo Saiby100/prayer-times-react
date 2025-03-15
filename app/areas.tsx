@@ -1,6 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet, FlatList } from 'react-native';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { router, Stack } from 'expo-router';
 import PTApi from '../utils/PTApi';
 import { Button, useTheme, useThemeMode } from '@rneui/themed';
@@ -9,7 +9,7 @@ import getStorage from '../utils/localStore';
 import globalStyles from '@/utils/globalStyles';
 
 export default function Areas() {
-  const api = new PTApi();
+  const api = useRef(new PTApi());
   const [areas, setAreas] = useState([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -22,7 +22,7 @@ export default function Areas() {
 
   const fetchAreas = async () => {
     setIsLoading(true);
-    const fetchedAreas = await api.fetchAreas();
+    const fetchedAreas = await api.current.fetchAreas();
     setAreas(fetchedAreas);
     setIsLoading(false);
   };
