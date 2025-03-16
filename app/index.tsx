@@ -29,19 +29,17 @@ export default function Index() {
       } else {
         router.replace('/areas');
       }
-
-      SplashScreen.hide();
     }, [])
   );
 
   return;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    margin: 30,
-    padding: 10,
-    justifyContent: 'center',
-  },
-});
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//     margin: 30,
+//     padding: 10,
+//     justifyContent: 'center',
+//   },
+// });

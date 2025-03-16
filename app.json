@@ -28,8 +28,7 @@
           "dark": {
             "image": "./assets/images/splash-dark.png",
             "backgroundColor": "#232634"
-          },
-          "imageWidth": 200
+          }
         }
       ]
     ],

@@ -7,6 +7,7 @@ import { Button, useTheme, useThemeMode } from '@rneui/themed';
 import LoadingList from '@/components/LoadingList';
 import getStorage from '../utils/localStore';
 import globalStyles from '@/utils/globalStyles';
+import * as SplashScreen from 'expo-splash-screen';
 
 export default function Areas() {
   const api = useRef(new PTApi());
@@ -33,6 +34,7 @@ export default function Areas() {
   const shadow = mode == 'light' ? styles.shadow : {};
 
   useEffect(() => {
+    SplashScreen.hide();
     fetchAreas();
   }, []);
 
