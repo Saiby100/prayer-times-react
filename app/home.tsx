@@ -1,13 +1,14 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, Stack } from 'expo-router';
+import { useLocalSearchParams, Stack, useFocusEffect } from 'expo-router';
 import PTApi from '../utils/PTApi';
 import globalStyles from '../utils/globalStyles';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { StyleSheet, FlatList, Text, View } from 'react-native';
+import { StyleSheet, FlatList, Text, View, StatusBar } from 'react-native';
 import { Icon, Button, useTheme, useThemeMode } from '@rneui/themed';
 import { getNextDay, getPrevDay, dateToString } from '@/utils/date';
 import LoadingList from '@/components/LoadingList';
 import getStorage from '../utils/localStore';
+import * as SplashScreen from 'expo-splash-screen';
 
 export default function Home() {
   const api = useRef(new PTApi());
@@ -81,6 +82,12 @@ export default function Home() {
     return value;
   };
 
+  useFocusEffect(
+    useCallback(() => {
+      SplashScreen.hide();
+    }, [])
+  );
+
   useEffect(() => {
     date.current = new Date();
     fetchData();
@@ -99,6 +106,7 @@ export default function Home() {
         name="home"
         options={{
           title: area,
+          headerShown: true,
           headerTitleStyle: { ...globalStyles.text, color: theme.colors.text },
           headerStyle: { backgroundColor: theme.colors.bgLight },
           headerTintColor: theme.colors.text,
@@ -125,6 +133,7 @@ export default function Home() {
           ),
         }}
       />
+      <StatusBar backgroundColor={theme.colors.background} />
       {isLoading ? (
         <LoadingList />
       ) : (

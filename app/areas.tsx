@@ -1,7 +1,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { StyleSheet, FlatList } from 'react-native';
-import { useEffect, useState, useRef } from 'react';
-import { router, Stack } from 'expo-router';
+import { StyleSheet, FlatList, StatusBar } from 'react-native';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { router, Stack, useFocusEffect } from 'expo-router';
 import PTApi from '../utils/PTApi';
 import { Button, useTheme, useThemeMode } from '@rneui/themed';
 import LoadingList from '@/components/LoadingList';
@@ -33,8 +33,13 @@ export default function Areas() {
 
   const shadow = mode == 'light' ? styles.shadow : {};
 
+  useFocusEffect(
+    useCallback(() => {
+      SplashScreen.hide();
+    }, [])
+  );
+
   useEffect(() => {
-    SplashScreen.hide();
     fetchAreas();
   }, []);
 
@@ -44,10 +49,12 @@ export default function Areas() {
         name="areas"
         options={{
           title: 'Select Area',
+          headerShown: true,
           headerTitleStyle: { ...globalStyles.text, color: theme.colors.text },
           headerStyle: { backgroundColor: theme.colors.bgLight },
         }}
       />
+      <StatusBar backgroundColor={theme.colors.background} />
       {isLoading ? (
         <LoadingList />
       ) : (

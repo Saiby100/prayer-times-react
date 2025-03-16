@@ -1,5 +1,4 @@
 import { useEffect, useCallback, useRef } from 'react';
-import { StyleSheet } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import getStorage from '../utils/localStore';
 import { useThemeMode } from '@rneui/themed';
@@ -34,12 +33,3 @@ export default function Index() {
 
   return;
 }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     margin: 30,
-//     padding: 10,
-//     justifyContent: 'center',
-//   },
-// });
