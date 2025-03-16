@@ -56,11 +56,27 @@ export default function Home() {
     if (typeof area === 'string') {
       setIsLoading(true);
       api.current.setArea(area);
-      const timesData = (await api.current.fetchTimes(date.current)) ?? [];
+      const timesData = await fetchTimes();
       setTimes(timesData);
       setTodayTimes(timesData[date.current.getDate() - 1]);
       setDateString(dateToString(date.current));
       setIsLoading(false);
+    }
+  };
+
+  const fetchTimes = async () => {
+    if (
+      storage.current.contains(
+        `times_${date.current.getMonth()}_${date.current.getFullYear()}_${area}`
+      )
+    ) {
+      const timesData = storage.current.getString(
+        `times_${date.current.getMonth()}_${date.current.getFullYear()}_${area}`
+      );
+      return JSON.parse(timesData) ?? [];
+    } else {
+      api.current.setArea(area);
+      return (await api.current.fetchTimes(date.current)) ?? [];
     }
   };
 
@@ -96,6 +112,22 @@ export default function Home() {
   useEffect(() => {
     nextTimeSet.current = false;
   }, [todayTimes]);
+
+  useEffect(() => {
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+
+    if (
+      date.current.getMonth() !== currentMonth ||
+      date.current.getFullYear() !== currentYear ||
+      storage.current.contains(`times_${currentMonth}_${currentYear}_${area}`) ||
+      times.length === 0
+    )
+      return;
+
+    console.log('Storinng times');
+    storage.current.set(`times_${currentMonth}_${currentYear}_${area}`, JSON.stringify(times));
+  }, [JSON.stringify(times)]);
 
   const shadow = mode === 'light' ? styles.shadow : {};
   const storage = useRef(getStorage());
