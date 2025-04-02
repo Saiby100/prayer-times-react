@@ -1,4 +1,4 @@
-# Only triggers with eas:workflow:run .eas/workflows/create-dev-build.yml
+# Only triggers with eas workflow:run .eas/workflows/create-dev-build.yml
 name: Create Development Build
 
 jobs:
