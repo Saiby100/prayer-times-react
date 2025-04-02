@@ -1,17 +1,35 @@
-import { Text } from "react-native";
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useEffect, useCallback, useRef } from 'react';
+import { useRouter, useFocusEffect } from 'expo-router';
+import getStorage from '../utils/localStore';
+import { useThemeMode } from '@rneui/themed';
+import * as SplashScreen from 'expo-splash-screen';
+
+SplashScreen.preventAutoHideAsync();
 
 export default function Index() {
+  const router = useRouter();
+  const { setMode } = useThemeMode();
+  const storage = useRef(getStorage());
 
-  return (
-    <SafeAreaView
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Text>Edit app/index.tsx to edit this screen. Safe Content</Text>
-    </SafeAreaView>
+  useEffect(() => {
+    const themeMode = storage.current.getString('themeMode');
+
+    if (!themeMode) storage.current.set('themeMode', 'light');
+    setMode(themeMode || 'light');
+  });
+
+  useFocusEffect(
+    useCallback(() => {
+      const area = storage.current.getString('area');
+
+      if (area) {
+        router.replace('/areas');
+        router.push({ pathname: '/home', params: { area } });
+      } else {
+        router.replace('/areas');
+      }
+    }, [])
   );
+
+  return;
 }
