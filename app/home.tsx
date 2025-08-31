@@ -1,13 +1,13 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, Stack, useFocusEffect } from 'expo-router';
-import PTApi from '../utils/PTApi';
-import globalStyles from '../utils/globalStyles';
+import PTApi from '@/utils/PTApi';
+import globalStyles from '@/utils/globalStyles';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, FlatList, Text, View, StatusBar } from 'react-native';
 import { Icon, Button, useTheme, useThemeMode } from '@rneui/themed';
 import { getNextDay, getPrevDay, dateToString } from '@/utils/date';
 import LoadingList from '@/components/LoadingList';
-import getStorage from '../utils/localStore';
+import getStorage from '@/utils/localStore';
 import * as SplashScreen from 'expo-splash-screen';
 
 export default function Home() {

@@ -21,8 +21,8 @@ export default function RootLayout() {
       primary: '#6E61FF',
       secondary: '#6E61FF',
       text: '#ffffff',
-      bgLight: '#303446',
-      background: '#232634',
+      bgLight: '#3d3d3d',
+      background: '#121212',
     },
   });
 
