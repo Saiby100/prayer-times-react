@@ -3,11 +3,12 @@ import { StyleSheet, FlatList, StatusBar } from 'react-native';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { router, Stack, useFocusEffect } from 'expo-router';
 import PTApi from '@/utils/PTApi';
-import { Button, useTheme, useThemeMode } from '@rneui/themed';
+import { useTheme, ListItem } from '@rneui/themed';
 import LoadingList from '@/components/LoadingList';
 import getStorage from '@/utils/localStore';
 import globalStyles from '@/utils/globalStyles';
 import * as SplashScreen from 'expo-splash-screen';
+import { Icon } from '@rneui/base';
 
 export default function Areas() {
   const api = useRef(new PTApi());
@@ -29,9 +30,6 @@ export default function Areas() {
   };
 
   const { theme } = useTheme();
-  const { mode } = useThemeMode();
-
-  const shadow = mode == 'light' ? styles.shadow : {};
 
   useFocusEffect(
     useCallback(() => {
@@ -60,19 +58,20 @@ export default function Areas() {
       ) : (
         <FlatList
           data={areas}
+          keyExtractor={(item, index) => index.toString()}
           renderItem={({ item, index }) => (
-            <Button
-              buttonStyle={styles.button}
-              containerStyle={[shadow, { backgroundColor: theme.colors.bgLight }]}
-              titleStyle={{ color: theme.colors.text }}
-              key={index}
-              title={item}
-              type="outline"
-              radius="lg"
+            <ListItem
+              bottomDivider
               onPress={() => {
                 navigateHome(item);
               }}
-            />
+              containerStyle={[styles.item]}
+            >
+              <Icon name="location-pin" color={theme.colors.primary} />
+              <ListItem.Title style={{ color: theme.colors.text, textAlign: 'center' }}>
+                {item}
+              </ListItem.Title>
+            </ListItem>
           )}
           contentContainerStyle={styles.list}
         ></FlatList>
@@ -87,12 +86,8 @@ const styles = StyleSheet.create({
     padding: 40,
     justifyContent: 'center',
   },
-  button: {
-    width: 200,
-    borderWidth: 1.5,
-  },
-  shadow: {
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+  item: {
+    width: 250,
   },
   list: {
     flexGrow: 1,
