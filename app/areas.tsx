@@ -2,10 +2,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet, FlatList, StatusBar } from 'react-native';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { router, Stack, useFocusEffect } from 'expo-router';
-import PTApi from '../utils/PTApi';
+import PTApi from '@/utils/PTApi';
 import { Button, useTheme, useThemeMode } from '@rneui/themed';
 import LoadingList from '@/components/LoadingList';
-import getStorage from '../utils/localStore';
+import getStorage from '@/utils/localStore';
 import globalStyles from '@/utils/globalStyles';
 import * as SplashScreen from 'expo-splash-screen';
 

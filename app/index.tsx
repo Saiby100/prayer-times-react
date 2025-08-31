@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { useRouter, useFocusEffect } from 'expo-router';
-import getStorage from '../utils/localStore';
+import getStorage from '@/utils/localStore';
 import { useThemeMode } from '@rneui/themed';
 import * as SplashScreen from 'expo-splash-screen';
 
