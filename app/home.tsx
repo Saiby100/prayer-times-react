@@ -1,14 +1,15 @@
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, Stack, useFocusEffect } from 'expo-router';
+import { useLocalSearchParams, useFocusEffect } from 'expo-router';
 import PTApi from '@/utils/PTApi';
 import globalStyles from '@/utils/globalStyles';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { StyleSheet, FlatList, Text, View, StatusBar } from 'react-native';
-import { Icon, Button, useTheme, useThemeMode } from '@rneui/themed';
+import { StyleSheet, FlatList, Text, View } from 'react-native';
+import { useTheme, useThemeMode } from '@rneui/themed';
 import { getNextDay, getPrevDay, dateToString } from '@/utils/date';
 import LoadingList from '@/components/LoadingList';
 import getStorage from '@/utils/localStore';
 import * as SplashScreen from 'expo-splash-screen';
+import ThemedButton from '@/components/ThemedButton';
+import Page from '@/components/Page';
 
 export default function Home() {
   const api = useRef(new PTApi());
@@ -133,17 +134,13 @@ export default function Home() {
   const storage = useRef(getStorage());
 
   return (
-    <SafeAreaView style={{ ...styles.container, backgroundColor: theme.colors.background }}>
-      <Stack.Screen
-        name="home"
-        options={{
-          title: area,
-          headerShown: true,
-          headerTitleStyle: { ...globalStyles.text, color: theme.colors.text },
-          headerStyle: { backgroundColor: theme.colors.bgLight },
-          headerTintColor: theme.colors.text,
-          headerRight: () => (
-            <Button
+    <Page
+      name="home"
+      options={{
+        title: area,
+        headerRight: () => (
+          <>
+            <ThemedButton
               onPressIn={() => {
                 if (mode === 'light') {
                   setMode('dark');
@@ -153,124 +150,128 @@ export default function Home() {
                   storage.current.set('themeMode', 'light');
                 }
               }}
-              icon={
-                <Icon
-                  name={mode === 'light' ? 'moon' : 'sun'}
-                  color={theme.colors.primary}
-                  type="feather"
-                />
-              }
+              icon={{
+                name: mode === 'light' ? 'moon' : 'sun',
+                type: 'feather',
+              }}
+            />
+            <ThemedButton
+              onPressIn={() => {}}
+              icon={{
+                name: 'settings',
+                type: 'feather',
+              }}
               color={theme.colors.bgLight}
             />
-          ),
-        }}
-      />
-      <StatusBar backgroundColor={theme.colors.background} />
-      {isLoading ? (
-        <LoadingList />
-      ) : (
-        <View>
-          <View
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              padding: 4,
-            }}
-          >
-            <Text style={[globalStyles.text, { color: theme.colors.text }]}>{dayString()}</Text>
-            <Button
-              size="sm"
-              radius="md"
-              type="outline"
-              titleStyle={{
-                ...globalStyles.text,
+          </>
+        ),
+      }}
+    >
+      <View style={{ paddingHorizontal: 42 }}>
+        {isLoading ? (
+          <LoadingList />
+        ) : (
+          <View>
+            <View
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
                 padding: 4,
-                fontSize: 14,
-                paddingVertical: 4,
-                color: theme.colors.text,
               }}
-              buttonStyle={{ borderWidth: 1, padding: 0 }}
-              title={JSON.stringify(new Date().getDate())}
-              onPress={() => {
-                setToday();
-              }}
-            />
-          </View>
-          <View style={[shadow, styles.card, { backgroundColor: theme.colors.bgLight }]}>
-            <FlatList
-              data={Object.keys(todayTimes ?? {})}
-              renderItem={({ item, index }) => (
-                <Text
-                  key={index}
-                  style={[
-                    globalStyles.text,
-                    styles.textButton,
-                    {
-                      width: '100%',
-                      borderWidth: 1.5,
-                      borderColor: isNextTime(todayTimes[item]) //TODO: Put in state
-                        ? theme.colors.primary
-                        : theme.colors.bgLight,
-                      color: theme.colors.text,
-                    },
-                  ]}
-                >{`${item} : ${todayTimes[item]}`}</Text>
-              )}
-              contentContainerStyle={styles.list}
-              extraData={todayTimes}
-            ></FlatList>
-          </View>
-          <View style={styles.buttonLayout}>
-            <Button
-              onPress={() => {
-                changeDay(-1);
-              }}
-              icon={<Icon name="left" color={theme.colors.primary} type="antdesign" size={30} />}
-              color={theme.colors.bgLight}
-              containerStyle={[
-                shadow,
-                {
-                  backgroundColor: theme.colors.bgLight,
-                  borderRadius: 8,
-                },
-              ]}
-            />
-            <Text
-              style={[
-                globalStyles.text,
-                { padding: 8, color: theme.colors.text, flex: 1, textAlign: 'center' },
-              ]}
             >
-              {dateString}
-            </Text>
-            <Button
-              onPress={() => {
-                changeDay(1);
-              }}
-              icon={<Icon name="right" color={theme.colors.primary} type="antdesign" size={30} />}
-              color={theme.colors.bgLight}
-              containerStyle={[
-                shadow,
-                {
-                  backgroundColor: theme.colors.bgLight,
-                  borderRadius: 8,
-                },
-              ]}
-            />
+              <Text style={[globalStyles.text, { color: theme.colors.text }]}>{dayString()}</Text>
+              <ThemedButton
+                size="sm"
+                radius="md"
+                type="outline"
+                titleStyle={{
+                  padding: 4,
+                  fontSize: 14,
+                  paddingVertical: 4,
+                }}
+                buttonStyle={{ borderWidth: 1, padding: 0 }}
+                title={JSON.stringify(new Date().getDate())}
+                onPress={() => {
+                  setToday();
+                }}
+              />
+            </View>
+            <View style={[shadow, styles.card, { backgroundColor: theme.colors.bgLight }]}>
+              <FlatList
+                data={Object.keys(todayTimes ?? {})}
+                renderItem={({ item, index }) => (
+                  <Text
+                    key={index}
+                    style={[
+                      globalStyles.text,
+                      styles.textButton,
+                      {
+                        width: '100%',
+                        borderWidth: 1.5,
+                        borderColor: isNextTime(todayTimes[item]) //TODO: Put in state
+                          ? theme.colors.primary
+                          : theme.colors.bgLight,
+                        color: theme.colors.text,
+                      },
+                    ]}
+                  >{`${item} : ${todayTimes[item]}`}</Text>
+                )}
+                contentContainerStyle={styles.list}
+                extraData={todayTimes}
+              ></FlatList>
+            </View>
+            <View style={styles.buttonLayout}>
+              <ThemedButton
+                onPress={() => {
+                  changeDay(-1);
+                }}
+                icon={{
+                  name: 'left',
+                  type: 'antdesign',
+                  size: 30,
+                }}
+                containerStyle={[
+                  shadow,
+                  {
+                    backgroundColor: theme.colors.bgLight,
+                    borderRadius: 8,
+                  },
+                ]}
+              />
+              <Text
+                style={[
+                  globalStyles.text,
+                  { padding: 8, color: theme.colors.text, flex: 1, textAlign: 'center' },
+                ]}
+              >
+                {dateString}
+              </Text>
+              <ThemedButton
+                onPress={() => {
+                  changeDay(1);
+                }}
+                icon={{
+                  name: 'right',
+                  type: 'antdesign',
+                  size: 30,
+                }}
+                containerStyle={[
+                  shadow,
+                  {
+                    borderRadius: 8,
+                  },
+                ]}
+              />
+            </View>
           </View>
-        </View>
-      )}
-    </SafeAreaView>
+        )}
+      </View>
+    </Page>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 42,
-    justifyContent: 'center',
-  },
   card: {
     borderRadius: 12,
     paddingVertical: 20,
