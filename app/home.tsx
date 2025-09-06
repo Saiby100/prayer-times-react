@@ -1,134 +1,31 @@
-import { useLocalSearchParams, useFocusEffect } from 'expo-router';
-import PTApi from '@/utils/PTApi';
-import globalStyles from '@/utils/globalStyles';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { StyleSheet, FlatList, Text, View } from 'react-native';
-import { useTheme, useThemeMode } from '@rneui/themed';
-import { getNextDay, getPrevDay, dateToString } from '@/utils/date';
-import LoadingList from '@/components/LoadingList';
-import getStorage from '@/utils/localStore';
+import { useCallback, useRef } from 'react';
+
 import * as SplashScreen from 'expo-splash-screen';
-import ThemedButton from '@/components/ThemedButton';
+import LoadingList from '@/components/LoadingList';
 import Page from '@/components/Page';
+import ThemedButton from '@/components/ThemedButton';
+import getStorage from '@/utils/localStore';
+import globalStyles from '@/utils/globalStyles';
+import usePTApi from '@/hooks/usePTApi';
+import { StyleSheet, FlatList, Text, View } from 'react-native';
+import { useLocalSearchParams, useFocusEffect } from 'expo-router';
+import { useTheme, useThemeMode } from '@rneui/themed';
 
 export default function Home() {
-  const api = useRef(new PTApi());
-  const date = useRef(new Date());
-  const nextTimeSet = useRef(false);
-
-  const [times, setTimes] = useState<Array<object>>([]);
-  const [todayTimes, setTodayTimes] = useState<object>({});
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const [dateString, setDateString] = useState<string>('');
-  const dayString = useCallback(() => {
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    return days[date.current.getDay()];
-  }, [dateString]);
-
   const params = useLocalSearchParams();
   const { area } = params as { area: string };
 
   const { theme } = useTheme();
   const { mode, setMode } = useThemeMode();
-
-  const setToday = () => {
-    if (date.current.getMonth() !== new Date().getMonth()) {
-      date.current = new Date();
-      fetchData();
-      return;
-    }
-    date.current = new Date();
-    setTodayTimes(times[date.current.getDate() - 1]);
-    setDateString(dateToString(date.current));
-  };
-  const changeDay = (i: number) => {
-    const oldMonth = date.current.getMonth();
-    date.current = i > 0 ? getNextDay(date.current) : getPrevDay(date.current);
-    if (date.current.getMonth() !== oldMonth) {
-      fetchData();
-      return;
-    }
-    setTodayTimes(times[date.current.getDate() - 1]);
-    setDateString(dateToString(date.current));
-  };
-
-  const fetchData = async () => {
-    if (typeof area === 'string') {
-      setIsLoading(true);
-      api.current.setArea(area);
-      const timesData = await fetchTimes();
-      setTimes(timesData);
-      setTodayTimes(timesData[date.current.getDate() - 1]);
-      setDateString(dateToString(date.current));
-      setIsLoading(false);
-    }
-  };
-
-  const fetchTimes = async () => {
-    if (
-      storage.current.contains(
-        `times_${date.current.getMonth()}_${date.current.getFullYear()}_${area}`
-      )
-    ) {
-      const timesData = storage.current.getString(
-        `times_${date.current.getMonth()}_${date.current.getFullYear()}_${area}`
-      );
-      return JSON.parse(timesData) ?? [];
-    } else {
-      api.current.setArea(area);
-      return (await api.current.fetchTimes(date.current)) ?? [];
-    }
-  };
-
-  // Determine the next prayer time for higlighting
-  const isNextTime = (time: string) => {
-    if (new Date().getDate() !== date.current.getDate() || nextTimeSet.current) return false;
-    const [hour, minutes] = time.split(':');
-    const currentHour = new Date().getHours();
-    const currentMinutes = new Date().getMinutes();
-
-    if (Number(hour) === currentHour) {
-      const value = Number(minutes) > currentMinutes;
-      nextTimeSet.current = value;
-      return value;
-    }
-
-    const value = Number(hour) > currentHour;
-    nextTimeSet.current = value;
-    return value;
-  };
+  const { isLoading, navigate, highlighted, dateString, dayString, todayTimes } = usePTApi({
+    area,
+  });
 
   useFocusEffect(
     useCallback(() => {
       SplashScreen.hide();
     }, [])
   );
-
-  useEffect(() => {
-    date.current = new Date();
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    nextTimeSet.current = false;
-  }, [todayTimes]);
-
-  useEffect(() => {
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
-
-    if (
-      date.current.getMonth() !== currentMonth ||
-      date.current.getFullYear() !== currentYear ||
-      storage.current.contains(`times_${currentMonth}_${currentYear}_${area}`) ||
-      times.length === 0
-    )
-      return;
-
-    console.log('Storinng times');
-    storage.current.set(`times_${currentMonth}_${currentYear}_${area}`, JSON.stringify(times));
-  }, [JSON.stringify(times)]);
 
   const shadow = mode === 'light' ? styles.shadow : {};
   const storage = useRef(getStorage());
@@ -180,7 +77,7 @@ export default function Home() {
                 padding: 4,
               }}
             >
-              <Text style={[globalStyles.text, { color: theme.colors.text }]}>{dayString()}</Text>
+              <Text style={[globalStyles.text, { color: theme.colors.text }]}>{dayString}</Text>
               <ThemedButton
                 size="sm"
                 radius="md"
@@ -193,7 +90,7 @@ export default function Home() {
                 buttonStyle={{ borderWidth: 1, padding: 0 }}
                 title={JSON.stringify(new Date().getDate())}
                 onPress={() => {
-                  setToday();
+                  navigate.today();
                 }}
               />
             </View>
@@ -209,9 +106,10 @@ export default function Home() {
                       {
                         width: '100%',
                         borderWidth: 1.5,
-                        borderColor: isNextTime(todayTimes[item]) //TODO: Put in state
-                          ? theme.colors.primary
-                          : theme.colors.bgLight,
+                        borderColor:
+                          todayTimes[item] == highlighted
+                            ? theme.colors.primary
+                            : theme.colors.bgLight,
                         color: theme.colors.text,
                       },
                     ]}
@@ -224,7 +122,7 @@ export default function Home() {
             <View style={styles.buttonLayout}>
               <ThemedButton
                 onPress={() => {
-                  changeDay(-1);
+                  navigate.prev();
                 }}
                 icon={{
                   name: 'left',
@@ -249,7 +147,7 @@ export default function Home() {
               </Text>
               <ThemedButton
                 onPress={() => {
-                  changeDay(1);
+                  navigate.next();
                 }}
                 icon={{
                   name: 'right',
