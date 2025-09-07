@@ -1,14 +1,13 @@
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { StyleSheet, FlatList, StatusBar } from 'react-native';
+import { StyleSheet, FlatList } from 'react-native';
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { router, Stack, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import PTApi from '@/utils/PTApi';
 import { useTheme, ListItem } from '@rneui/themed';
 import LoadingList from '@/components/LoadingList';
 import getStorage from '@/utils/localStore';
-import globalStyles from '@/utils/globalStyles';
 import * as SplashScreen from 'expo-splash-screen';
 import { Icon } from '@rneui/base';
+import Page from '@/components/Page';
 
 export default function Areas() {
   const api = useRef(new PTApi());
@@ -42,17 +41,7 @@ export default function Areas() {
   }, []);
 
   return (
-    <SafeAreaView style={{ ...styles.container, backgroundColor: theme.colors.background }}>
-      <Stack.Screen
-        name="areas"
-        options={{
-          title: 'Select Area',
-          headerShown: true,
-          headerTitleStyle: { ...globalStyles.text, color: theme.colors.text },
-          headerStyle: { backgroundColor: theme.colors.bgLight },
-        }}
-      />
-      <StatusBar backgroundColor={theme.colors.background} />
+    <Page name="areas" title="Select Area">
       {isLoading ? (
         <LoadingList />
       ) : (
@@ -76,7 +65,7 @@ export default function Areas() {
           contentContainerStyle={styles.list}
         ></FlatList>
       )}
-    </SafeAreaView>
+    </Page>
   );
 }
 

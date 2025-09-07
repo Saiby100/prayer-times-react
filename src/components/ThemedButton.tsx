@@ -8,6 +8,7 @@ type ThemedButtonProps = ButtonProps & {
   icon?: {
     name: string;
     type: string;
+    size?: number;
   };
 };
 
@@ -21,7 +22,7 @@ const ThemedButton: React.FC<ThemedButtonProps> = ({ title, color, icon, ...prop
         ...globalStyles.text,
         color: theme.colors.text, // TODO: Move into global styles
       }}
-      icon={icon && <ThemedIcon name={icon.name} type={icon.type} />}
+      icon={icon && <ThemedIcon name={icon.name} type={icon.type} size={icon.size} />}
       color={color || theme.colors.bgLight}
       {...properties}
     />
