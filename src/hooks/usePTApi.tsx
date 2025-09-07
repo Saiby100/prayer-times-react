@@ -84,8 +84,18 @@ function usePTApi({ area }: { area: string }) {
   }, [JSON.stringify(date)]);
   const highlighted = useMemo(() => {
     if (date.getDate() !== new Date().getDate()) return '';
-    // TODO: For each time in todayTimes, calculate if it's the next time and return the one to highlight
-    return '16:02';
+    const now = new Date();
+    // Find the first time that is after now
+    const upcoming = Object.values(todayTimes)
+      .map((timeStr) => {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        const time = new Date(now);
+        time.setHours(hours, minutes, 0, 0);
+        return { timeStr, time };
+      })
+      .filter(({ time }) => time >= now)
+      .sort((a, b) => a.time.getTime() - b.time.getTime())[0];
+    return upcoming ? upcoming.timeStr : '';
   }, [JSON.stringify(todayTimes)]);
 
   return {
