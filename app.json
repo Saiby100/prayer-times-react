@@ -46,6 +46,12 @@
     "android": {
       "package": "com.salasaiet.reminder"
     },
-    "owner": "salasaiet"
+    "owner": "salasaiet",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/4f89f60c-f7fa-4e13-97c3-bb74260287e8"
+    }
   }
 }
