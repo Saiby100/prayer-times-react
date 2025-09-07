@@ -33,8 +33,8 @@ export default function Home() {
   return (
     <Page
       name="home"
+      title={area}
       options={{
-        title: area,
         headerRight: () => (
           <>
             <ThemedButton

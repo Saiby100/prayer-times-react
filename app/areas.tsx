@@ -41,12 +41,7 @@ export default function Areas() {
   }, []);
 
   return (
-    <Page
-      name="areas"
-      options={{
-        title: 'Select Area',
-      }}
-    >
+    <Page name="areas" title="Select Area">
       {isLoading ? (
         <LoadingList />
       ) : (

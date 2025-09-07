@@ -7,9 +7,10 @@ import globalStyles from '@/utils/globalStyles';
 
 type Page = ScreenProps & {
   children?: React.ReactNode;
+  title?: string;
 };
 
-const Page: React.FC<Page> = ({ children, name, options }) => {
+const Page: React.FC<Page> = ({ children, name, options, title }) => {
   const { theme } = useTheme();
 
   return (
@@ -17,6 +18,7 @@ const Page: React.FC<Page> = ({ children, name, options }) => {
       <Stack.Screen
         name={name}
         options={{
+          title,
           headerShown: true,
           headerTitleStyle: { ...globalStyles.text, color: theme.colors.text },
           headerStyle: { backgroundColor: theme.colors.bgLight },
