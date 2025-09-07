@@ -52,14 +52,14 @@ export default function Home() {
                 type: 'feather',
               }}
             />
-            <ThemedButton
+            {/* <ThemedButton
               onPressIn={() => {}}
               icon={{
                 name: 'settings',
                 type: 'feather',
               }}
               color={theme.colors.bgLight}
-            />
+            /> */}
           </>
         ),
       }}
