@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { useRouter, useFocusEffect } from 'expo-router';
-import getStorage from '../utils/localStore';
-import { useThemeMode } from '@rneui/themed';
+import getStorage from '@/utils/localStore';
+import { useThemeMode, ThemeMode } from '@rneui/themed';
 import * as SplashScreen from 'expo-splash-screen';
 
 SplashScreen.preventAutoHideAsync();
@@ -12,7 +12,7 @@ export default function Index() {
   const storage = useRef(getStorage());
 
   useEffect(() => {
-    const themeMode = storage.current.getString('themeMode');
+    const themeMode = storage.current.getString('themeMode') as ThemeMode;
 
     if (!themeMode) storage.current.set('themeMode', 'light');
     setMode(themeMode || 'light');

@@ -1,4 +1,3 @@
-
 function getNextDay(current: Date) {
   const nextDay = new Date(current);
 
@@ -39,11 +38,11 @@ function getPrevMonth(current: Date) {
   return prevMonth;
 }
 
-function dateToString(current: Date)  {
+function dateToString(current: Date) {
   return current.toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',
-    year: 'numeric'
+    year: 'numeric',
   });
 }
 
