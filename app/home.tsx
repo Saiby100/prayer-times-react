@@ -7,6 +7,7 @@ import ThemedButton from '@/components/ThemedButton';
 import getStorage from '@/utils/localStore';
 import globalStyles from '@/utils/globalStyles';
 import usePTApi from '@/hooks/usePTApi';
+import usePTNotification from '@/hooks/usePTNotification';
 import { StyleSheet, FlatList, Text, View } from 'react-native';
 import { useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useTheme, useThemeMode } from '@rneui/themed';
@@ -20,6 +21,7 @@ export default function Home() {
   const { isLoading, navigate, highlighted, dateString, dayString, todayTimes } = usePTApi({
     area,
   });
+  const { schedulePrayerTimeNotification } = usePTNotification();
 
   useFocusEffect(
     useCallback(() => {
