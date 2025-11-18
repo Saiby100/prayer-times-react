@@ -21,7 +21,7 @@ export default function Home() {
   const { isLoading, navigate, highlighted, dateString, dayString, todayTimes } = usePTApi({
     area,
   });
-  const { schedulePrayerTimeNotification } = usePTNotification();
+  const { schedulePrayerReminder } = usePTNotification();
 
   useFocusEffect(
     useCallback(() => {
@@ -54,14 +54,16 @@ export default function Home() {
                 type: 'feather',
               }}
             />
-            {/* <ThemedButton
-              onPressIn={() => {}}
+            <ThemedButton
               icon={{
-                name: 'settings',
+                name: 'bell',
                 type: 'feather',
               }}
               color={theme.colors.bgLight}
-            /> */}
+              onPressIn={() => {
+                schedulePrayerReminder(0, todayTimes);
+              }}
+            />
           </>
         ),
       }}

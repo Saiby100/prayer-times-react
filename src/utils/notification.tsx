@@ -16,6 +16,7 @@ if (!handlerSet) {
 }
 
 async function createNotificationChannel(channelId: string, name: string) {
+  if (!(await notificationPermissionGranted())) return;
   if (Platform.OS !== 'android') return;
 
   const notificationChannel = await Notifications.getNotificationChannelAsync(channelId);
@@ -28,6 +29,7 @@ async function createNotificationChannel(channelId: string, name: string) {
 }
 
 async function schedulePushNotification(title: string, body: string, date: Date) {
+  if (!(await notificationPermissionGranted())) return;
   await Notifications.scheduleNotificationAsync({
     content: {
       title,
@@ -40,13 +42,20 @@ async function schedulePushNotification(title: string, body: string, date: Date)
   });
 }
 
-async function notificationPermissionGranted(request = false) {
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  if (existingStatus !== 'granted' && request) {
-    const { status } = await Notifications.requestPermissionsAsync();
-    return status === 'granted';
-  }
-  return existingStatus === 'granted';
+async function notificationPermissionGranted() {
+  const { status } = await Notifications.getPermissionsAsync();
+  return status === 'granted';
 }
 
-export { createNotificationChannel, notificationPermissionGranted, schedulePushNotification };
+async function requestNotificationPermission() {
+  if (await notificationPermissionGranted()) return true;
+  const { status } = await Notifications.requestPermissionsAsync();
+  return status === 'granted';
+}
+
+export {
+  createNotificationChannel,
+  notificationPermissionGranted,
+  schedulePushNotification,
+  requestNotificationPermission,
+};
