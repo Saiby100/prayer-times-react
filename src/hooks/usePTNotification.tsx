@@ -57,6 +57,8 @@ function usePTNotification() {
       data: { offset, todayTimes: formattedTimes, type: 'prayer_reminder' },
       date: formattedTimes[prayerName],
     });
+
+    createReminderTask();
   }
 
   async function createReminderTask() {
