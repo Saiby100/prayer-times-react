@@ -28,7 +28,17 @@ async function createNotificationChannel(channelId: string, name: string) {
   });
 }
 
-async function schedulePushNotification(title: string, body: string, date: Date) {
+async function schedulePushNotification({
+  title,
+  body,
+  data,
+  date,
+}: {
+  title: string;
+  body: string;
+  data: Record<string, any>;
+  date: Date;
+}) {
   if (!(await notificationPermissionGranted())) return;
   await Notifications.scheduleNotificationAsync({
     content: {

@@ -5,6 +5,7 @@ import {
   requestNotificationPermission,
 } from '@/utils/notification';
 import getStorage from '@/utils/localStore';
+import { createTask, registerNotificationTask } from '@/utils/task';
 
 function usePTNotification() {
   const storage = useRef(getStorage());
@@ -35,20 +36,43 @@ function usePTNotification() {
   }
 
   async function schedulePrayerReminder(offset: number, todayTimes: Record<string, any>) {
-    const dateTime = new Date();
     if (!(await setupNotifications())) return;
-    const time = Object.values(todayTimes)[offset];
-    const [hours, minutes] = time.split(':').map(Number);
-    const minutesBefore = storage.current.getNumber('prayerReminderPref') || 5;
 
     // TODO: Handle cases where notification time is on the next day
-    dateTime.setHours(hours, minutes - minutesBefore, 0, 0);
-    const prayerName = Object.keys(todayTimes)[offset];
-    schedulePushNotification(
-      `${prayerName} Reminder`,
-      `${prayerName} prayer is in ${minutesBefore} minutes (${time}).`,
-      dateTime
+    const minutesBefore = storage.current.getNumber('prayerReminderPref') || 5;
+    const formattedTimes = Object.fromEntries(
+      Object.entries(todayTimes).map(([prayerName, timeString]) => {
+        const dateTime = new Date();
+        const [hours, minutes] = timeString.split(':').map(Number);
+
+        dateTime.setHours(hours, minutes - minutesBefore, 0, 0);
+        return [prayerName, dateTime];
+      })
     );
+
+    const prayerName = Object.keys(formattedTimes)[offset];
+    schedulePushNotification({
+      title: `${prayerName} Reminder`,
+      body: `${prayerName} prayer is at ${todayTimes[prayerName]}.`,
+      data: { offset, todayTimes: formattedTimes, type: 'prayer_reminder' },
+      date: formattedTimes[prayerName],
+    });
+  }
+
+  async function createReminderTask() {
+    const taskName = 'SCHEDULE-PRAYER-REMINDER';
+    await createTask(taskName, async ({ data }) => {
+      const { type, todayTimes, offset } = data;
+      if (type !== 'prayer_reminder') return;
+      const prayerName = Object.keys(todayTimes)[offset];
+      schedulePushNotification({
+        title: `${prayerName} Reminder`,
+        body: `${prayerName} prayer at ${todayTimes[prayerName]}.`,
+        data: { offset: offset + 1, todayTimes, type: 'prayer_reminder' },
+        date: todayTimes[prayerName],
+      });
+    });
+    registerNotificationTask(taskName);
   }
 
   return { schedulePrayerReminder };
