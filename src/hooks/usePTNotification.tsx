@@ -1,83 +1,107 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useMemo, useEffect, useRef, useState } from 'react';
 import {
   createNotificationChannel,
-  schedulePushNotification,
+  clearScheduledNotifications,
   requestNotificationPermission,
-} from '@/utils/notification';
+  schedulePushNotification,
+  getScheduledNotifications,
+} from '@/services/notifications/notification';
 import getStorage from '@/utils/localStore';
-import { createTask, registerNotificationTask } from '@/utils/task';
 
-function usePTNotification() {
+// Format prayer times with minutes before preference
+function formatPrayerTimes(todayTimes: Record<string, string>, minutesBefore: number) {
+  // TODO: Handle cases where minutesBefore pushed time onto the next day
+  return Object.fromEntries(
+    Object.entries(todayTimes).map(([prayerName, timeString]) => {
+      const dateTime = new Date();
+      const [hours, minutes] = timeString.split(':').map(Number);
+
+      dateTime.setHours(hours, minutes - minutesBefore, 0, 0);
+      return [prayerName, dateTime];
+    })
+  );
+}
+
+function usePTNotification(todayTimes: Record<string, string>) {
   const storage = useRef(getStorage());
+  const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(false);
+  const [scheduledNotifications, setScheduledNotifications] = useState<Array<string>>([]);
+
+  const notificationsIsScheduled = useMemo(() => {
+    return scheduledNotifications.length > 0;
+  }, [scheduledNotifications]);
 
   useEffect(() => {
-    setupNotifications(true);
+    setupNotifications();
   }, []);
 
-  /**
-   * Sets up notification permissions and channels for prayer reminders.
-   * @param init - Optional flag indicating if this is an initial setup call.
-   *               When true, bypasses the permission denied check. Defaults to false.
-   * @returns Promise that resolves to true if notifications were successfully set up,
-   *          false if permission was denied or setup failed.
-   */
-  async function setupNotifications(init = false) {
+  useEffect(() => {
+    if (notificationsIsScheduled) return;
+
+    const notificationsEnabledPref = storage.current.getBoolean('remindersEnabled') || false;
+    if (!notificationsEnabledPref) return;
+
+    initPrayerReminders();
+  }, [JSON.stringify(todayTimes)]);
+
+  async function setupNotifications() {
     const permissionDenied = storage.current.getBoolean('notificationPermissionDenied') || false;
-    if (permissionDenied && !init) return false;
+    if (permissionDenied) return;
 
     const result = await requestNotificationPermission();
-
     storage.current.set('notificationPermissionDenied', !result);
 
-    if (!result) return false;
-    await createNotificationChannel('prayer_reminder', 'Prayer reminder notifications');
-
-    return true;
+    if (!result) {
+      setNotificationsEnabled(false);
+    } else {
+      await createNotificationChannel('prayer_reminder', 'Prayer reminder notifications');
+      setNotificationsEnabled(true);
+      await
+    }
   }
 
-  async function schedulePrayerReminder(offset: number, todayTimes: Record<string, any>) {
-    if (!(await setupNotifications())) return;
+  async function initPrayerReminders() {
+    if (!notificationsEnabled) return;
 
-    // TODO: Handle cases where notification time is on the next day
+    await clearAllPrayerReminders();
+
     const minutesBefore = storage.current.getNumber('prayerReminderPref') || 5;
-    const formattedTimes = Object.fromEntries(
-      Object.entries(todayTimes).map(([prayerName, timeString]) => {
-        const dateTime = new Date();
-        const [hours, minutes] = timeString.split(':').map(Number);
+    const formattedTimes: Record<string, Date> = formatPrayerTimes(todayTimes, minutesBefore);
 
-        dateTime.setHours(hours, minutes - minutesBefore, 0, 0);
-        return [prayerName, dateTime];
+    const results = await Promise.all(
+      Object.entries(formattedTimes).map(([prayerName, time]) => {
+        return schedulePushNotification({
+          title: `${prayerName} Reminder`,
+          body: `${prayerName} prayer at ${todayTimes[prayerName]}.`,
+          data: { type: 'prayer_reminder' },
+          date: time,
+        });
       })
     );
-
-    const prayerName = Object.keys(formattedTimes)[offset];
-    schedulePushNotification({
-      title: `${prayerName} Reminder`,
-      body: `${prayerName} prayer is at ${todayTimes[prayerName]}.`,
-      data: { offset, todayTimes: formattedTimes, type: 'prayer_reminder' },
-      date: formattedTimes[prayerName],
-    });
-
-    createReminderTask();
+    setScheduledNotifications(results.filter((result): result is string => result !== null));
   }
 
-  async function createReminderTask() {
-    const taskName = 'SCHEDULE-PRAYER-REMINDER';
-    await createTask(taskName, async ({ data }) => {
-      const { type, todayTimes, offset } = data;
-      if (type !== 'prayer_reminder') return;
-      const prayerName = Object.keys(todayTimes)[offset];
-      schedulePushNotification({
-        title: `${prayerName} Reminder`,
-        body: `${prayerName} prayer at ${todayTimes[prayerName]}.`,
-        data: { offset: offset + 1, todayTimes, type: 'prayer_reminder' },
-        date: todayTimes[prayerName],
-      });
-    });
-    registerNotificationTask(taskName);
+  async function clearAllPrayerReminders() {
+    console.log('Clearing all prayer reminders', scheduledNotifications);
+    await clearScheduledNotifications(scheduledNotifications);
+    setScheduledNotifications([]);
   }
 
-  return { schedulePrayerReminder };
+  async function getAllScheduledPrayerReminders() {
+    const scheduled = await getScheduledNotifications().then((notifications) =>
+      notifications.filter((notification) => notification.content.data?.type === 'prayer_reminder')
+    );
+
+    setScheduledNotifications(scheduled.map((scheduled) => scheduled.identifier));
+    return scheduled; // todo remove
+  }
+
+  return {
+    clearAllPrayerReminders,
+    initPrayerReminders,
+    notificationsIsScheduled,
+    getAllScheduledPrayerReminders,
+  };
 }
 
 export default usePTNotification;

@@ -21,7 +21,12 @@ export default function Home() {
   const { isLoading, navigate, highlighted, dateString, dayString, todayTimes } = usePTApi({
     area,
   });
-  const { schedulePrayerReminder } = usePTNotification();
+  const {
+    clearAllPrayerReminders,
+    initPrayerReminders,
+    notificationsIsScheduled,
+    getAllScheduledPrayerReminders,
+  } = usePTNotification(todayTimes);
 
   useFocusEffect(
     useCallback(() => {
@@ -56,12 +61,29 @@ export default function Home() {
             />
             <ThemedButton
               icon={{
-                name: 'bell',
+                name: notificationsIsScheduled ? 'bell' : 'bell-off',
                 type: 'feather',
               }}
               color={theme.colors.bgLight}
-              onPressIn={() => {
-                schedulePrayerReminder(0, todayTimes);
+              onPressIn={async () => {
+                if (notificationsIsScheduled) {
+                  storage.current.set('remindersEnabled', false);
+                  await clearAllPrayerReminders();
+                  return;
+                }
+                await initPrayerReminders();
+                storage.current.set('remindersEnabled', true);
+              }}
+            />
+            <ThemedButton
+              icon={{
+                name: 'eye',
+                type: 'feather',
+              }}
+              color={theme.colors.bgLight}
+              onPressIn={async () => {
+                const reminders = await getAllScheduledPrayerReminders();
+                console.log('Scheduled prayer reminders', reminders);
               }}
             />
           </>

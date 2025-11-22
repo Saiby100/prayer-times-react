@@ -36,14 +36,15 @@ async function schedulePushNotification({
 }: {
   title: string;
   body: string;
-  data: Record<string, any>;
+  data?: Record<string, any>;
   date: Date;
 }) {
-  if (!(await notificationPermissionGranted())) return;
-  await Notifications.scheduleNotificationAsync({
+  if (!(await notificationPermissionGranted())) return null;
+  return await Notifications.scheduleNotificationAsync({
     content: {
       title,
       body,
+      data: data ?? {},
     },
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.DATE,
@@ -63,9 +64,23 @@ async function requestNotificationPermission() {
   return status === 'granted';
 }
 
+async function clearScheduledNotifications(ids: Array<string>) {
+  await Promise.all(
+    ids.map((id) => {
+      Notifications.cancelScheduledNotificationAsync(id);
+    })
+  );
+}
+
+async function getScheduledNotifications() {
+  return await Notifications.getAllScheduledNotificationsAsync();
+}
+
 export {
+  clearScheduledNotifications,
   createNotificationChannel,
+  getScheduledNotifications,
   notificationPermissionGranted,
-  schedulePushNotification,
   requestNotificationPermission,
+  schedulePushNotification,
 };
