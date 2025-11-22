@@ -65,17 +65,17 @@ export default function Home() {
                 type: 'feather',
               }}
               color={theme.colors.bgLight}
-              onPressIn={async () => {
+              onPressIn={() => {
                 if (notificationsIsScheduled) {
                   storage.current.set('remindersEnabled', false);
-                  await clearAllPrayerReminders();
+                  clearAllPrayerReminders();
                   return;
                 }
-                await initPrayerReminders();
+                initPrayerReminders();
                 storage.current.set('remindersEnabled', true);
               }}
             />
-            <ThemedButton
+            {/* <ThemedButton
               icon={{
                 name: 'eye',
                 type: 'feather',
@@ -85,7 +85,7 @@ export default function Home() {
                 const reminders = await getAllScheduledPrayerReminders();
                 console.log('Scheduled prayer reminders', reminders);
               }}
-            />
+            /> */}
           </>
         ),
       }}

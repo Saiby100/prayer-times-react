@@ -22,6 +22,7 @@ function formatPrayerTimes(todayTimes: Record<string, string>, minutesBefore: nu
   );
 }
 
+// TODO: Only create the notifications for the current day times
 function usePTNotification(todayTimes: Record<string, string>) {
   const storage = useRef(getStorage());
   const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(false);
@@ -56,7 +57,8 @@ function usePTNotification(todayTimes: Record<string, string>) {
     } else {
       await createNotificationChannel('prayer_reminder', 'Prayer reminder notifications');
       setNotificationsEnabled(true);
-      await
+
+      await getAllScheduledPrayerReminders();
     }
   }
 
