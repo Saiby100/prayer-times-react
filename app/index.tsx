@@ -3,6 +3,10 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import getStorage from '@/utils/localStore';
 import { useThemeMode, ThemeMode } from '@rneui/themed';
 import * as SplashScreen from 'expo-splash-screen';
+import {
+  registerBackgroundTask,
+  scheduleTodayNotifications,
+} from '@/services/notifications/backgroundTask';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -16,7 +20,13 @@ export default function Index() {
 
     if (!themeMode) storage.current.set('themeMode', 'light');
     setMode(themeMode || 'light');
-  });
+
+    // Register background task for daily notification scheduling
+    registerBackgroundTask();
+
+    // Schedule today's notifications immediately on app open
+    scheduleTodayNotifications();
+  }, []);
 
   useFocusEffect(
     useCallback(() => {

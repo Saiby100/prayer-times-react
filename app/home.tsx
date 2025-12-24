@@ -9,12 +9,13 @@ import globalStyles from '@/utils/globalStyles';
 import usePTApi from '@/hooks/usePTApi';
 import usePTNotification from '@/hooks/usePTNotification';
 import { StyleSheet, FlatList, Text, View } from 'react-native';
-import { useLocalSearchParams, useFocusEffect } from 'expo-router';
+import { useLocalSearchParams, useFocusEffect, useRouter } from 'expo-router';
 import { useTheme, useThemeMode } from '@rneui/themed';
 
 export default function Home() {
   const params = useLocalSearchParams();
   const { area } = params as { area: string };
+  const router = useRouter();
 
   const { theme } = useTheme();
   const { mode, setMode } = useThemeMode();
@@ -25,13 +26,15 @@ export default function Home() {
     clearAllPrayerReminders,
     initPrayerReminders,
     notificationsIsScheduled,
-    getAllScheduledPrayerReminders,
-  } = usePTNotification(todayTimes);
+    refreshAndReschedule,
+  } = usePTNotification();
 
   useFocusEffect(
     useCallback(() => {
       SplashScreen.hide();
-    }, [])
+      // Refresh notification preferences when returning from settings
+      refreshAndReschedule();
+    }, [refreshAndReschedule])
   );
 
   const shadow = mode === 'light' ? styles.shadow : {};
@@ -73,6 +76,16 @@ export default function Home() {
                 }
                 initPrayerReminders();
                 storage.current.set('remindersEnabled', true);
+              }}
+            />
+            <ThemedButton
+              icon={{
+                name: 'settings',
+                type: 'feather',
+              }}
+              color={theme.colors.bgLight}
+              onPressIn={() => {
+                router.push('/settings' as any);
               }}
             />
             {/* <ThemedButton
