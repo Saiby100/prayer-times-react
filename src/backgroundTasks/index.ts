@@ -13,7 +13,7 @@ TaskManager.defineTask(prayerReminderTask.NAME, prayerReminderTask.handler);
 
 // Export a mapping of task registration functions
 export const registerDefinedTask = {
-  prayerReminderTask: async (options: BackgroundTask.BackgroundTaskOptions = {}) => {
-    await registerTask(prayerReminderTask.NAME, prayerReminderTask.options ?? options);
+  prayerReminderTask: async (options?: BackgroundTask.BackgroundTaskOptions) => {
+    await registerTask(prayerReminderTask.NAME, options ?? prayerReminderTask.options ?? {});
   },
 };
