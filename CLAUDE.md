@@ -34,8 +34,9 @@ Build and deploy use EAS (`eas build`, `eas update`). CI workflows live in `.git
 - **`utils/localStore.ts`** — MMKV-based persistent storage. Stores selected area, theme, cached prayer times (keyed `times_${month}_${year}_${area}`), notification preferences.
 - **`hooks/usePTApi.ts`** — Manages prayer time fetching, date navigation, and caching logic.
 - **`hooks/usePTNotification.ts`** — Manages notification permission and scheduling lifecycle.
-- **`services/notification.ts`** — Core notification APIs (schedule, permissions, channels).
-- **`services/backgroundTask.ts`** — Registers daily background task that fetches cached times and schedules prayer reminders N minutes before each salah.
+- **`services/notifications/notification.ts`** — Core notification APIs (schedule, permissions, channels).
+- **`services/notifications/scheduleReminders.ts`** — Fetches prayer times and schedules reminder notifications.
+- **`backgroundTasks/`** — Background task definitions. `index.ts` exports `registerAllBackgroundTasks()` to register all tasks at app startup. Each task gets its own file (e.g. `prayerReminderTask.ts`).
 - **`components/`** — Reusable UI components (Page, LoadingList, etc.).
 - **`types/`** — TypeScript type definitions.
 
@@ -44,10 +45,11 @@ Build and deploy use EAS (`eas build`, `eas update`). CI workflows live in `.git
 - **No Redux/Context** — state is managed via React hooks + MMKV for persistence.
 - **Path alias** — `@/*` maps to `./src/*` (configured in `tsconfig.json`).
 - **UI library** — `@rneui/themed` (React Native Elements) for components and theming.
-- **Notification flow** — On app open, `registerBackgroundTask()` sets up daily task → `scheduleTodayNotifications()` runs immediately → background task repeats every 24h.
+- **Notification flow** — On app open, `registerBackgroundTask()` (from `backgroundTasks/`) sets up daily task → `scheduleTodayNotifications()` (from `services/notifications/scheduleReminders`) runs immediately → background task repeats every 24h.
 
 ## Code Style
 
+- Prefer small, focused files with utility functions over large files with many functions. Group closely related functions together in the same file.
 - TypeScript strict mode
 - Prettier: single quotes, 100 print width, 2-space indent (`.prettierrc`)
 - ESLint extends `expo` config with `eslint-import-resolver-typescript` for `@/` alias resolution

@@ -5,7 +5,7 @@ import {
   requestNotificationPermission,
   getScheduledNotifications,
 } from '@/services/notifications/notification';
-import { scheduleTodayNotifications } from '@/services/notifications/backgroundTask';
+import { scheduleTodayNotifications } from '@/services/notifications/scheduleReminders';
 import getStorage from '@/utils/localStore';
 
 function usePTNotification() {
