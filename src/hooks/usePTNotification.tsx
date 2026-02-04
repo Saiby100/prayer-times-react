@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useRef, useState, useCallback } from 'react';
+import { useMemo, useEffect, useState, useCallback } from 'react';
 import {
   createNotificationChannel,
   clearScheduledNotifications,
@@ -9,7 +9,7 @@ import { scheduleTodayNotifications } from '@/services/notifications/scheduleRem
 import getStorage from '@/utils/localStore';
 
 function usePTNotification() {
-  const storage = useRef(getStorage());
+  const storage = getStorage();
   const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(false);
   const [scheduledNotifications, setScheduledNotifications] = useState<string[]>([]);
   const [reminderMinutes, setReminderMinutes] = useState<number>(5);
@@ -24,16 +24,16 @@ function usePTNotification() {
   }, []);
 
   function loadReminderPreference() {
-    const savedMinutes = storage.current.getNumber('prayerReminderPref') ?? 5;
+    const savedMinutes = storage.getNumber('prayerReminderPref') ?? 5;
     setReminderMinutes(savedMinutes);
   }
 
   async function setupNotifications() {
-    const permissionDenied = storage.current.getBoolean('notificationPermissionDenied') || false;
+    const permissionDenied = storage.getBoolean('notificationPermissionDenied') || false;
     if (permissionDenied) return;
 
     const result = await requestNotificationPermission();
-    storage.current.set('notificationPermissionDenied', !result);
+    storage.set('notificationPermissionDenied', !result);
 
     if (!result) {
       setNotificationsEnabled(false);
@@ -70,8 +70,8 @@ function usePTNotification() {
 
   // Refresh preference from storage and reschedule if notifications are enabled
   const refreshAndReschedule = useCallback(async () => {
-    const savedMinutes = storage.current.getNumber('prayerReminderPref') ?? 5;
-    const remindersEnabled = storage.current.getBoolean('remindersEnabled') ?? false;
+    const savedMinutes = storage.getNumber('prayerReminderPref') ?? 5;
+    const remindersEnabled = storage.getBoolean('remindersEnabled') ?? false;
 
     setReminderMinutes(savedMinutes);
 
