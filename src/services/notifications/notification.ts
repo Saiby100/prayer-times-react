@@ -64,7 +64,7 @@ async function requestNotificationPermission() {
   return status === 'granted';
 }
 
-async function clearScheduledNotifications(ids: Array<string>) {
+async function clearScheduledNotifications(ids: string[]) {
   await Promise.all(
     ids.map((id) => {
       Notifications.cancelScheduledNotificationAsync(id);

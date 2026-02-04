@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useRouter, useFocusEffect } from 'expo-router';
 import getStorage from '@/utils/localStore';
 import { useThemeMode, ThemeMode } from '@rneui/themed';
@@ -11,12 +11,12 @@ SplashScreen.preventAutoHideAsync();
 export default function Index() {
   const router = useRouter();
   const { setMode } = useThemeMode();
-  const storage = useRef(getStorage());
+  const storage = getStorage();
 
   useEffect(() => {
-    const themeMode = storage.current.getString('themeMode') as ThemeMode;
+    const themeMode = storage.getString('themeMode') as ThemeMode;
 
-    if (!themeMode) storage.current.set('themeMode', 'light');
+    if (!themeMode) storage.set('themeMode', 'light');
     setMode(themeMode || 'light');
 
     // Register background task for daily notification scheduling
@@ -28,7 +28,7 @@ export default function Index() {
 
   useFocusEffect(
     useCallback(() => {
-      const area = storage.current.getString('area');
+      const area = storage.getString('area');
 
       if (area) {
         router.replace('/areas');

@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 
 import * as SplashScreen from 'expo-splash-screen';
 import LoadingList from '@/components/LoadingList';
@@ -38,7 +38,7 @@ export default function Home() {
   );
 
   const shadow = mode === 'light' ? styles.shadow : {};
-  const storage = useRef(getStorage());
+  const storage = getStorage();
 
   return (
     <Page
@@ -51,10 +51,10 @@ export default function Home() {
               onPressIn={() => {
                 if (mode === 'light') {
                   setMode('dark');
-                  storage.current.set('themeMode', 'dark');
+                  storage.set('themeMode', 'dark');
                 } else {
                   setMode('light');
-                  storage.current.set('themeMode', 'light');
+                  storage.set('themeMode', 'light');
                 }
               }}
               icon={{
@@ -70,12 +70,12 @@ export default function Home() {
               color={theme.colors.bgLight}
               onPressIn={() => {
                 if (notificationsIsScheduled) {
-                  storage.current.set('remindersEnabled', false);
+                  storage.set('remindersEnabled', false);
                   clearAllPrayerReminders();
                   return;
                 }
                 initPrayerReminders();
-                storage.current.set('remindersEnabled', true);
+                storage.set('remindersEnabled', true);
               }}
             />
             <ThemedButton
