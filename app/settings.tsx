@@ -1,16 +1,14 @@
 import { useRef, useState, useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { Slider, useTheme, useThemeMode } from '@rneui/themed';
+import { StyleSheet, View } from 'react-native';
+import { Slider, Text, useTheme } from '@rneui/themed';
 
 import Page from '@/components/Page';
 import getStorage from '@/utils/localStore';
-import globalStyles from '@/utils/globalStyles';
 
 const REMINDER_OPTIONS = [0, 5, 10, 15, 20, 30, 45, 60];
 
 export default function Settings() {
   const { theme } = useTheme();
-  const { mode } = useThemeMode();
   const storage = useRef(getStorage());
 
   const [reminderMinutes, setReminderMinutes] = useState<number>(5);
@@ -36,8 +34,6 @@ export default function Settings() {
     storage.current.set('prayerReminderPref', minutes);
   };
 
-  const shadow = mode === 'light' ? styles.shadow : {};
-
   const getReminderLabel = (minutes: number) => {
     if (minutes === 0) return 'At prayer time';
     if (minutes === 60) return '1 hour before';
@@ -53,16 +49,17 @@ export default function Settings() {
       }}
     >
       <View style={{ paddingHorizontal: 24, paddingTop: 20 }}>
-        <View style={[shadow, styles.card, { backgroundColor: theme.colors.bgLight }]}>
-          <Text style={[globalStyles.text, styles.sectionTitle, { color: theme.colors.text }]}>
-            Prayer Reminder
-          </Text>
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: theme.colors.bgLight, boxShadow: theme.colors.shadow },
+          ]}
+        >
+          <Text style={styles.sectionTitle}>Prayer Reminder</Text>
 
-          <Text style={[globalStyles.text, styles.label, { color: theme.colors.text }]}>
-            Notify me:
-          </Text>
+          <Text style={styles.label}>Notify me:</Text>
 
-          <Text style={[globalStyles.text, styles.value, { color: theme.colors.primary }]}>
+          <Text style={[styles.value, { color: theme.colors.primary }]}>
             {getReminderLabel(reminderMinutes)}
           </Text>
 
@@ -76,19 +73,16 @@ export default function Settings() {
               step={1}
               allowTouchTrack
               trackStyle={styles.track}
-              thumbStyle={[styles.thumb, { backgroundColor: theme.colors.primary }]}
-              minimumTrackTintColor={theme.colors.primary}
-              maximumTrackTintColor={mode === 'light' ? '#d3d3d3' : '#555555'}
             />
             <View style={styles.tickLabels}>
-              <Text style={[styles.tickLabel, { color: theme.colors.text }]}>0</Text>
-              <Text style={[styles.tickLabel, { color: theme.colors.text }]}>15</Text>
-              <Text style={[styles.tickLabel, { color: theme.colors.text }]}>30</Text>
-              <Text style={[styles.tickLabel, { color: theme.colors.text }]}>60</Text>
+              <Text style={styles.tickLabel}>0</Text>
+              <Text style={styles.tickLabel}>15</Text>
+              <Text style={styles.tickLabel}>30</Text>
+              <Text style={styles.tickLabel}>60</Text>
             </View>
           </View>
 
-          <Text style={[styles.hint, { color: theme.colors.text, opacity: 0.6 }]}>
+          <Text style={[styles.hint, { opacity: 0.6 }]}>
             You will receive a notification before each prayer time
           </Text>
         </View>
@@ -101,9 +95,6 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 12,
     padding: 20,
-  },
-  shadow: {
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
   },
   sectionTitle: {
     fontSize: 20,
@@ -126,11 +117,6 @@ const styles = StyleSheet.create({
   track: {
     height: 6,
     borderRadius: 3,
-  },
-  thumb: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
   },
   tickLabels: {
     flexDirection: 'row',

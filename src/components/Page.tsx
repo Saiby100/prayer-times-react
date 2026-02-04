@@ -3,7 +3,6 @@ import { StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, ScreenProps } from 'expo-router';
 import { useTheme } from '@rneui/themed';
-import globalStyles from '@/utils/globalStyles';
 
 type Page = ScreenProps & {
   children?: React.ReactNode;
@@ -20,7 +19,7 @@ const Page: React.FC<Page> = ({ children, name, options, title }) => {
         options={{
           title,
           headerShown: true,
-          headerTitleStyle: { ...globalStyles.text, color: theme.colors.text },
+          headerTitleStyle: { fontSize: 18, fontFamily: 'Inter-Medium', color: theme.colors.text },
           headerStyle: { backgroundColor: theme.colors.bgLight },
           headerTintColor: theme.colors.text,
           ...options,

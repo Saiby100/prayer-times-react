@@ -3,14 +3,12 @@ import { useCallback } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import LoadingList from '@/components/LoadingList';
 import Page from '@/components/Page';
-import ThemedButton from '@/components/ThemedButton';
 import getStorage from '@/utils/localStore';
-import globalStyles from '@/utils/globalStyles';
 import usePTApi from '@/hooks/usePTApi';
 import usePTNotification from '@/hooks/usePTNotification';
-import { StyleSheet, FlatList, Text, View } from 'react-native';
+import { StyleSheet, FlatList, View } from 'react-native';
 import { useLocalSearchParams, useFocusEffect, useRouter } from 'expo-router';
-import { useTheme, useThemeMode } from '@rneui/themed';
+import { Button, Text, useTheme, useThemeMode } from '@rneui/themed';
 
 export default function Home() {
   const params = useLocalSearchParams();
@@ -37,7 +35,6 @@ export default function Home() {
     }, [refreshAndReschedule])
   );
 
-  const shadow = mode === 'light' ? styles.shadow : {};
   const storage = getStorage();
 
   return (
@@ -47,7 +44,7 @@ export default function Home() {
       options={{
         headerRight: () => (
           <>
-            <ThemedButton
+            <Button
               onPressIn={() => {
                 if (mode === 'light') {
                   setMode('dark');
@@ -62,12 +59,11 @@ export default function Home() {
                 type: 'feather',
               }}
             />
-            <ThemedButton
+            <Button
               icon={{
                 name: notificationsIsScheduled ? 'bell' : 'bell-off',
                 type: 'feather',
               }}
-              color={theme.colors.bgLight}
               onPressIn={() => {
                 if (notificationsIsScheduled) {
                   storage.set('remindersEnabled', false);
@@ -78,27 +74,15 @@ export default function Home() {
                 storage.set('remindersEnabled', true);
               }}
             />
-            <ThemedButton
+            <Button
               icon={{
                 name: 'settings',
                 type: 'feather',
               }}
-              color={theme.colors.bgLight}
               onPressIn={() => {
                 router.push('/settings' as any);
               }}
             />
-            {/* <ThemedButton
-              icon={{
-                name: 'eye',
-                type: 'feather',
-              }}
-              color={theme.colors.bgLight}
-              onPressIn={async () => {
-                const reminders = await getAllScheduledPrayerReminders();
-                console.log('Scheduled prayer reminders', reminders);
-              }}
-            /> */}
           </>
         ),
       }}
@@ -116,8 +100,8 @@ export default function Home() {
                 padding: 4,
               }}
             >
-              <Text style={[globalStyles.text, { color: theme.colors.text }]}>{dayString}</Text>
-              <ThemedButton
+              <Text>{dayString}</Text>
+              <Button
                 size="sm"
                 radius="md"
                 type="outline"
@@ -133,23 +117,29 @@ export default function Home() {
                 }}
               />
             </View>
-            <View style={[shadow, styles.card, { backgroundColor: theme.colors.bgLight }]}>
+            <View
+              style={[
+                styles.card,
+                {
+                  backgroundColor: theme.colors.bgLight,
+                  boxShadow: theme.colors.shadow,
+                },
+              ]}
+            >
               <FlatList
                 data={Object.keys(todayTimes ?? {})}
                 renderItem={({ item, index }) => (
                   <Text
                     key={index}
                     style={[
-                      globalStyles.text,
                       styles.textButton,
                       {
                         width: '100%',
                         borderWidth: 1.5,
                         borderColor:
-                          todayTimes[item] == highlighted
+                          todayTimes[item] === highlighted
                             ? theme.colors.primary
                             : theme.colors.bgLight,
-                        color: theme.colors.text,
                       },
                     ]}
                   >{`${item} : ${todayTimes[item]}`}</Text>
@@ -159,7 +149,7 @@ export default function Home() {
               ></FlatList>
             </View>
             <View style={styles.buttonLayout}>
-              <ThemedButton
+              <Button
                 onPress={() => {
                   navigate.prev();
                 }}
@@ -169,22 +159,15 @@ export default function Home() {
                   size: 30,
                 }}
                 containerStyle={[
-                  shadow,
                   {
                     backgroundColor: theme.colors.bgLight,
                     borderRadius: 8,
+                    boxShadow: theme.colors.shadow,
                   },
                 ]}
               />
-              <Text
-                style={[
-                  globalStyles.text,
-                  { padding: 8, color: theme.colors.text, flex: 1, textAlign: 'center' },
-                ]}
-              >
-                {dateString}
-              </Text>
-              <ThemedButton
+              <Text style={{ padding: 8, flex: 1, textAlign: 'center' }}>{dateString}</Text>
+              <Button
                 onPress={() => {
                   navigate.next();
                 }}
@@ -194,9 +177,9 @@ export default function Home() {
                   size: 30,
                 }}
                 containerStyle={[
-                  shadow,
                   {
                     borderRadius: 8,
+                    boxShadow: theme.colors.shadow,
                   },
                 ]}
               />
@@ -213,9 +196,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 20,
     marginBottom: 24,
-  },
-  shadow: {
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
   },
   buttonLayout: {
     flexDirection: 'row',
