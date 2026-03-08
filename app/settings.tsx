@@ -1,10 +1,16 @@
 import { StyleSheet, View } from 'react-native';
-import { Text, useTheme } from '@rneui/themed';
+import { Button, Text, useThemeMode } from '@rneui/themed';
 
 import Page from '@/components/Page';
+import Card from '@/components/Card';
+import getStorage from '@/utils/localStore';
+import usePTNotification from '@/hooks/usePTNotification';
 
 export default function Settings() {
-  const { theme } = useTheme();
+  const { mode, setMode } = useThemeMode();
+  const storage = getStorage();
+  const { clearAllPrayerReminders, initPrayerReminders, notificationsIsScheduled } =
+    usePTNotification();
 
   return (
     <Page
@@ -13,43 +19,81 @@ export default function Settings() {
       options={{
         headerBackVisible: true,
       }}
+      contentStyle={{ justifyContent: 'flex-start', paddingTop: 20 }}
     >
-      <View style={{ paddingHorizontal: 24, paddingTop: 20 }}>
-        <View style={[styles.card, { backgroundColor: theme.colors.bgLight }]}>
-          <Text style={styles.sectionTitle}>Prayer Reminder</Text>
+      <View style={{ paddingHorizontal: 24, gap: 16 }}>
+        <Card title="Appearance">
+          <View style={styles.row}>
+            <Text style={styles.label}>Theme</Text>
+            <Button
+              type="outline"
+              size="sm"
+              radius="md"
+              icon={{
+                name: mode === 'light' ? 'moon' : 'sun',
+                type: 'feather',
+                size: 18,
+              }}
+              title={mode === 'light' ? ' Dark mode' : ' Light mode'}
+              titleStyle={{ fontSize: 14 }}
+              buttonStyle={{ borderWidth: 1 }}
+              onPress={() => {
+                if (mode === 'light') {
+                  setMode('dark');
+                  storage.set('themeMode', 'dark');
+                } else {
+                  setMode('light');
+                  storage.set('themeMode', 'light');
+                }
+              }}
+            />
+          </View>
+        </Card>
 
-          <Text style={styles.label}>Notify me:</Text>
+        <Card title="Notifications">
+          <View style={styles.row}>
+            <Text style={styles.label}>Prayer reminders</Text>
+            <Button
+              type="outline"
+              size="sm"
+              radius="md"
+              icon={{
+                name: notificationsIsScheduled ? 'bell' : 'bell-off',
+                type: 'feather',
+                size: 18,
+              }}
+              title={notificationsIsScheduled ? ' On' : ' Off'}
+              titleStyle={{ fontSize: 14 }}
+              buttonStyle={{ borderWidth: 1 }}
+              onPress={() => {
+                if (notificationsIsScheduled) {
+                  storage.set('remindersEnabled', false);
+                  clearAllPrayerReminders();
+                  return;
+                }
+                initPrayerReminders();
+                storage.set('remindersEnabled', true);
+              }}
+            />
+          </View>
 
-          <Text style={[styles.value, { color: theme.colors.primary }]}>5 minutes before</Text>
-
-          <Text style={[styles.hint, { opacity: 0.6 }]}>
-            You will receive a notification 5 minutes before each prayer time
+          <Text style={[styles.hint, { opacity: 0.6, marginTop: 16 }]}>
+            Reminders are sent 5 minutes before each prayer time
           </Text>
-        </View>
+        </Card>
       </View>
     </Page>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    borderRadius: 12,
-    padding: 20,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 20,
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   label: {
     fontSize: 16,
-    marginBottom: 8,
-  },
-  value: {
-    fontSize: 24,
-    fontWeight: '600',
-    textAlign: 'center',
-    marginBottom: 20,
   },
   hint: {
     fontSize: 14,

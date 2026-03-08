@@ -4,12 +4,11 @@ import * as SplashScreen from 'expo-splash-screen';
 import LoadingList from '@/components/LoadingList';
 import Page from '@/components/Page';
 import CalendarPopup from '@/components/CalendarPopup';
-import getStorage from '@/utils/localStore';
+import Card from '@/components/Card';
 import usePTApi from '@/hooks/usePTApi';
-import usePTNotification from '@/hooks/usePTNotification';
 import { StyleSheet, FlatList, View } from 'react-native';
 import { useLocalSearchParams, useFocusEffect, useRouter } from 'expo-router';
-import { Button, Text, useTheme, useThemeMode } from '@rneui/themed';
+import { Button, Text, useTheme } from '@rneui/themed';
 
 export default function Home() {
   const params = useLocalSearchParams();
@@ -17,27 +16,16 @@ export default function Home() {
   const router = useRouter();
 
   const { theme } = useTheme();
-  const { mode, setMode } = useThemeMode();
   const [calendarVisible, setCalendarVisible] = useState(false);
   const { isLoading, navigate, date, highlighted, dateString, dayString, todayTimes } = usePTApi({
     area,
   });
-  const {
-    clearAllPrayerReminders,
-    initPrayerReminders,
-    notificationsIsScheduled,
-    refreshAndReschedule,
-  } = usePTNotification();
 
   useFocusEffect(
     useCallback(() => {
       SplashScreen.hide();
-      // Refresh notification preferences when returning from settings
-      refreshAndReschedule();
-    }, [refreshAndReschedule])
+    }, [])
   );
-
-  const storage = getStorage();
 
   return (
     <Page
@@ -45,47 +33,15 @@ export default function Home() {
       title={area}
       options={{
         headerRight: () => (
-          <>
-            <Button
-              onPressIn={() => {
-                if (mode === 'light') {
-                  setMode('dark');
-                  storage.set('themeMode', 'dark');
-                } else {
-                  setMode('light');
-                  storage.set('themeMode', 'light');
-                }
-              }}
-              icon={{
-                name: mode === 'light' ? 'moon' : 'sun',
-                type: 'feather',
-              }}
-            />
-            <Button
-              icon={{
-                name: notificationsIsScheduled ? 'bell' : 'bell-off',
-                type: 'feather',
-              }}
-              onPressIn={() => {
-                if (notificationsIsScheduled) {
-                  storage.set('remindersEnabled', false);
-                  clearAllPrayerReminders();
-                  return;
-                }
-                initPrayerReminders();
-                storage.set('remindersEnabled', true);
-              }}
-            />
-            <Button
-              icon={{
-                name: 'settings',
-                type: 'feather',
-              }}
-              onPressIn={() => {
-                router.push('/settings' as any);
-              }}
-            />
-          </>
+          <Button
+            icon={{
+              name: 'settings',
+              type: 'feather',
+            }}
+            onPressIn={() => {
+              router.push('/settings' as any);
+            }}
+          />
         ),
       }}
     >
@@ -133,14 +89,7 @@ export default function Home() {
                 />
               </View>
             </View>
-            <View
-              style={[
-                styles.card,
-                {
-                  backgroundColor: theme.colors.bgLight,
-                },
-              ]}
-            >
+            <Card style={{ marginBottom: 24 }}>
               <FlatList
                 data={Object.keys(todayTimes ?? {})}
                 renderItem={({ item, index }) => (
@@ -162,7 +111,7 @@ export default function Home() {
                 contentContainerStyle={styles.list}
                 extraData={todayTimes}
               ></FlatList>
-            </View>
+            </Card>
             <View style={styles.buttonLayout}>
               <Button
                 onPress={() => {
@@ -220,11 +169,6 @@ export default function Home() {
 }
 
 const styles = StyleSheet.create({
-  card: {
-    borderRadius: 12,
-    paddingVertical: 20,
-    marginBottom: 24,
-  },
   buttonLayout: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -237,7 +181,6 @@ const styles = StyleSheet.create({
   },
   list: {
     flexGrow: 1,
-    paddingHorizontal: 20,
     justifyContent: 'center',
     gap: 12,
   },

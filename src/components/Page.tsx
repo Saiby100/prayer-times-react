@@ -1,5 +1,5 @@
 import React from 'react';
-import { StatusBar, StyleSheet } from 'react-native';
+import { StatusBar, StyleProp, StyleSheet, ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, ScreenProps } from 'expo-router';
 import { useTheme } from '@rneui/themed';
@@ -7,13 +7,14 @@ import { useTheme } from '@rneui/themed';
 type Page = ScreenProps & {
   children?: React.ReactNode;
   title?: string;
+  contentStyle?: StyleProp<ViewStyle>;
 };
 
-const Page: React.FC<Page> = ({ children, name, options, title }) => {
+const Page: React.FC<Page> = ({ children, name, options, title, contentStyle }) => {
   const { theme } = useTheme();
 
   return (
-    <SafeAreaView style={{ ...styles.view, backgroundColor: theme.colors.background }}>
+    <SafeAreaView style={[styles.view, { backgroundColor: theme.colors.background }, contentStyle]}>
       <Stack.Screen
         name={name}
         options={{
