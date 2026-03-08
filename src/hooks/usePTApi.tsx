@@ -77,6 +77,12 @@ function usePTApi({ area }: { area: string }) {
     setDateWithSave(newDate);
     setTodayTimes(times[newDate.getDate() - 1]);
   };
+  const goToDate = (target: Date) => {
+    setDateWithSave(target);
+    if (target.getMonth() === date.getMonth() && target.getFullYear() === date.getFullYear()) {
+      setTodayTimes(times[target.getDate() - 1]);
+    }
+  };
   const dateString = useMemo(() => dateToString(date), [JSON.stringify(date)]);
   const dayString = useMemo(() => {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -100,7 +106,8 @@ function usePTApi({ area }: { area: string }) {
 
   return {
     isLoading,
-    navigate: { next: nextDay, prev: prevDay, today: setToday },
+    navigate: { next: nextDay, prev: prevDay, today: setToday, goToDate },
+    date,
     dateString,
     dayString,
     highlighted,

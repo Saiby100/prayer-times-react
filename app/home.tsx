@@ -1,8 +1,9 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 import * as SplashScreen from 'expo-splash-screen';
 import LoadingList from '@/components/LoadingList';
 import Page from '@/components/Page';
+import CalendarPopup from '@/components/CalendarPopup';
 import getStorage from '@/utils/localStore';
 import usePTApi from '@/hooks/usePTApi';
 import usePTNotification from '@/hooks/usePTNotification';
@@ -17,7 +18,8 @@ export default function Home() {
 
   const { theme } = useTheme();
   const { mode, setMode } = useThemeMode();
-  const { isLoading, navigate, highlighted, dateString, dayString, todayTimes } = usePTApi({
+  const [calendarVisible, setCalendarVisible] = useState(false);
+  const { isLoading, navigate, date, highlighted, dateString, dayString, todayTimes } = usePTApi({
     area,
   });
   const {
@@ -101,21 +103,35 @@ export default function Home() {
               }}
             >
               <Text>{dayString}</Text>
-              <Button
-                size="sm"
-                radius="md"
-                type="outline"
-                titleStyle={{
-                  padding: 4,
-                  fontSize: 14,
-                  paddingVertical: 4,
-                }}
-                buttonStyle={{ borderWidth: 1, padding: 0 }}
-                title={JSON.stringify(new Date().getDate())}
-                onPress={() => {
-                  navigate.today();
-                }}
-              />
+              <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+                <Button
+                  size="sm"
+                  radius="md"
+                  type="outline"
+                  titleStyle={{
+                    padding: 4,
+                    fontSize: 14,
+                    paddingVertical: 4,
+                  }}
+                  buttonStyle={{ borderWidth: 1, paddingHorizontal: 6, paddingVertical: 1 }}
+                  title={JSON.stringify(new Date().getDate())}
+                  onPress={() => {
+                    navigate.today();
+                  }}
+                />
+                <Button
+                  size="sm"
+                  radius="md"
+                  type="outline"
+                  buttonStyle={{ borderWidth: 1, paddingHorizontal: 4, paddingVertical: 6 }}
+                  icon={{
+                    name: 'calendar',
+                    type: 'feather',
+                    size: 16,
+                  }}
+                  onPress={() => setCalendarVisible(true)}
+                />
+              </View>
             </View>
             <View
               style={[
@@ -192,6 +208,12 @@ export default function Home() {
             </View>
           </View>
         )}
+        <CalendarPopup
+          visible={calendarVisible}
+          onClose={() => setCalendarVisible(false)}
+          onDateSelect={navigate.goToDate}
+          selectedDate={date}
+        />
       </View>
     </Page>
   );
