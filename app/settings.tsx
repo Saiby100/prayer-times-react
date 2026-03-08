@@ -5,12 +5,14 @@ import Page from '@/components/Page';
 import Card from '@/components/Card';
 import getStorage from '@/utils/localStore';
 import usePTNotification from '@/hooks/usePTNotification';
+import useHijriDate from '@/hooks/useHijriDate';
 
 export default function Settings() {
   const { mode, setMode } = useThemeMode();
   const storage = getStorage();
   const { clearAllPrayerReminders, initPrayerReminders, notificationsIsScheduled } =
     usePTNotification();
+  const { showHijri, toggleShowHijri, hijriSupported } = useHijriDate(new Date());
 
   return (
     <Page
@@ -48,11 +50,30 @@ export default function Settings() {
               }}
             />
           </View>
+          {hijriSupported && (
+            <View style={[styles.row, { marginTop: 16 }]}>
+              <Text style={styles.label}>Hijri date</Text>
+              <Button
+                type="outline"
+                size="sm"
+                radius="md"
+                icon={{
+                  name: showHijri ? 'eye' : 'eye-off',
+                  type: 'feather',
+                  size: 18,
+                }}
+                title={showHijri ? ' Shown' : ' Hidden'}
+                titleStyle={{ fontSize: 14 }}
+                buttonStyle={{ borderWidth: 1 }}
+                onPress={toggleShowHijri}
+              />
+            </View>
+          )}
         </Card>
 
         <Card title="Notifications">
           <View style={styles.row}>
-            <Text style={styles.label}>Prayer reminders</Text>
+            <Text style={styles.label}>Prayer reminders (Beta)</Text>
             <Button
               type="outline"
               size="sm"

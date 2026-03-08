@@ -51,7 +51,7 @@ export default function CalendarPopup({
           calendarBackground: theme.colors.background,
           textSectionTitleColor: theme.colors.text,
           selectedDayBackgroundColor: theme.colors.primary,
-          selectedDayTextColor: '#ffffff',
+          selectedDayTextColor: theme.colors.background,
           todayTextColor: theme.colors.primary,
           dayTextColor: theme.colors.text,
           monthTextColor: theme.colors.text,

@@ -4,9 +4,11 @@ import * as SplashScreen from 'expo-splash-screen';
 import LoadingList from '@/components/LoadingList';
 import Page from '@/components/Page';
 import CalendarPopup from '@/components/CalendarPopup';
+import InfoPopup from '@/components/InfoPopup';
 import Card from '@/components/Card';
 import usePTApi from '@/hooks/usePTApi';
-import { StyleSheet, FlatList, View } from 'react-native';
+import useHijriDate from '@/hooks/useHijriDate';
+import { StyleSheet, FlatList, TouchableOpacity, View } from 'react-native';
 import { useLocalSearchParams, useFocusEffect, useRouter } from 'expo-router';
 import { Button, Text, useTheme } from '@rneui/themed';
 
@@ -20,6 +22,9 @@ export default function Home() {
   const { isLoading, navigate, date, highlighted, dateString, dayString, todayTimes } = usePTApi({
     area,
   });
+  const { showHijri, hijriDateString, hijriDateInfoList } = useHijriDate(date);
+  const [hijriInfoVisible, setHijriInfoVisible] = useState(false);
+  const hasHijriInfo = hijriDateInfoList.length > 0;
 
   useFocusEffect(
     useCallback(() => {
@@ -58,7 +63,26 @@ export default function Home() {
                 padding: 4,
               }}
             >
-              <Text>{dayString}</Text>
+              <View>
+                <Text>{dayString}</Text>
+                {showHijri &&
+                  hijriDateString &&
+                  (hasHijriInfo ? (
+                    <TouchableOpacity onPress={() => setHijriInfoVisible(true)}>
+                      <Text
+                        style={{
+                          fontSize: 13,
+                          opacity: 0.7,
+                          textDecorationLine: 'underline',
+                        }}
+                      >
+                        {hijriDateString}
+                      </Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <Text style={{ fontSize: 13, opacity: 0.7 }}>{hijriDateString}</Text>
+                  ))}
+              </View>
               <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
                 <Button
                   size="sm"
@@ -157,6 +181,11 @@ export default function Home() {
             </View>
           </View>
         )}
+        <InfoPopup
+          visible={hijriInfoVisible}
+          onClose={() => setHijriInfoVisible(false)}
+          items={hijriDateInfoList}
+        />
         <CalendarPopup
           visible={calendarVisible}
           onClose={() => setCalendarVisible(false)}
