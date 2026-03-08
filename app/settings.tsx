@@ -73,7 +73,7 @@ export default function Settings() {
 
         <Card title="Notifications">
           <View style={styles.row}>
-            <Text style={styles.label}>Prayer reminders</Text>
+            <Text style={styles.label}>Prayer reminders (Beta)</Text>
             <Button
               type="outline"
               size="sm"
