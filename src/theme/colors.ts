@@ -1,17 +1,17 @@
 export const lightColors = {
-  primary: '#2089DC',
-  secondary: '#2089DC',
-  text: '#000000',
-  background: '#f5f5f5',
-  bgLight: '#ffffff',
-  sliderTrack: '#d3d3d3',
+  primary: '#0D7C5F',
+  secondary: '#C8956C',
+  text: '#1A1A2E',
+  background: '#F7F5F0',
+  bgLight: '#FFFFFF',
+  sliderTrack: '#D4CFC7',
 };
 
 export const darkColors = {
-  primary: '#6E61FF',
-  secondary: '#6E61FF',
-  text: '#ffffff',
-  bgLight: '#3d3d3d',
-  background: '#121212',
-  sliderTrack: '#555555',
+  primary: '#2AB58A',
+  secondary: '#D4A76A',
+  text: '#E8E4DC',
+  bgLight: '#1C2B24',
+  background: '#0F1A15',
+  sliderTrack: '#3D4A42',
 };
