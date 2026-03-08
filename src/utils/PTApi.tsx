@@ -1,8 +1,8 @@
 import cheerio from 'react-native-cheerio';
 
-interface Day {
-  [key: string]: any;
-}
+type Day = {
+  [key: string]: string;
+};
 
 class PTApi {
   url: string;
@@ -57,7 +57,7 @@ class PTApi {
         .toArray()
         .map((title: object) => $(title).text());
 
-      const results: Array<object> = [];
+      const results: Array<Day> = [];
 
       table
         .find('tbody')

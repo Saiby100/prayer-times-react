@@ -1,17 +1,11 @@
-name: Publish Preview Update
+name: Build Development Android
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
-  preview_update:
-    name: EAS Update
+  android_build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
     steps:
       - name: Check for EXPO_TOKEN
         run: |
@@ -23,10 +17,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: 18
           cache: npm
 
       - name: Setup EAS
@@ -38,9 +32,5 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Create preview
-        uses: expo/expo-github-action/preview@v8
-        with:
-          command: eas update --auto
-        env:
-          APP_VARIANT: preview
+      - name: Run Development Build
+        run: eas build --profile development --platform android --non-interactive --no-wait

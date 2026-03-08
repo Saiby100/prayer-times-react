@@ -46,4 +46,46 @@ function dateToString(current: Date) {
   });
 }
 
-export { getNextDay, getPrevDay, getNextMonth, getPrevMonth, dateToString };
+function dateToHijriString(current: Date): string | null {
+  try {
+    return new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }).format(current);
+  } catch {
+    return null;
+  }
+}
+
+type ParsedHijriDate = {
+  day: number;
+  month: string;
+};
+
+function parseHijriDate(date: Date): ParsedHijriDate | null {
+  try {
+    const formatter = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
+      day: 'numeric',
+      month: 'long',
+    });
+    const parts = formatter.formatToParts(date);
+    const dayStr = parts.find((p) => p.type === 'day')?.value ?? null;
+    const month = parts.find((p) => p.type === 'month')?.value ?? null;
+    if (!dayStr || !month) return null;
+    return { day: parseInt(dayStr, 10), month };
+  } catch {
+    return null;
+  }
+}
+
+export {
+  getNextDay,
+  getPrevDay,
+  getNextMonth,
+  getPrevMonth,
+  dateToString,
+  dateToHijriString,
+  parseHijriDate,
+};
+export type { ParsedHijriDate };

@@ -1,18 +1,15 @@
 import { StyleSheet, FlatList } from 'react-native';
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useCallback } from 'react';
 import { router, useFocusEffect } from 'expo-router';
-import PTApi from '@/utils/PTApi';
-import { useTheme, ListItem } from '@rneui/themed';
+import { ListItem, Icon } from '@rneui/themed';
 import LoadingList from '@/components/LoadingList';
 import getStorage from '@/utils/localStore';
 import * as SplashScreen from 'expo-splash-screen';
-import { Icon } from '@rneui/base';
 import Page from '@/components/Page';
+import usePTAreas from '@/hooks/usePTAreas';
 
 export default function Areas() {
-  const api = useRef(new PTApi());
-  const [areas, setAreas] = useState([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { areas, isLoading } = usePTAreas();
 
   const navigateHome = (area: string) => {
     const storage = getStorage();
@@ -21,24 +18,11 @@ export default function Areas() {
     router.push({ pathname: '/home', params: { area } });
   };
 
-  const fetchAreas = async () => {
-    setIsLoading(true);
-    const fetchedAreas = await api.current.fetchAreas();
-    setAreas(fetchedAreas);
-    setIsLoading(false);
-  };
-
-  const { theme } = useTheme();
-
   useFocusEffect(
     useCallback(() => {
       SplashScreen.hide();
     }, [])
   );
-
-  useEffect(() => {
-    fetchAreas();
-  }, []);
 
   return (
     <Page name="areas" title="Select Area">
@@ -56,10 +40,8 @@ export default function Areas() {
               }}
               containerStyle={[styles.item]}
             >
-              <Icon name="location-pin" color={theme.colors.primary} />
-              <ListItem.Title style={{ color: theme.colors.text, textAlign: 'center' }}>
-                {item}
-              </ListItem.Title>
+              <Icon name="location-pin" />
+              <ListItem.Title>{item}</ListItem.Title>
             </ListItem>
           )}
           contentContainerStyle={styles.list}

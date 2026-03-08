@@ -11,8 +11,8 @@ function usePTApi({ area }: { area: string }) {
   const [date, setDate] = useState<Date>(new Date());
   const [savedDate, setSavedDate] = useState<Date | null>(null);
 
-  const [times, setTimes] = useState<Array<Record<string, any>>>([]);
-  const [todayTimes, setTodayTimes] = useState<Record<string, any>>({});
+  const [times, setTimes] = useState<Array<Record<string, string>>>([]);
+  const [todayTimes, setTodayTimes] = useState<Record<string, string>>({});
 
   const setDateWithSave = (newDate: Date, save: Date | null = null) => {
     setSavedDate(save || date);
@@ -77,6 +77,12 @@ function usePTApi({ area }: { area: string }) {
     setDateWithSave(newDate);
     setTodayTimes(times[newDate.getDate() - 1]);
   };
+  const goToDate = (target: Date) => {
+    setDateWithSave(target);
+    if (target.getMonth() === date.getMonth() && target.getFullYear() === date.getFullYear()) {
+      setTodayTimes(times[target.getDate() - 1]);
+    }
+  };
   const dateString = useMemo(() => dateToString(date), [JSON.stringify(date)]);
   const dayString = useMemo(() => {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -100,7 +106,8 @@ function usePTApi({ area }: { area: string }) {
 
   return {
     isLoading,
-    navigate: { next: nextDay, prev: prevDay, today: setToday },
+    navigate: { next: nextDay, prev: prevDay, today: setToday, goToDate },
+    date,
     dateString,
     dayString,
     highlighted,

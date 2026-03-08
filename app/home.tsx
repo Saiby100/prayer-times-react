@@ -1,25 +1,30 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useState } from 'react';
 
 import * as SplashScreen from 'expo-splash-screen';
 import LoadingList from '@/components/LoadingList';
 import Page from '@/components/Page';
-import ThemedButton from '@/components/ThemedButton';
-import getStorage from '@/utils/localStore';
-import globalStyles from '@/utils/globalStyles';
+import CalendarPopup from '@/components/CalendarPopup';
+import InfoPopup from '@/components/InfoPopup';
+import Card from '@/components/Card';
 import usePTApi from '@/hooks/usePTApi';
-import { StyleSheet, FlatList, Text, View } from 'react-native';
-import { useLocalSearchParams, useFocusEffect } from 'expo-router';
-import { useTheme, useThemeMode } from '@rneui/themed';
+import useHijriDate from '@/hooks/useHijriDate';
+import { StyleSheet, FlatList, TouchableOpacity, View } from 'react-native';
+import { useLocalSearchParams, useFocusEffect, useRouter } from 'expo-router';
+import { Button, Text, useTheme } from '@rneui/themed';
 
 export default function Home() {
   const params = useLocalSearchParams();
   const { area } = params as { area: string };
+  const router = useRouter();
 
   const { theme } = useTheme();
-  const { mode, setMode } = useThemeMode();
-  const { isLoading, navigate, highlighted, dateString, dayString, todayTimes } = usePTApi({
+  const [calendarVisible, setCalendarVisible] = useState(false);
+  const { isLoading, navigate, date, highlighted, dateString, dayString, todayTimes } = usePTApi({
     area,
   });
+  const { showHijri, hijriDateString, hijriDateInfoList } = useHijriDate(date);
+  const [hijriInfoVisible, setHijriInfoVisible] = useState(false);
+  const hasHijriInfo = hijriDateInfoList.length > 0;
 
   useFocusEffect(
     useCallback(() => {
@@ -27,40 +32,21 @@ export default function Home() {
     }, [])
   );
 
-  const shadow = mode === 'light' ? styles.shadow : {};
-  const storage = useRef(getStorage());
-
   return (
     <Page
       name="home"
       title={area}
       options={{
         headerRight: () => (
-          <>
-            <ThemedButton
-              onPressIn={() => {
-                if (mode === 'light') {
-                  setMode('dark');
-                  storage.current.set('themeMode', 'dark');
-                } else {
-                  setMode('light');
-                  storage.current.set('themeMode', 'light');
-                }
-              }}
-              icon={{
-                name: mode === 'light' ? 'moon' : 'sun',
-                type: 'feather',
-              }}
-            />
-            {/* <ThemedButton
-              onPressIn={() => {}}
-              icon={{
-                name: 'settings',
-                type: 'feather',
-              }}
-              color={theme.colors.bgLight}
-            /> */}
-          </>
+          <Button
+            icon={{
+              name: 'settings',
+              type: 'feather',
+            }}
+            onPressIn={() => {
+              router.push('/settings' as any);
+            }}
+          />
         ),
       }}
     >
@@ -77,40 +63,71 @@ export default function Home() {
                 padding: 4,
               }}
             >
-              <Text style={[globalStyles.text, { color: theme.colors.text }]}>{dayString}</Text>
-              <ThemedButton
-                size="sm"
-                radius="md"
-                type="outline"
-                titleStyle={{
-                  padding: 4,
-                  fontSize: 14,
-                  paddingVertical: 4,
-                }}
-                buttonStyle={{ borderWidth: 1, padding: 0 }}
-                title={JSON.stringify(new Date().getDate())}
-                onPress={() => {
-                  navigate.today();
-                }}
-              />
+              <View>
+                <Text>{dayString}</Text>
+                {showHijri &&
+                  hijriDateString &&
+                  (hasHijriInfo ? (
+                    <TouchableOpacity onPress={() => setHijriInfoVisible(true)}>
+                      <Text
+                        style={{
+                          fontSize: 13,
+                          opacity: 0.7,
+                          textDecorationLine: 'underline',
+                        }}
+                      >
+                        {hijriDateString}
+                      </Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <Text style={{ fontSize: 13, opacity: 0.7 }}>{hijriDateString}</Text>
+                  ))}
+              </View>
+              <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+                <Button
+                  size="sm"
+                  radius="md"
+                  type="outline"
+                  titleStyle={{
+                    padding: 4,
+                    fontSize: 14,
+                    paddingVertical: 4,
+                  }}
+                  buttonStyle={{ borderWidth: 1, paddingHorizontal: 6, paddingVertical: 1 }}
+                  title={JSON.stringify(new Date().getDate())}
+                  onPress={() => {
+                    navigate.today();
+                  }}
+                />
+                <Button
+                  size="sm"
+                  radius="md"
+                  type="outline"
+                  buttonStyle={{ borderWidth: 1, paddingHorizontal: 4, paddingVertical: 6 }}
+                  icon={{
+                    name: 'calendar',
+                    type: 'feather',
+                    size: 16,
+                  }}
+                  onPress={() => setCalendarVisible(true)}
+                />
+              </View>
             </View>
-            <View style={[shadow, styles.card, { backgroundColor: theme.colors.bgLight }]}>
+            <Card style={{ marginBottom: 24 }}>
               <FlatList
                 data={Object.keys(todayTimes ?? {})}
                 renderItem={({ item, index }) => (
                   <Text
                     key={index}
                     style={[
-                      globalStyles.text,
                       styles.textButton,
                       {
                         width: '100%',
                         borderWidth: 1.5,
                         borderColor:
-                          todayTimes[item] == highlighted
+                          todayTimes[item] === highlighted
                             ? theme.colors.primary
                             : theme.colors.bgLight,
-                        color: theme.colors.text,
                       },
                     ]}
                   >{`${item} : ${todayTimes[item]}`}</Text>
@@ -118,9 +135,9 @@ export default function Home() {
                 contentContainerStyle={styles.list}
                 extraData={todayTimes}
               ></FlatList>
-            </View>
+            </Card>
             <View style={styles.buttonLayout}>
-              <ThemedButton
+              <Button
                 onPress={() => {
                   navigate.prev();
                 }}
@@ -130,7 +147,6 @@ export default function Home() {
                   size: 30,
                 }}
                 containerStyle={[
-                  shadow,
                   {
                     backgroundColor: theme.colors.bgLight,
                     borderRadius: 8,
@@ -138,14 +154,16 @@ export default function Home() {
                 ]}
               />
               <Text
-                style={[
-                  globalStyles.text,
-                  { padding: 8, color: theme.colors.text, flex: 1, textAlign: 'center' },
-                ]}
+                style={{
+                  padding: 8,
+                  flex: 1,
+                  textAlign: 'center',
+                  fontSize: 18,
+                }}
               >
                 {dateString}
               </Text>
-              <ThemedButton
+              <Button
                 onPress={() => {
                   navigate.next();
                 }}
@@ -155,7 +173,6 @@ export default function Home() {
                   size: 30,
                 }}
                 containerStyle={[
-                  shadow,
                   {
                     borderRadius: 8,
                   },
@@ -164,20 +181,23 @@ export default function Home() {
             </View>
           </View>
         )}
+        <InfoPopup
+          visible={hijriInfoVisible}
+          onClose={() => setHijriInfoVisible(false)}
+          items={hijriDateInfoList}
+        />
+        <CalendarPopup
+          visible={calendarVisible}
+          onClose={() => setCalendarVisible(false)}
+          onDateSelect={navigate.goToDate}
+          selectedDate={date}
+        />
       </View>
     </Page>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    borderRadius: 12,
-    paddingVertical: 20,
-    marginBottom: 24,
-  },
-  shadow: {
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-  },
   buttonLayout: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -186,10 +206,10 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 8,
     textAlign: 'center',
+    fontSize: 18,
   },
   list: {
     flexGrow: 1,
-    paddingHorizontal: 20,
     justifyContent: 'center',
     gap: 12,
   },
