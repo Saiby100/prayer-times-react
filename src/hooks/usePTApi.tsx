@@ -11,8 +11,8 @@ function usePTApi({ area }: { area: string }) {
   const [date, setDate] = useState<Date>(new Date());
   const [savedDate, setSavedDate] = useState<Date | null>(null);
 
-  const [times, setTimes] = useState<Array<Record<string, any>>>([]);
-  const [todayTimes, setTodayTimes] = useState<Record<string, any>>({});
+  const [times, setTimes] = useState<Array<Record<string, string>>>([]);
+  const [todayTimes, setTodayTimes] = useState<Record<string, string>>({});
 
   const setDateWithSave = (newDate: Date, save: Date | null = null) => {
     setSavedDate(save || date);

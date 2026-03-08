@@ -1,7 +1,7 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
-var handlerSet = false;
+let handlerSet = false;
 
 if (!handlerSet) {
   Notifications.setNotificationHandler({
@@ -36,7 +36,7 @@ async function schedulePushNotification({
 }: {
   title: string;
   body: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   date: Date;
 }) {
   if (!(await notificationPermissionGranted())) return null;
