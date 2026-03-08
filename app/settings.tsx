@@ -15,12 +15,7 @@ export default function Settings() {
       }}
     >
       <View style={{ paddingHorizontal: 24, paddingTop: 20 }}>
-        <View
-          style={[
-            styles.card,
-            { backgroundColor: theme.colors.bgLight, boxShadow: theme.colors.shadow },
-          ]}
-        >
+        <View style={[styles.card, { backgroundColor: theme.colors.bgLight }]}>
           <Text style={styles.sectionTitle}>Prayer Reminder</Text>
 
           <Text style={styles.label}>Notify me:</Text>

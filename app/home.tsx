@@ -122,7 +122,6 @@ export default function Home() {
                 styles.card,
                 {
                   backgroundColor: theme.colors.bgLight,
-                  boxShadow: theme.colors.shadow,
                 },
               ]}
             >
@@ -162,7 +161,6 @@ export default function Home() {
                   {
                     backgroundColor: theme.colors.bgLight,
                     borderRadius: 8,
-                    boxShadow: theme.colors.shadow,
                   },
                 ]}
               />
@@ -188,7 +186,6 @@ export default function Home() {
                 containerStyle={[
                   {
                     borderRadius: 8,
-                    boxShadow: theme.colors.shadow,
                   },
                 ]}
               />
