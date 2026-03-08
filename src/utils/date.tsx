@@ -46,4 +46,16 @@ function dateToString(current: Date) {
   });
 }
 
-export { getNextDay, getPrevDay, getNextMonth, getPrevMonth, dateToString };
+function dateToHijriString(current: Date): string | null {
+  try {
+    return new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }).format(current);
+  } catch {
+    return null;
+  }
+}
+
+export { getNextDay, getPrevDay, getNextMonth, getPrevMonth, dateToString, dateToHijriString };

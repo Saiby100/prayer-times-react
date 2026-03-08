@@ -6,6 +6,7 @@ import Page from '@/components/Page';
 import CalendarPopup from '@/components/CalendarPopup';
 import Card from '@/components/Card';
 import usePTApi from '@/hooks/usePTApi';
+import useHijriDate from '@/hooks/useHijriDate';
 import { StyleSheet, FlatList, View } from 'react-native';
 import { useLocalSearchParams, useFocusEffect, useRouter } from 'expo-router';
 import { Button, Text, useTheme } from '@rneui/themed';
@@ -20,6 +21,7 @@ export default function Home() {
   const { isLoading, navigate, date, highlighted, dateString, dayString, todayTimes } = usePTApi({
     area,
   });
+  const { showHijri, hijriDateString } = useHijriDate(date);
 
   useFocusEffect(
     useCallback(() => {
@@ -58,7 +60,12 @@ export default function Home() {
                 padding: 4,
               }}
             >
-              <Text>{dayString}</Text>
+              <View>
+                <Text>{dayString}</Text>
+                {showHijri && hijriDateString && (
+                  <Text style={{ fontSize: 13, opacity: 0.7 }}>{hijriDateString}</Text>
+                )}
+              </View>
               <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
                 <Button
                   size="sm"
