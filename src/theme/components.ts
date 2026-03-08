@@ -3,11 +3,15 @@ import { Colors, Theme } from '@rneui/themed';
 const font = { fontSize: 18, fontFamily: 'Inter-Medium' };
 
 const components = {
-  Button: (props: Record<string, unknown>, theme: Theme & { colors: Colors }) => ({
-    titleStyle: { ...font, color: theme.colors.text },
-    color: theme.colors.bgLight,
-    ...props,
-  }),
+  Button: (props: Record<string, unknown>, theme: Theme & { colors: Colors }) => {
+    const icon = props.icon as Record<string, unknown> | undefined;
+    return {
+      titleStyle: { ...font, color: theme.colors.text },
+      color: theme.colors.bgLight,
+      ...props,
+      ...(icon ? { icon: { color: theme.colors.primary, ...icon } } : {}),
+    };
+  },
 
   Icon: (props: Record<string, unknown>, theme: Theme & { colors: Colors }) => ({
     color: theme.colors.primary,

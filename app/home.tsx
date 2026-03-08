@@ -166,7 +166,16 @@ export default function Home() {
                   },
                 ]}
               />
-              <Text style={{ padding: 8, flex: 1, textAlign: 'center' }}>{dateString}</Text>
+              <Text
+                style={{
+                  padding: 8,
+                  flex: 1,
+                  textAlign: 'center',
+                  fontSize: 18,
+                }}
+              >
+                {dateString}
+              </Text>
               <Button
                 onPress={() => {
                   navigate.next();
@@ -205,6 +214,7 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 8,
     textAlign: 'center',
+    fontSize: 18,
   },
   list: {
     flexGrow: 1,
