@@ -5,6 +5,7 @@ import { useThemeMode, ThemeMode } from '@rneui/themed';
 import * as SplashScreen from 'expo-splash-screen';
 import { registerDefinedTask } from '@/backgroundTasks';
 import { scheduleTodayNotifications } from '@/services/notifications/scheduleReminders';
+import useUpdates from '@/hooks/useUpdates';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -12,6 +13,7 @@ export default function Index() {
   const router = useRouter();
   const { setMode } = useThemeMode();
   const storage = getStorage();
+  const { checkForUpdates } = useUpdates();
 
   useEffect(() => {
     const themeMode = storage.getString('themeMode') as ThemeMode;
@@ -24,6 +26,9 @@ export default function Index() {
 
     // Schedule today's notifications immediately on app open
     scheduleTodayNotifications();
+
+    // Auto-check for OTA updates (only in production builds with a channel)
+    checkForUpdates();
   }, []);
 
   useFocusEffect(

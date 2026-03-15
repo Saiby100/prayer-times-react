@@ -8,6 +8,7 @@ import Card from '@/components/Card';
 import getStorage from '@/utils/localStore';
 import usePTNotification from '@/hooks/usePTNotification';
 import useHijriDate from '@/hooks/useHijriDate';
+import useUpdates, { type UpdateStatus } from '@/hooks/useUpdates';
 
 export default function Settings() {
   const { mode, setMode } = useThemeMode();
@@ -15,6 +16,23 @@ export default function Settings() {
   const { clearAllPrayerReminders, initPrayerReminders, notificationsIsScheduled } =
     usePTNotification();
   const { showHijri, toggleShowHijri, hijriSupported } = useHijriDate(new Date());
+  const { updateStatus, checkForUpdates } = useUpdates();
+
+  const updateIconName: Record<UpdateStatus, string> = {
+    idle: 'download',
+    checking: 'download',
+    downloading: 'download',
+    'up-to-date': 'check-circle',
+    error: 'alert-circle',
+  };
+
+  const updateTitle: Record<UpdateStatus, string> = {
+    idle: ' Check for updates',
+    checking: ' Checking...',
+    downloading: ' Downloading...',
+    'up-to-date': ' Up to date',
+    error: ' Update failed',
+  };
 
   return (
     <Page
@@ -134,6 +152,26 @@ export default function Settings() {
                   year: 'numeric',
                 })}
               </Text>
+            </View>
+          ) : null}
+          {Updates.channel ? (
+            <View style={{ marginTop: 16, alignItems: 'center' }}>
+              <Button
+                type="outline"
+                size="sm"
+                radius="md"
+                icon={{
+                  name: updateIconName[updateStatus],
+                  type: 'feather',
+                  size: 18,
+                }}
+                title={updateTitle[updateStatus]}
+                titleStyle={{ fontSize: 14 }}
+                buttonStyle={{ borderWidth: 1 }}
+                loading={updateStatus === 'checking' || updateStatus === 'downloading'}
+                disabled={updateStatus !== 'idle'}
+                onPress={checkForUpdates}
+              />
             </View>
           ) : null}
         </Card>
