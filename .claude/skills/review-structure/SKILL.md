@@ -31,7 +31,7 @@ Read each file in scope and check for these issues:
 2. **Too many hook calls** — More than ~5 calls to `useState`, `useEffect`, `useCallback`, `useMemo`, or `useRef` suggests the logic should be extracted into a custom hook in `src/hooks/`.
 3. **Inline data fetching** — Direct calls to `supabase`, `fetch()`, or similar in the screen file. These should live in a custom hook.
 4. **Multiple component definitions** — More than 1 exported/named component defined in a single screen file. Sub-components should be extracted to `src/components/`.
-5. **StyleSheet.create usage** — This project uses NativeWind. Prefer `className` over `StyleSheet.create`.
+5. **Inline styles** — Prefer `StyleSheet.create` over inline `style` objects for repeated or complex styles.
 
 ### Component files (`src/components/**/*.tsx`)
 
