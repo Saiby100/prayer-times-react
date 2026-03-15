@@ -22,7 +22,7 @@ export default function Home() {
   const { isLoading, navigate, date, highlighted, dateString, dayString, todayTimes } = usePTApi({
     area,
   });
-  const { showHijri, hijriDateString, hijriDateInfoList } = useHijriDate(date);
+  const { hijriDateString, hijriDateInfoList } = useHijriDate(date);
   const [hijriInfoVisible, setHijriInfoVisible] = useState(false);
   const hasHijriInfo = hijriDateInfoList.length > 0;
 
@@ -65,8 +65,7 @@ export default function Home() {
             >
               <View>
                 <Text>{dayString}</Text>
-                {showHijri &&
-                  hijriDateString &&
+                {hijriDateString &&
                   (hasHijriInfo ? (
                     <TouchableOpacity onPress={() => setHijriInfoVisible(true)}>
                       <Text
