@@ -41,6 +41,6 @@ jobs:
       - name: Create preview
         uses: expo/expo-github-action/preview@v8
         with:
-          command: eas update --auto
+          command: eas update --branch preview --message "${{ github.event.head_commit.message }}"
         env:
           APP_VARIANT: preview
