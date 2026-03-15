@@ -1,14 +1,34 @@
 import { StyleSheet, View } from 'react-native';
-import { Button, Text, useThemeMode } from '@rneui/themed';
+import { Text, useThemeMode } from '@rneui/themed';
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
 
 import Page from '@/components/Page';
 import Card from '@/components/Card';
+import SettingsToggleRow from '@/components/SettingsToggleRow';
+import SettingsInfoRow from '@/components/SettingsInfoRow';
 import getStorage from '@/utils/localStore';
 import usePTNotification from '@/hooks/usePTNotification';
 import useHijriDate from '@/hooks/useHijriDate';
 import useUpdates, { type UpdateStatus } from '@/hooks/useUpdates';
+
+const REMINDER_HINT = 'Reminders are sent 5 minutes before each prayer time';
+
+const updateIconName: Record<UpdateStatus, string> = {
+  idle: 'download',
+  checking: 'download',
+  downloading: 'download',
+  'up-to-date': 'check-circle',
+  error: 'alert-circle',
+};
+
+const updateTitle: Record<UpdateStatus, string> = {
+  idle: ' Check for updates',
+  checking: ' Checking...',
+  downloading: ' Downloading...',
+  'up-to-date': ' Up to date',
+  error: ' Update failed',
+};
 
 export default function Settings() {
   const { mode, setMode } = useThemeMode();
@@ -18,20 +38,20 @@ export default function Settings() {
   const { showHijri, toggleShowHijri, hijriSupported } = useHijriDate(new Date());
   const { updateStatus, checkForUpdates } = useUpdates();
 
-  const updateIconName: Record<UpdateStatus, string> = {
-    idle: 'download',
-    checking: 'download',
-    downloading: 'download',
-    'up-to-date': 'check-circle',
-    error: 'alert-circle',
+  const toggleTheme = () => {
+    const newMode = mode === 'light' ? 'dark' : 'light';
+    setMode(newMode);
+    storage.set('themeMode', newMode);
   };
 
-  const updateTitle: Record<UpdateStatus, string> = {
-    idle: ' Check for updates',
-    checking: ' Checking...',
-    downloading: ' Downloading...',
-    'up-to-date': ' Up to date',
-    error: ' Update failed',
+  const toggleReminders = () => {
+    if (notificationsIsScheduled) {
+      storage.set('remindersEnabled', false);
+      clearAllPrayerReminders();
+      return;
+    }
+    initPrayerReminders();
+    storage.set('remindersEnabled', true);
   };
 
   return (
@@ -41,50 +61,22 @@ export default function Settings() {
       options={{
         headerBackVisible: true,
       }}
-      contentStyle={{ justifyContent: 'flex-start', paddingTop: 20 }}
+      contentStyle={styles.content}
     >
-      <View style={{ paddingHorizontal: 24, gap: 16 }}>
+      <View style={styles.container}>
         <Card title="Appearance">
-          <View style={styles.row}>
-            <Text style={styles.label}>Theme</Text>
-            <Button
-              type="outline"
-              size="sm"
-              radius="md"
-              icon={{
-                name: mode === 'light' ? 'moon' : 'sun',
-                type: 'feather',
-                size: 18,
-              }}
-              title={mode === 'light' ? ' Dark mode' : ' Light mode'}
-              titleStyle={{ fontSize: 14 }}
-              buttonStyle={{ borderWidth: 1 }}
-              onPress={() => {
-                if (mode === 'light') {
-                  setMode('dark');
-                  storage.set('themeMode', 'dark');
-                } else {
-                  setMode('light');
-                  storage.set('themeMode', 'light');
-                }
-              }}
-            />
-          </View>
+          <SettingsToggleRow
+            label="Theme"
+            iconName={mode === 'light' ? 'moon' : 'sun'}
+            title={mode === 'light' ? ' Dark mode' : ' Light mode'}
+            onPress={toggleTheme}
+          />
           {hijriSupported && (
-            <View style={[styles.row, { marginTop: 16 }]}>
-              <Text style={styles.label}>Hijri date</Text>
-              <Button
-                type="outline"
-                size="sm"
-                radius="md"
-                icon={{
-                  name: showHijri ? 'eye' : 'eye-off',
-                  type: 'feather',
-                  size: 18,
-                }}
+            <View style={styles.extraRow}>
+              <SettingsToggleRow
+                label="Hijri date"
+                iconName={showHijri ? 'eye' : 'eye-off'}
                 title={showHijri ? ' Shown' : ' Hidden'}
-                titleStyle={{ fontSize: 14 }}
-                buttonStyle={{ borderWidth: 1 }}
                 onPress={toggleShowHijri}
               />
             </View>
@@ -92,82 +84,43 @@ export default function Settings() {
         </Card>
 
         <Card title="Notifications">
-          <View style={styles.row}>
-            <Text style={styles.label}>Prayer reminders (Beta)</Text>
-            <Button
-              type="outline"
-              size="sm"
-              radius="md"
-              icon={{
-                name: notificationsIsScheduled ? 'bell' : 'bell-off',
-                type: 'feather',
-                size: 18,
-              }}
-              title={notificationsIsScheduled ? ' On' : ' Off'}
-              titleStyle={{ fontSize: 14 }}
-              buttonStyle={{ borderWidth: 1 }}
-              onPress={() => {
-                if (notificationsIsScheduled) {
-                  storage.set('remindersEnabled', false);
-                  clearAllPrayerReminders();
-                  return;
-                }
-                initPrayerReminders();
-                storage.set('remindersEnabled', true);
-              }}
-            />
-          </View>
-
-          <Text style={[styles.hint, { opacity: 0.6, marginTop: 16 }]}>
-            Reminders are sent 5 minutes before each prayer time
-          </Text>
+          <SettingsToggleRow
+            label="Prayer reminders (Beta)"
+            iconName={notificationsIsScheduled ? 'bell' : 'bell-off'}
+            title={notificationsIsScheduled ? ' On' : ' Off'}
+            onPress={toggleReminders}
+          />
+          <Text style={styles.hint}>{REMINDER_HINT}</Text>
         </Card>
 
         <Card title="About">
-          <View style={styles.row}>
-            <Text style={styles.label}>Version</Text>
-            <Text style={styles.aboutValue}>{Constants.expoConfig?.version ?? '-'}</Text>
-          </View>
-          {Updates.channel ? (
-            <View style={[styles.row, { marginTop: 12 }]}>
-              <Text style={styles.label}>Channel</Text>
-              <Text style={styles.aboutValue}>{Updates.channel}</Text>
-            </View>
-          ) : null}
-          {Constants.expoConfig?.extra?.commitHash ? (
-            <View style={[styles.row, { marginTop: 12 }]}>
-              <Text style={styles.label}>Commit</Text>
-              <Text selectable style={styles.aboutValue}>
-                {Constants.expoConfig.extra.commitHash}
-              </Text>
-            </View>
-          ) : null}
-          {Updates.createdAt ? (
-            <View style={[styles.row, { marginTop: 12 }]}>
-              <Text style={styles.label}>Published</Text>
-              <Text style={styles.aboutValue}>
-                {Updates.createdAt.toLocaleDateString('en-US', {
+          <View style={styles.aboutRows}>
+            <SettingsInfoRow label="Version" value={Constants.expoConfig?.version ?? '-'} />
+            {Updates.channel ? <SettingsInfoRow label="Channel" value={Updates.channel} /> : null}
+            {Constants.expoConfig?.extra?.commitHash ? (
+              <SettingsInfoRow
+                label="Commit"
+                value={Constants.expoConfig.extra.commitHash}
+                selectable
+              />
+            ) : null}
+            {Updates.createdAt ? (
+              <SettingsInfoRow
+                label="Published"
+                value={Updates.createdAt.toLocaleDateString('en-US', {
                   month: 'short',
                   day: 'numeric',
                   year: 'numeric',
                 })}
-              </Text>
-            </View>
-          ) : null}
+              />
+            ) : null}
+          </View>
           {Updates.channel ? (
-            <View style={{ marginTop: 16, alignItems: 'center' }}>
-              <Button
-                type="outline"
-                size="sm"
-                radius="md"
-                icon={{
-                  name: updateIconName[updateStatus],
-                  type: 'feather',
-                  size: 18,
-                }}
+            <View style={styles.extraRow}>
+              <SettingsToggleRow
+                label="Updates"
+                iconName={updateIconName[updateStatus]}
                 title={updateTitle[updateStatus]}
-                titleStyle={{ fontSize: 14 }}
-                buttonStyle={{ borderWidth: 1 }}
                 loading={updateStatus === 'checking' || updateStatus === 'downloading'}
                 disabled={updateStatus !== 'idle'}
                 onPress={checkForUpdates}
@@ -181,21 +134,24 @@ export default function Settings() {
 }
 
 const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  content: {
+    justifyContent: 'flex-start',
+    paddingTop: 20,
   },
-  label: {
-    fontSize: 16,
+  container: {
+    paddingHorizontal: 24,
+    gap: 16,
+  },
+  extraRow: {
+    marginTop: 16,
   },
   hint: {
     fontSize: 14,
     textAlign: 'center',
-    marginTop: 20,
-  },
-  aboutValue: {
-    fontSize: 14,
     opacity: 0.6,
+    marginTop: 16,
+  },
+  aboutRows: {
+    gap: 12,
   },
 });
