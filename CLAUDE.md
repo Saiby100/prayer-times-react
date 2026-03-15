@@ -33,7 +33,7 @@ Build and deploy use EAS (`eas build`, `eas update`). CI workflows live in `.git
 - **`utils/PTApi.tsx`** — API client class. Scrapes HTML from `masjids.co.za/salaahtimes` using `react-native-cheerio`. Returns area list and monthly prayer time tables.
 - **`utils/localStore.tsx`** — `getStorage(id)` factory function returning MMKV instances with lazy initialization and multi-process support.
 - **`hooks/usePTApi.tsx`** — Manages prayer time fetching, date navigation, and caching logic.
-- **`hooks/usePTNotification.tsx`** — Manages notification permission and scheduling lifecycle.
+- **`hooks/notifications/usePrayerReminders.ts`** — Manages notification permission, channel setup, and prayer reminder scheduling lifecycle.
 - **`services/notifications/notification.ts`** — Core notification APIs (schedule, permissions, channels).
 - **`services/notifications/scheduleReminders.ts`** — Fetches prayer times and schedules reminder notifications.
 - **`backgroundTasks/`** — Background task definitions. `index.ts` exports `registerAllBackgroundTasks()` to register all tasks at app startup. Each task gets its own file (e.g. `prayerReminderTask.ts`).

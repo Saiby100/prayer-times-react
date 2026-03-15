@@ -8,7 +8,7 @@ import Card from '@/components/Card';
 import SettingsToggleRow from '@/components/SettingsToggleRow';
 import SettingsInfoRow from '@/components/SettingsInfoRow';
 import getStorage from '@/utils/localStore';
-import usePTNotification from '@/hooks/usePTNotification';
+import usePrayerReminders from '@/hooks/notifications/usePrayerReminders';
 import useHijriDate from '@/hooks/useHijriDate';
 import useUpdates, { type UpdateStatus } from '@/hooks/useUpdates';
 
@@ -33,8 +33,7 @@ const updateTitle: Record<UpdateStatus, string> = {
 export default function Settings() {
   const { mode, setMode } = useThemeMode();
   const storage = getStorage();
-  const { clearAllPrayerReminders, initPrayerReminders, notificationsIsScheduled } =
-    usePTNotification();
+  const { isScheduled, schedule, clear } = usePrayerReminders();
   const { showHijri, toggleShowHijri, hijriSupported } = useHijriDate(new Date());
   const { updateStatus, checkForUpdates } = useUpdates();
 
@@ -45,13 +44,13 @@ export default function Settings() {
   };
 
   const toggleReminders = () => {
-    if (notificationsIsScheduled) {
+    if (isScheduled) {
       storage.set('remindersEnabled', false);
-      clearAllPrayerReminders();
+      clear();
       return;
     }
-    initPrayerReminders();
     storage.set('remindersEnabled', true);
+    schedule();
   };
 
   return (
@@ -86,8 +85,8 @@ export default function Settings() {
         <Card title="Notifications">
           <SettingsToggleRow
             label="Prayer reminders (Beta)"
-            iconName={notificationsIsScheduled ? 'bell' : 'bell-off'}
-            title={notificationsIsScheduled ? ' On' : ' Off'}
+            iconName={isScheduled ? 'bell' : 'bell-off'}
+            title={isScheduled ? ' On' : ' Off'}
             onPress={toggleReminders}
           />
           <Text style={styles.hint}>{REMINDER_HINT}</Text>

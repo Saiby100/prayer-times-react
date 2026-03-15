@@ -1,5 +1,6 @@
 import PTApi from '@/utils/PTApi';
 import getStorage from '@/utils/localStore';
+import * as Notifications from 'expo-notifications';
 import {
   schedulePushNotification,
   clearScheduledNotifications,
@@ -117,6 +118,8 @@ export async function scheduleTodayNotifications(): Promise<string[]> {
       body: `${prayerName} prayer at ${todayTimes[prayerName]}.`,
       data: { type: 'prayer_reminder', prayer: prayerName },
       date: reminderTime,
+      channelId: 'prayer_reminder',
+      priority: Notifications.AndroidNotificationPriority.MAX,
     });
 
     if (id) {
