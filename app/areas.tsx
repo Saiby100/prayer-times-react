@@ -7,9 +7,10 @@ import getStorage from '@/utils/localStore';
 import * as SplashScreen from 'expo-splash-screen';
 import Page from '@/components/Page';
 import usePTAreas from '@/hooks/usePTAreas';
+import NetworkError from '@/components/NetworkError';
 
 export default function Areas() {
-  const { areas, isLoading } = usePTAreas();
+  const { areas, isLoading, error, retry } = usePTAreas();
 
   const navigateHome = (area: string) => {
     const storage = getStorage();
@@ -26,7 +27,9 @@ export default function Areas() {
 
   return (
     <Page name="areas" title="Select Area">
-      {isLoading ? (
+      {error ? (
+        <NetworkError onRetry={retry} />
+      ) : isLoading ? (
         <LoadingList />
       ) : (
         <FlatList

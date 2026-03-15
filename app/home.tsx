@@ -7,6 +7,7 @@ import CalendarPopup from '@/components/CalendarPopup';
 import InfoPopup from '@/components/InfoPopup';
 import Card from '@/components/Card';
 import usePTApi from '@/hooks/usePTApi';
+import NetworkError from '@/components/NetworkError';
 import useHijriDate from '@/hooks/useHijriDate';
 import { StyleSheet, FlatList, TouchableOpacity, View } from 'react-native';
 import { useLocalSearchParams, useFocusEffect, useRouter } from 'expo-router';
@@ -19,7 +20,17 @@ export default function Home() {
 
   const { theme } = useTheme();
   const [calendarVisible, setCalendarVisible] = useState(false);
-  const { isLoading, navigate, date, highlighted, dateString, dayString, todayTimes } = usePTApi({
+  const {
+    isLoading,
+    error,
+    retry,
+    navigate,
+    date,
+    highlighted,
+    dateString,
+    dayString,
+    todayTimes,
+  } = usePTApi({
     area,
   });
   const { hijriDateString, hijriDateInfoList } = useHijriDate(date);
@@ -51,7 +62,9 @@ export default function Home() {
       }}
     >
       <View style={{ paddingHorizontal: 42 }}>
-        {isLoading ? (
+        {error ? (
+          <NetworkError onRetry={retry} />
+        ) : isLoading ? (
           <LoadingList />
         ) : (
           <View>

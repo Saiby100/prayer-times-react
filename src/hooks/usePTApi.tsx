@@ -7,6 +7,7 @@ function usePTApi({ area }: { area: string }) {
   const api = useRef(new PTApi());
   const storage = useRef(getStorage());
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<boolean>(false);
 
   const [date, setDate] = useState<Date>(new Date());
   const [savedDate, setSavedDate] = useState<Date | null>(null);
@@ -33,11 +34,21 @@ function usePTApi({ area }: { area: string }) {
 
   const fetchAndSetTimes = async () => {
     setIsLoading(true);
-    api.current.setArea(area);
-    const timesData = await fetchTimes();
-    setTimes(timesData);
-    setTodayTimes(timesData[date.getDate() - 1]);
-    setIsLoading(false);
+    setError(false);
+    try {
+      api.current.setArea(area);
+      const timesData = await fetchTimes();
+      if (!timesData || timesData.length === 0) {
+        setError(true);
+      } else {
+        setTimes(timesData);
+        setTodayTimes(timesData[date.getDate() - 1]);
+      }
+    } catch {
+      setError(true);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -106,6 +117,8 @@ function usePTApi({ area }: { area: string }) {
 
   return {
     isLoading,
+    error,
+    retry: fetchAndSetTimes,
     navigate: { next: nextDay, prev: prevDay, today: setToday, goToDate },
     date,
     dateString,
