@@ -9,7 +9,6 @@ import SettingsToggleRow from '@/components/SettingsToggleRow';
 import SettingsInfoRow from '@/components/SettingsInfoRow';
 import getStorage from '@/utils/localStore';
 import usePrayerReminders from '@/hooks/notifications/usePrayerReminders';
-import useHijriDate from '@/hooks/useHijriDate';
 import useUpdates, { type UpdateStatus } from '@/hooks/useUpdates';
 
 const REMINDER_HINT = 'Reminders are sent 5 minutes before each prayer time';
@@ -34,7 +33,6 @@ export default function Settings() {
   const { mode, setMode } = useThemeMode();
   const storage = getStorage();
   const { isScheduled, schedule, clear } = usePrayerReminders();
-  const { showHijri, toggleShowHijri, hijriSupported } = useHijriDate(new Date());
   const { updateStatus, checkForUpdates } = useUpdates();
 
   const toggleTheme = () => {
@@ -70,16 +68,6 @@ export default function Settings() {
             title={mode === 'light' ? ' Dark mode' : ' Light mode'}
             onPress={toggleTheme}
           />
-          {hijriSupported && (
-            <View style={styles.extraRow}>
-              <SettingsToggleRow
-                label="Hijri date"
-                iconName={showHijri ? 'eye' : 'eye-off'}
-                title={showHijri ? ' Shown' : ' Hidden'}
-                onPress={toggleShowHijri}
-              />
-            </View>
-          )}
         </Card>
 
         <Card title="Notifications">

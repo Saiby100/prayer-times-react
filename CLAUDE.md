@@ -47,7 +47,7 @@ Build and deploy use EAS (`eas build`, `eas update`). CI workflows live in `.git
 - **UI library** — `@rneui/themed` (React Native Elements) for components and theming.
 - **Notification flow** — On app open, `registerBackgroundTask()` (from `backgroundTasks/`) sets up daily task → `scheduleTodayNotifications()` (from `services/notifications/scheduleReminders`) runs immediately → background task repeats every 24h.
 - **Background task pattern** — Each task exports `NAME`, `handler`, and `options` constants. `registerDefinedTask` object provides per-task registration methods.
-- **Storage keys** — `area`, `themeMode`, `times_${month}_${year}_${area}` (cached prayer times), `prayerReminderPref` (minutes before prayer), `remindersEnabled`, `notificationPermissionDenied`, `showHijriDate` (boolean, show Hijri date on home screen).
+- **Storage keys** — `area`, `themeMode`, `times_${month}_${year}_${area}` (cached prayer times), `prayerReminderPref` (minutes before prayer), `remindersEnabled`, `notificationPermissionDenied`.
 
 ## IMPORTANT: Always Clarify Before Acting
 
