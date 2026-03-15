@@ -1,5 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import { Button, Text, useThemeMode } from '@rneui/themed';
+import Constants from 'expo-constants';
+import * as Updates from 'expo-updates';
 
 import Page from '@/components/Page';
 import Card from '@/components/Card';
@@ -102,6 +104,39 @@ export default function Settings() {
             Reminders are sent 5 minutes before each prayer time
           </Text>
         </Card>
+
+        <Card title="About">
+          <View style={styles.row}>
+            <Text style={styles.label}>Version</Text>
+            <Text style={styles.aboutValue}>{Constants.expoConfig?.version ?? '-'}</Text>
+          </View>
+          {Updates.channel ? (
+            <View style={[styles.row, { marginTop: 12 }]}>
+              <Text style={styles.label}>Channel</Text>
+              <Text style={styles.aboutValue}>{Updates.channel}</Text>
+            </View>
+          ) : null}
+          {Constants.expoConfig?.extra?.commitHash ? (
+            <View style={[styles.row, { marginTop: 12 }]}>
+              <Text style={styles.label}>Commit</Text>
+              <Text selectable style={styles.aboutValue}>
+                {Constants.expoConfig.extra.commitHash}
+              </Text>
+            </View>
+          ) : null}
+          {Updates.createdAt ? (
+            <View style={[styles.row, { marginTop: 12 }]}>
+              <Text style={styles.label}>Published</Text>
+              <Text style={styles.aboutValue}>
+                {Updates.createdAt.toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
+              </Text>
+            </View>
+          ) : null}
+        </Card>
       </View>
     </Page>
   );
@@ -120,5 +155,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
     marginTop: 20,
+  },
+  aboutValue: {
+    fontSize: 14,
+    opacity: 0.6,
   },
 });
