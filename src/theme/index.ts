@@ -1,12 +1,14 @@
-import { createTheme } from '@rneui/themed';
+import { createTheme, ThemeMode } from '@rneui/themed';
 import { lightColors, darkColors } from './colors';
 import components from './components';
 import './types';
 
-const theme = createTheme({
-  lightColors,
-  darkColors,
-  components,
-});
+const createAppTheme = (mode: ThemeMode = 'light') =>
+  createTheme({
+    mode,
+    lightColors,
+    darkColors,
+    components,
+  });
 
-export default theme;
+export default createAppTheme;

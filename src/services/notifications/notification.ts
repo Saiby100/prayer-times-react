@@ -33,11 +33,15 @@ async function schedulePushNotification({
   body,
   data,
   date,
+  channelId,
+  priority,
 }: {
   title: string;
   body: string;
   data?: Record<string, unknown>;
   date: Date;
+  channelId?: string;
+  priority?: Notifications.AndroidNotificationPriority;
 }) {
   if (!(await notificationPermissionGranted())) return null;
   return await Notifications.scheduleNotificationAsync({
@@ -45,6 +49,8 @@ async function schedulePushNotification({
       title,
       body,
       data: data ?? {},
+      ...(priority && { priority }),
+      ...(channelId && { channelId }),
     },
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.DATE,
