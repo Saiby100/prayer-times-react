@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text, useThemeMode } from '@rneui/themed';
 import Constants from 'expo-constants';
@@ -7,9 +8,12 @@ import Page from '@/components/Page';
 import Card from '@/components/Card';
 import SettingsToggleRow from '@/components/SettingsToggleRow';
 import SettingsInfoRow from '@/components/SettingsInfoRow';
+import BackgroundPickerPopup from '@/components/BackgroundPickerPopup';
 import getStorage from '@/utils/localStore';
 import usePrayerReminders from '@/hooks/notifications/usePrayerReminders';
 import useUpdates, { type UpdateStatus } from '@/hooks/useUpdates';
+import useBackgroundImage from '@/hooks/useBackgroundImage';
+import { getBackgroundById } from '@/theme/backgrounds';
 
 const REMINDER_HINT = 'Reminders are sent 5 minutes before each prayer time';
 
@@ -34,6 +38,10 @@ export default function Settings() {
   const storage = getStorage();
   const { isScheduled, schedule, clear } = usePrayerReminders();
   const { updateStatus, checkForUpdates } = useUpdates();
+  const { backgroundId, setBackgroundId } = useBackgroundImage();
+  const [bgPickerVisible, setBgPickerVisible] = useState(false);
+
+  const backgroundLabel = getBackgroundById(backgroundId)?.label ?? 'None';
 
   const toggleTheme = () => {
     const newMode = mode === 'light' ? 'dark' : 'light';
@@ -68,6 +76,14 @@ export default function Settings() {
             title={mode === 'light' ? ' Dark mode' : ' Light mode'}
             onPress={toggleTheme}
           />
+          <View style={styles.extraRow}>
+            <SettingsToggleRow
+              label="Background"
+              iconName="image"
+              title={` ${backgroundLabel}`}
+              onPress={() => setBgPickerVisible(true)}
+            />
+          </View>
         </Card>
 
         <Card title="Notifications">
@@ -116,6 +132,12 @@ export default function Settings() {
           ) : null}
         </Card>
       </View>
+      <BackgroundPickerPopup
+        visible={bgPickerVisible}
+        onClose={() => setBgPickerVisible(false)}
+        selectedId={backgroundId}
+        onSelect={setBackgroundId}
+      />
     </Page>
   );
 }

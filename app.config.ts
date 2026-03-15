@@ -24,7 +24,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   slug: 'reminder',
   version: '1.0.0',
   orientation: 'portrait',
-  icon: './assets/images/myicon.png',
+  icon: './assets/images/icon.png',
   scheme: 'myapp',
   userInterfaceStyle: 'automatic',
   newArchEnabled: true,
@@ -43,11 +43,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-splash-screen',
       {
-        backgroundColor: '#ffffff',
+        backgroundColor: '#F7F5F0',
         image: './assets/images/splash-light.png',
         dark: {
           image: './assets/images/splash-dark.png',
-          backgroundColor: '#232634',
+          backgroundColor: '#0B1026',
         },
       },
     ],
@@ -67,6 +67,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     package: getBundleId(),
+    adaptiveIcon: {
+      foregroundImage: './assets/images/adaptive-icon.png',
+      backgroundColor: '#08182f',
+    },
   },
   owner: 'salasaiet',
   runtimeVersion: {
