@@ -52,6 +52,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     'expo-background-task',
+    [
+      'expo-notifications',
+      {
+        icon: './assets/images/notification-icon.png',
+        color: '#0D7C5F',
+      },
+    ],
   ],
   experiments: {
     typedRoutes: true,
