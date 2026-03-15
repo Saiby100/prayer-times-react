@@ -8,10 +8,10 @@ export const lightColors = {
 };
 
 export const darkColors = {
-  primary: '#2AB58A',
-  secondary: '#D4A76A',
+  primary: '#D4A055',
+  secondary: '#E8B86D',
   text: '#E8E4DC',
-  bgLight: '#1C2B24',
-  background: '#0F1A15',
-  sliderTrack: '#3D4A42',
+  bgLight: '#151A35',
+  background: '#0B1026',
+  sliderTrack: '#2A2F4A',
 };
