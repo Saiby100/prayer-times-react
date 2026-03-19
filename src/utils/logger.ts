@@ -1,8 +1,16 @@
 import { logger, transportFunctionType } from 'react-native-logs';
+import { consoleTransport } from 'react-native-logs/src/transports/consoleTransport';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import { supabase } from '@/utils/supabase';
 import { getDeviceId } from '@/utils/deviceId';
+
+export type LogType = 'api' | 'notification' | 'background-task' | 'storage' | 'update' | 'app';
+
+type LogData = {
+  type: LogType;
+  [key: string]: unknown;
+};
 
 const LEVEL_NAMES = ['debug', 'info', 'warn', 'error'] as const;
 
@@ -10,13 +18,15 @@ function parseTransportProps(props: Parameters<transportFunctionType<object>>[0]
   const { msg, level } = props;
   const messages = props.rawMsg as unknown[];
   const levelName = LEVEL_NAMES[level.severity] ?? 'info';
-  const data = messages.length > 1 ? messages[1] : undefined;
+  const rawData = messages.length > 1 ? (messages[1] as LogData | undefined) : undefined;
+  const type = rawData?.type;
+  const { type: _, ...data } = rawData ?? {};
 
-  return { message: msg, levelName, data };
+  return { message: msg, levelName, type, data: Object.keys(data).length > 0 ? data : undefined };
 }
 
 const supabaseTransport: transportFunctionType<object> = (props) => {
-  const { message, levelName, data } = parseTransportProps(props);
+  const { message, levelName, type, data } = parseTransportProps(props);
 
   if (levelName === 'debug') return;
 
@@ -24,6 +34,7 @@ const supabaseTransport: transportFunctionType<object> = (props) => {
     .from('logs')
     .insert({
       level: levelName,
+      type: type ?? null,
       message,
       data: data ?? null,
       device_id: getDeviceId(),
@@ -38,17 +49,17 @@ const supabaseTransport: transportFunctionType<object> = (props) => {
     });
 };
 
-const consoleTransport: transportFunctionType<object> = (props) => {
-  const { message, levelName, data } = parseTransportProps(props);
-  const consoleFn =
-    levelName === 'error' ? console.error : levelName === 'warn' ? console.warn : console.log;
-  consoleFn(`[${levelName.toUpperCase()}] ${message}`, data ?? '');
-};
-
 const log = logger.createLogger({
   severity: 'debug',
   transport: [consoleTransport, supabaseTransport],
-  transportOptions: {},
+  transportOptions: {
+    colors: {
+      debug: 'blue',
+      info: 'white',
+      warn: 'yellow',
+      error: 'red',
+    },
+  },
 });
 
 export default log;
