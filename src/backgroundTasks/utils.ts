@@ -1,5 +1,6 @@
 import * as BackgroundTask from 'expo-background-task';
 import * as TaskManager from 'expo-task-manager';
+import log from '@/utils/logger';
 
 export async function registerTask(
   taskName: string,
@@ -9,14 +10,21 @@ export async function registerTask(
     const isRegistered = await TaskManager.isTaskRegisteredAsync(taskName);
 
     if (isRegistered) {
-      console.log(`[BackgroundTask] Task "${taskName}" already registered`);
+      log.debug('backgroundTask: task already registered', {
+        type: 'background-task',
+        task: taskName,
+      });
       return;
     }
 
     await BackgroundTask.registerTaskAsync(taskName, options);
-    console.log(`[BackgroundTask] Task "${taskName}" registered successfully`);
+    log.info('backgroundTask: task registered', { type: 'background-task', task: taskName });
   } catch (error) {
-    console.error(`[BackgroundTask] Failed to register task "${taskName}":`, error);
+    log.error('backgroundTask: failed to register task', {
+      type: 'background-task',
+      task: taskName,
+      error: String(error),
+    });
   }
 }
 
@@ -25,14 +33,18 @@ export async function unregisterTask(taskName: string): Promise<void> {
     const isRegistered = await TaskManager.isTaskRegisteredAsync(taskName);
 
     if (!isRegistered) {
-      console.log(`[BackgroundTask] Task "${taskName}" not registered`);
+      log.debug('backgroundTask: task not registered', { type: 'background-task', task: taskName });
       return;
     }
 
     await BackgroundTask.unregisterTaskAsync(taskName);
-    console.log(`[BackgroundTask] Task "${taskName}" unregistered successfully`);
+    log.info('backgroundTask: task unregistered', { type: 'background-task', task: taskName });
   } catch (error) {
-    console.error(`[BackgroundTask] Failed to unregister task "${taskName}":`, error);
+    log.error('backgroundTask: failed to unregister task', {
+      type: 'background-task',
+      task: taskName,
+      error: String(error),
+    });
   }
 }
 

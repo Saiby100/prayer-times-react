@@ -1,5 +1,6 @@
 import PTApi from '@/utils/PTApi';
 import getStorage from '@/utils/localStore';
+import log from '@/utils/logger';
 import * as Notifications from 'expo-notifications';
 import {
   schedulePushNotification,
@@ -34,7 +35,7 @@ async function fetchTodayPrayerTimes(): Promise<Record<string, string> | null> {
   const area = storage.getString('area');
 
   if (!area) {
-    console.log('[ScheduleReminders] No area configured');
+    log.warn('scheduleReminders: no area configured', { type: 'notification' });
     return null;
   }
 
@@ -62,7 +63,10 @@ async function fetchTodayPrayerTimes(): Promise<Record<string, string> | null> {
       return times[today.getDate() - 1] as Record<string, string>;
     }
   } catch (error) {
-    console.error('[ScheduleReminders] Error fetching times:', error);
+    log.error('scheduleReminders: error fetching times', {
+      type: 'notification',
+      error: String(error),
+    });
   }
 
   return null;
@@ -76,7 +80,10 @@ async function clearExistingReminders(): Promise<void> {
 
   if (ids.length > 0) {
     await clearScheduledNotifications(ids);
-    console.log(`[ScheduleReminders] Cleared ${ids.length} existing reminders`);
+    log.info('scheduleReminders: cleared existing reminders', {
+      type: 'notification',
+      count: ids.length,
+    });
   }
 }
 
@@ -86,13 +93,13 @@ export async function scheduleTodayNotifications(): Promise<string[]> {
   const remindersEnabled = storage.getBoolean('remindersEnabled') ?? false;
 
   if (!remindersEnabled) {
-    console.log('[ScheduleReminders] Reminders are disabled');
+    log.debug('scheduleReminders: reminders are disabled', { type: 'notification' });
     return [];
   }
 
   const todayTimes = await fetchTodayPrayerTimes();
   if (!todayTimes) {
-    console.log('[ScheduleReminders] Could not fetch prayer times');
+    log.warn('scheduleReminders: could not fetch prayer times', { type: 'notification' });
     return [];
   }
 
@@ -109,7 +116,10 @@ export async function scheduleTodayNotifications(): Promise<string[]> {
   for (const [prayerName, reminderTime] of Object.entries(formattedTimes)) {
     // Only schedule if the reminder time is in the future
     if (reminderTime <= now) {
-      console.log(`[ScheduleReminders] Skipping ${prayerName} - time has passed`);
+      log.debug('scheduleReminders: skipping prayer, time passed', {
+        type: 'notification',
+        prayer: prayerName,
+      });
       continue;
     }
 
@@ -124,12 +134,17 @@ export async function scheduleTodayNotifications(): Promise<string[]> {
 
     if (id) {
       scheduledIds.push(id);
-      console.log(
-        `[ScheduleReminders] Scheduled ${prayerName} for ${reminderTime.toLocaleTimeString()}`
-      );
+      log.info('scheduleReminders: scheduled reminder', {
+        type: 'notification',
+        prayer: prayerName,
+        time: reminderTime.toLocaleTimeString(),
+      });
     }
   }
 
-  console.log(`[ScheduleReminders] Scheduled ${scheduledIds.length} notifications`);
+  log.info('scheduleReminders: scheduling complete', {
+    type: 'notification',
+    count: scheduledIds.length,
+  });
   return scheduledIds;
 }

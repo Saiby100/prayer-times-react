@@ -7,6 +7,7 @@ import {
 } from '@/services/notifications/notification';
 import { scheduleTodayNotifications } from '@/services/notifications/scheduleReminders';
 import getStorage from '@/utils/localStore';
+import log from '@/utils/logger';
 
 function usePrayerReminders() {
   const storage = getStorage();
@@ -32,6 +33,10 @@ function usePrayerReminders() {
     }
 
     await createNotificationChannel('prayer_reminder', 'Prayer reminder notifications');
+    log.info('usePrayerReminders: notification channel created', {
+      type: 'notification',
+      channel: 'prayer_reminder',
+    });
     setNotificationsEnabled(true);
 
     const scheduled = await getScheduledNotifications();
@@ -42,10 +47,18 @@ function usePrayerReminders() {
   async function schedule() {
     if (!notificationsEnabled) return;
     const ids = await scheduleTodayNotifications();
+    log.info('usePrayerReminders: scheduled reminders', {
+      type: 'notification',
+      count: ids.length,
+    });
     setScheduledIds(ids);
   }
 
   async function clear() {
+    log.info('usePrayerReminders: clearing reminders', {
+      type: 'notification',
+      count: scheduledIds.length,
+    });
     await clearScheduledNotifications(scheduledIds);
     setScheduledIds([]);
   }
