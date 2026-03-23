@@ -16,7 +16,8 @@ export default function Areas() {
     const storage = getStorage();
     storage.set('area', area);
 
-    router.push({ pathname: '/home', params: { area } });
+    router.dismissAll();
+    router.replace('/home');
   };
 
   useFocusEffect(

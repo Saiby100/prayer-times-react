@@ -32,8 +32,7 @@ export default function Index() {
       const area = storage.getString('area');
 
       if (area) {
-        router.replace('/areas');
-        router.push({ pathname: '/home', params: { area } });
+        router.replace('/home');
       } else {
         router.replace('/areas');
       }

@@ -9,13 +9,15 @@ import Card from '@/components/Card';
 import usePTApi from '@/hooks/usePTApi';
 import NetworkError from '@/components/NetworkError';
 import useHijriDate from '@/hooks/useHijriDate';
+import OptionsMenu from '@/components/OptionsMenu';
+import getStorage from '@/utils/localStore';
 import { StyleSheet, FlatList, TouchableOpacity, View } from 'react-native';
-import { useLocalSearchParams, useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { Button, Text, useTheme } from '@rneui/themed';
 
 export default function Home() {
-  const params = useLocalSearchParams();
-  const { area } = params as { area: string };
+  const storage = getStorage();
+  const area = storage.getString('area') ?? '';
   const router = useRouter();
 
   const { theme } = useTheme();
@@ -50,14 +52,15 @@ export default function Home() {
       showBackground
       options={{
         headerRight: () => (
-          <Button
-            icon={{
-              name: 'settings',
-              type: 'feather',
-            }}
-            onPressIn={() => {
-              router.push('/settings' as any);
-            }}
+          <OptionsMenu
+            items={[
+              {
+                label: 'Settings',
+                icon: 'settings',
+                onPress: () => router.push('/settings' as any),
+              },
+              { label: 'Location', icon: 'map-pin', onPress: () => router.push('/areas') },
+            ]}
           />
         ),
       }}
