@@ -5,11 +5,8 @@ import LoadingList from '@/components/LoadingList';
 import Page from '@/components/Page';
 import CalendarPopup from '@/components/CalendarPopup';
 import InfoPopup from '@/components/InfoPopup';
-import ConfirmPopup from '@/components/ConfirmPopup';
 import Card from '@/components/Card';
 import usePTApi from '@/hooks/usePTApi';
-import useReleaseUpdate from '@/hooks/useReleaseUpdate';
-import { getDismissedVersion } from '@/services/github/releaseChecker';
 import NetworkError from '@/components/NetworkError';
 import useHijriDate from '@/hooks/useHijriDate';
 import OptionsMenu from '@/components/OptionsMenu';
@@ -41,11 +38,6 @@ export default function Home() {
   const { hijriDateString, hijriDateInfoList } = useHijriDate(date);
   const [hijriInfoVisible, setHijriInfoVisible] = useState(false);
   const hasHijriInfo = hijriDateInfoList.length > 0;
-  const { updateAvailable, latestVersion, downloadUpdate, dismiss } = useReleaseUpdate({
-    autoCheck: true,
-  });
-  const isDismissed = latestVersion ? getDismissedVersion() === latestVersion : false;
-
   const handleShareApp = async () => {
     await Share.share({
       message:
@@ -77,15 +69,6 @@ export default function Home() {
       }}
     >
       <View style={{ paddingHorizontal: 42 }}>
-        <ConfirmPopup
-          visible={updateAvailable && !!latestVersion && !isDismissed}
-          title="Update Available"
-          message={`A new version (v${latestVersion}) is available.`}
-          confirmLabel="Download"
-          dismissLabel="Remind Me Later"
-          onConfirm={downloadUpdate}
-          onDismiss={dismiss}
-        />
         <NetworkError error={error} onRetry={retry} />
         {isLoading ? (
           <LoadingList />
