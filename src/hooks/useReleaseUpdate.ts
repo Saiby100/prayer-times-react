@@ -128,12 +128,15 @@ export default function useReleaseUpdate() {
     setCheckStatus('idle');
   }, [latestVersion]);
 
+  const loading = checkStatus === 'checking' || checkStatus === 'downloading';
+
   return {
     updateAvailable,
     releaseUrl,
     latestVersion,
     checkStatus,
     downloadProgress,
+    loading,
     checkForUpdate,
     downloadAndInstall,
     dismiss,

@@ -40,7 +40,7 @@ export default function Settings() {
   const { mode, setMode } = useThemeMode();
   const storage = getStorage();
   const { isScheduled, schedule, clear } = usePrayerReminders();
-  const { checkStatus, checkForUpdate, downloadAndInstall } = useReleaseUpdate();
+  const { checkStatus, loading, checkForUpdate, downloadAndInstall } = useReleaseUpdate();
   const { backgroundId, setBackgroundId } = useBackgroundImage();
   const [bgPickerVisible, setBgPickerVisible] = useState(false);
 
@@ -108,8 +108,8 @@ export default function Settings() {
               label="Updates"
               iconName={updateIconName[checkStatus]}
               title={updateTitle[checkStatus]}
-              loading={checkStatus === 'checking' || checkStatus === 'downloading'}
-              disabled={checkStatus === 'checking' || checkStatus === 'downloading'}
+              loading={loading}
+              disabled={loading}
               onPress={() => {
                 if (checkStatus === 'update-available') {
                   downloadAndInstall();
