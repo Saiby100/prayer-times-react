@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Text, useThemeMode } from '@rneui/themed';
 import Constants from 'expo-constants';
-import * as Updates from 'expo-updates';
 
 import Page from '@/components/Page';
 import Card from '@/components/Card';
@@ -11,33 +10,36 @@ import SettingsInfoRow from '@/components/SettingsInfoRow';
 import BackgroundPickerPopup from '@/components/BackgroundPickerPopup';
 import getStorage from '@/utils/localStore';
 import usePrayerReminders from '@/hooks/notifications/usePrayerReminders';
-import useUpdates, { type UpdateStatus } from '@/hooks/useUpdates';
+import useReleaseUpdate, { type ReleaseCheckStatus } from '@/hooks/useReleaseUpdate';
+import ConfirmPopup from '@/components/ConfirmPopup';
 import useBackgroundImage from '@/hooks/useBackgroundImage';
 import { getBackgroundById } from '@/theme/backgrounds';
 
 const REMINDER_HINT = 'Reminders are sent 5 minutes before each prayer time';
 
-const updateIconName: Record<UpdateStatus, string> = {
+const updateIconName: Record<ReleaseCheckStatus, string> = {
   idle: 'download',
   checking: 'download',
-  downloading: 'download',
   'up-to-date': 'check-circle',
+  'update-available': 'arrow-up-circle',
   error: 'alert-circle',
 };
 
-const updateTitle: Record<UpdateStatus, string> = {
+const updateTitle: Record<ReleaseCheckStatus, string> = {
   idle: ' Check for updates',
   checking: ' Checking...',
-  downloading: ' Downloading...',
   'up-to-date': ' Up to date',
-  error: ' Update failed',
+  'update-available': ' Update available',
+  error: ' Check failed',
 };
 
 export default function Settings() {
   const { mode, setMode } = useThemeMode();
   const storage = getStorage();
   const { isScheduled, schedule, clear } = usePrayerReminders();
-  const { updateStatus, checkForUpdates } = useUpdates();
+  const { latestVersion, checkStatus, loading, checkForUpdate, downloadUpdate } =
+    useReleaseUpdate();
+  const [updatePopupVisible, setUpdatePopupVisible] = useState(false);
   const { backgroundId, setBackgroundId } = useBackgroundImage();
   const [bgPickerVisible, setBgPickerVisible] = useState(false);
 
@@ -99,20 +101,24 @@ export default function Settings() {
         <Card title="About">
           <View style={styles.aboutRows}>
             <SettingsInfoRow label="Version" value={Constants.expoConfig?.version ?? '-'} />
-            {Updates.channel ? <SettingsInfoRow label="Channel" value={Updates.channel} /> : null}
           </View>
-          {Updates.channel ? (
-            <View style={styles.extraRow}>
-              <SettingsToggleRow
-                label="Updates"
-                iconName={updateIconName[updateStatus]}
-                title={updateTitle[updateStatus]}
-                loading={updateStatus === 'checking' || updateStatus === 'downloading'}
-                disabled={updateStatus !== 'idle'}
-                onPress={checkForUpdates}
-              />
-            </View>
-          ) : null}
+          <View style={styles.extraRow}>
+            <SettingsToggleRow
+              label="Updates"
+              iconName={updateIconName[checkStatus]}
+              title={updateTitle[checkStatus]}
+              loading={loading}
+              disabled={loading}
+              onPress={async () => {
+                if (checkStatus === 'update-available') {
+                  setUpdatePopupVisible(true);
+                } else {
+                  const found = await checkForUpdate();
+                  if (found) setUpdatePopupVisible(true);
+                }
+              }}
+            />
+          </View>
         </Card>
       </ScrollView>
       <BackgroundPickerPopup
@@ -120,6 +126,18 @@ export default function Settings() {
         onClose={() => setBgPickerVisible(false)}
         selectedId={backgroundId}
         onSelect={setBackgroundId}
+      />
+      <ConfirmPopup
+        visible={updatePopupVisible}
+        title="Update Available"
+        message={`Version ${latestVersion} is ready to download.`}
+        confirmLabel="Download"
+        dismissLabel="Cancel"
+        onConfirm={() => {
+          setUpdatePopupVisible(false);
+          downloadUpdate();
+        }}
+        onDismiss={() => setUpdatePopupVisible(false)}
       />
     </Page>
   );
