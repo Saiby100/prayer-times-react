@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { Text, useThemeMode } from '@rneui/themed';
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
@@ -68,7 +68,7 @@ export default function Settings() {
       }}
       contentStyle={styles.content}
     >
-      <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.container}>
         <Card title="Appearance">
           <SettingsToggleRow
             label="Theme"
@@ -131,7 +131,7 @@ export default function Settings() {
             </View>
           ) : null}
         </Card>
-      </View>
+      </ScrollView>
       <BackgroundPickerPopup
         visible={bgPickerVisible}
         onClose={() => setBgPickerVisible(false)}

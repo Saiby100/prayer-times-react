@@ -2,6 +2,7 @@ import PTApi from '@/utils/PTApi';
 import { useRef, useState, useEffect, useMemo } from 'react';
 import getStorage from '@/utils/localStore';
 import { getNextDay, getPrevDay, dateToString } from '@/utils/date';
+import log from '@/utils/logger';
 
 function usePTApi({ area }: { area: string }) {
   const api = useRef(new PTApi());
@@ -21,12 +22,22 @@ function usePTApi({ area }: { area: string }) {
   };
 
   const fetchTimes = async () => {
-    if (storage.current.contains(`times_${date.getMonth()}_${date.getFullYear()}_${area}`)) {
-      const timesData = storage.current.getString(
-        `times_${date.getMonth()}_${date.getFullYear()}_${area}`
-      );
+    const cacheKey = `times_${date.getMonth()}_${date.getFullYear()}_${area}`;
+    if (storage.current.contains(cacheKey)) {
+      log.debug('usePTApi: cache hit', {
+        type: 'api',
+        area,
+        month: date.getMonth(),
+        year: date.getFullYear(),
+      });
+      const timesData = storage.current.getString(cacheKey);
       return timesData ? JSON.parse(timesData) : [];
     } else {
+      log.info('usePTApi: fetching times from API', {
+        type: 'api',
+        area,
+        date: date.toISOString(),
+      });
       api.current.setArea(area);
       return (await api.current.fetchTimes(date)) ?? [];
     }
@@ -69,7 +80,7 @@ function usePTApi({ area }: { area: string }) {
     if (storage.current.contains(`times_${date.getMonth()}_${date.getFullYear()}_${area}`)) return;
     const month = new Date().getMonth();
     const year = new Date().getFullYear();
-    console.log('Saving times to storage');
+    log.info('usePTApi: saving times to storage', { type: 'storage', month, year, area });
     storage.current.set(`times_${month}_${year}_${area}`, JSON.stringify(times));
   }, [JSON.stringify(times)]);
 

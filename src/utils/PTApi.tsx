@@ -1,4 +1,5 @@
 import cheerio from 'react-native-cheerio';
+import log from '@/utils/logger';
 
 type Day = {
   [key: string]: string;
@@ -17,20 +18,23 @@ class PTApi {
     try {
       this.area = area.replaceAll("'", '').replaceAll(' ', '').toLowerCase();
     } catch (error) {
-      console.error('Error setting area:', error);
+      log.error('PTApi: error setting area', { type: 'api', error: String(error) });
     }
   };
 
   fetchAreas = async () => {
     try {
+      log.info('PTApi: fetching areas', { type: 'api', url: this.url });
       const response = await fetch(this.url);
       const data = await response.text();
 
       const $ = cheerio.load(data);
       const areas = $('.col-lg-8').find('h5').toArray();
-      return areas.map((area: string) => $(area).text().trim());
+      const result = areas.map((area: string) => $(area).text().trim());
+      log.info('PTApi: fetched areas', { type: 'api', count: result.length });
+      return result;
     } catch (error) {
-      console.error('Error fetching areas:', error);
+      log.error('PTApi: error fetching areas', { type: 'api', error: String(error) });
     }
   };
 
@@ -45,6 +49,7 @@ class PTApi {
         throw new Error('No area defined. Please use setArea to set a valid area.');
       }
       const newUrl = `${this.url}/${this.area}/${date.getFullYear()}-${date.getMonth() + 1}`;
+      log.info('PTApi: fetching times', { type: 'api', url: newUrl, area: this.area });
       const response = await fetch(newUrl);
       const data = await response.text();
 
@@ -85,7 +90,11 @@ class PTApi {
         return dayObj;
       });
     } catch (error) {
-      console.error('Error fetching times:', error);
+      log.error('PTApi: error fetching times', {
+        type: 'api',
+        error: String(error),
+        area: this.area,
+      });
     }
   };
 }
