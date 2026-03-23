@@ -5,6 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { registerDefinedTask } from '@/backgroundTasks';
 import { scheduleTodayNotifications } from '@/services/notifications/scheduleReminders';
 import useUpdates from '@/hooks/useUpdates';
+import log from '@/utils/logger';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -14,6 +15,8 @@ export default function Index() {
   const { checkForUpdates } = useUpdates();
 
   useEffect(() => {
+    log.info('index: app init started', { type: 'app' });
+
     // Register background task for daily notification scheduling
     registerDefinedTask.prayerReminderTask();
 
@@ -29,8 +32,7 @@ export default function Index() {
       const area = storage.getString('area');
 
       if (area) {
-        router.replace('/areas');
-        router.push({ pathname: '/home', params: { area } });
+        router.replace('/home');
       } else {
         router.replace('/areas');
       }

@@ -1,5 +1,14 @@
 import { ExpoConfig, ConfigContext } from 'expo/config';
 import { execSync } from 'child_process';
+import packageJson from './package.json';
+
+const appVersion = packageJson.version;
+
+// Derive Android versionCode from semver: 1.2.3 → 10203
+const getVersionCode = (version: string): number => {
+  const [major, minor, patch] = version.split('.').map(Number);
+  return major * 10000 + minor * 100 + patch;
+};
 
 let commitHash = 'unknown';
 try {
@@ -27,7 +36,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: getAppName(),
   slug: 'reminder',
-  version: '1.0.0',
+  version: appVersion,
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   scheme: 'myapp',
@@ -79,6 +88,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     package: getBundleId(),
+    versionCode: getVersionCode(appVersion),
     adaptiveIcon: {
       foregroundImage: './assets/images/adaptive-icon.png',
       backgroundColor: '#08182f',

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { Text, useThemeMode } from '@rneui/themed';
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
@@ -68,7 +68,7 @@ export default function Settings() {
       }}
       contentStyle={styles.content}
     >
-      <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.container}>
         <Card title="Appearance">
           <SettingsToggleRow
             label="Theme"
@@ -100,23 +100,6 @@ export default function Settings() {
           <View style={styles.aboutRows}>
             <SettingsInfoRow label="Version" value={Constants.expoConfig?.version ?? '-'} />
             {Updates.channel ? <SettingsInfoRow label="Channel" value={Updates.channel} /> : null}
-            {Constants.expoConfig?.extra?.commitHash ? (
-              <SettingsInfoRow
-                label="Commit"
-                value={Constants.expoConfig.extra.commitHash}
-                selectable
-              />
-            ) : null}
-            {Updates.createdAt ? (
-              <SettingsInfoRow
-                label="Published"
-                value={Updates.createdAt.toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}
-              />
-            ) : null}
           </View>
           {Updates.channel ? (
             <View style={styles.extraRow}>
@@ -131,7 +114,7 @@ export default function Settings() {
             </View>
           ) : null}
         </Card>
-      </View>
+      </ScrollView>
       <BackgroundPickerPopup
         visible={bgPickerVisible}
         onClose={() => setBgPickerVisible(false)}

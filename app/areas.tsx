@@ -7,15 +7,17 @@ import getStorage from '@/utils/localStore';
 import * as SplashScreen from 'expo-splash-screen';
 import Page from '@/components/Page';
 import usePTAreas from '@/hooks/usePTAreas';
+import NetworkError from '@/components/NetworkError';
 
 export default function Areas() {
-  const { areas, isLoading } = usePTAreas();
+  const { areas, isLoading, error, retry } = usePTAreas();
 
   const navigateHome = (area: string) => {
     const storage = getStorage();
     storage.set('area', area);
 
-    router.push({ pathname: '/home', params: { area } });
+    router.dismissAll();
+    router.replace('/home');
   };
 
   useFocusEffect(
@@ -26,9 +28,10 @@ export default function Areas() {
 
   return (
     <Page name="areas" title="Select Area" showBackground>
+      <NetworkError error={error} onRetry={retry} />
       {isLoading ? (
         <LoadingList />
-      ) : (
+      ) : !error ? (
         <FlatList
           data={areas}
           keyExtractor={(item, index) => index.toString()}
@@ -46,7 +49,7 @@ export default function Areas() {
           )}
           contentContainerStyle={styles.list}
         ></FlatList>
-      )}
+      ) : null}
     </Page>
   );
 }

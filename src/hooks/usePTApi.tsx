@@ -2,11 +2,13 @@ import PTApi from '@/utils/PTApi';
 import { useRef, useState, useEffect, useMemo } from 'react';
 import getStorage from '@/utils/localStore';
 import { getNextDay, getPrevDay, dateToString } from '@/utils/date';
+import log from '@/utils/logger';
 
 function usePTApi({ area }: { area: string }) {
   const api = useRef(new PTApi());
   const storage = useRef(getStorage());
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<boolean>(false);
 
   const [date, setDate] = useState<Date>(new Date());
   const [savedDate, setSavedDate] = useState<Date | null>(null);
@@ -20,12 +22,22 @@ function usePTApi({ area }: { area: string }) {
   };
 
   const fetchTimes = async () => {
-    if (storage.current.contains(`times_${date.getMonth()}_${date.getFullYear()}_${area}`)) {
-      const timesData = storage.current.getString(
-        `times_${date.getMonth()}_${date.getFullYear()}_${area}`
-      );
+    const cacheKey = `times_${date.getMonth()}_${date.getFullYear()}_${area}`;
+    if (storage.current.contains(cacheKey)) {
+      log.debug('usePTApi: cache hit', {
+        type: 'api',
+        area,
+        month: date.getMonth(),
+        year: date.getFullYear(),
+      });
+      const timesData = storage.current.getString(cacheKey);
       return timesData ? JSON.parse(timesData) : [];
     } else {
+      log.info('usePTApi: fetching times from API', {
+        type: 'api',
+        area,
+        date: date.toISOString(),
+      });
       api.current.setArea(area);
       return (await api.current.fetchTimes(date)) ?? [];
     }
@@ -33,11 +45,21 @@ function usePTApi({ area }: { area: string }) {
 
   const fetchAndSetTimes = async () => {
     setIsLoading(true);
-    api.current.setArea(area);
-    const timesData = await fetchTimes();
-    setTimes(timesData);
-    setTodayTimes(timesData[date.getDate() - 1]);
-    setIsLoading(false);
+    setError(false);
+    try {
+      api.current.setArea(area);
+      const timesData = await fetchTimes();
+      if (!timesData || timesData.length === 0) {
+        setError(true);
+      } else {
+        setTimes(timesData);
+        setTodayTimes(timesData[date.getDate() - 1]);
+      }
+    } catch {
+      setError(true);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -58,7 +80,7 @@ function usePTApi({ area }: { area: string }) {
     if (storage.current.contains(`times_${date.getMonth()}_${date.getFullYear()}_${area}`)) return;
     const month = new Date().getMonth();
     const year = new Date().getFullYear();
-    console.log('Saving times to storage');
+    log.info('usePTApi: saving times to storage', { type: 'storage', month, year, area });
     storage.current.set(`times_${month}_${year}_${area}`, JSON.stringify(times));
   }, [JSON.stringify(times)]);
 
@@ -106,6 +128,8 @@ function usePTApi({ area }: { area: string }) {
 
   return {
     isLoading,
+    error,
+    retry: fetchAndSetTimes,
     navigate: { next: nextDay, prev: prevDay, today: setToday, goToDate },
     date,
     dateString,
