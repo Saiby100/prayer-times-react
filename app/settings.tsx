@@ -11,6 +11,7 @@ import BackgroundPickerPopup from '@/components/BackgroundPickerPopup';
 import getStorage from '@/utils/localStore';
 import usePrayerReminders from '@/hooks/notifications/usePrayerReminders';
 import useReleaseUpdate, { type ReleaseCheckStatus } from '@/hooks/useReleaseUpdate';
+import ConfirmPopup from '@/components/ConfirmPopup';
 import useBackgroundImage from '@/hooks/useBackgroundImage';
 import { getBackgroundById } from '@/theme/backgrounds';
 
@@ -36,7 +37,9 @@ export default function Settings() {
   const { mode, setMode } = useThemeMode();
   const storage = getStorage();
   const { isScheduled, schedule, clear } = usePrayerReminders();
-  const { checkStatus, loading, checkForUpdate, downloadUpdate } = useReleaseUpdate();
+  const { latestVersion, checkStatus, loading, checkForUpdate, downloadUpdate } =
+    useReleaseUpdate();
+  const [updatePopupVisible, setUpdatePopupVisible] = useState(false);
   const { backgroundId, setBackgroundId } = useBackgroundImage();
   const [bgPickerVisible, setBgPickerVisible] = useState(false);
 
@@ -106,11 +109,12 @@ export default function Settings() {
               title={updateTitle[checkStatus]}
               loading={loading}
               disabled={loading}
-              onPress={() => {
+              onPress={async () => {
                 if (checkStatus === 'update-available') {
-                  downloadUpdate();
+                  setUpdatePopupVisible(true);
                 } else {
-                  checkForUpdate({ skipDismissed: true });
+                  const found = await checkForUpdate({ skipDismissed: true });
+                  if (found) setUpdatePopupVisible(true);
                 }
               }}
             />
@@ -122,6 +126,18 @@ export default function Settings() {
         onClose={() => setBgPickerVisible(false)}
         selectedId={backgroundId}
         onSelect={setBackgroundId}
+      />
+      <ConfirmPopup
+        visible={updatePopupVisible}
+        title="Update Available"
+        message={`Version ${latestVersion} is ready to download.`}
+        confirmLabel="Download"
+        dismissLabel="Cancel"
+        onConfirm={() => {
+          setUpdatePopupVisible(false);
+          downloadUpdate();
+        }}
+        onDismiss={() => setUpdatePopupVisible(false)}
       />
     </Page>
   );
