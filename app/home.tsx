@@ -5,7 +5,7 @@ import LoadingList from '@/components/LoadingList';
 import Page from '@/components/Page';
 import CalendarPopup from '@/components/CalendarPopup';
 import InfoPopup from '@/components/InfoPopup';
-import Banner from '@/components/Banner';
+import ConfirmPopup from '@/components/ConfirmPopup';
 import Card from '@/components/Card';
 import usePTApi from '@/hooks/usePTApi';
 import useReleaseUpdate from '@/hooks/useReleaseUpdate';
@@ -73,15 +73,15 @@ export default function Home() {
       }}
     >
       <View style={{ paddingHorizontal: 42 }}>
-        {updateAvailable && latestVersion && (
-          <Banner
-            icon={{ name: 'arrow-up-circle' }}
-            message={`v${latestVersion} available`}
-            actionLabel="Update"
-            onAction={downloadUpdate}
-            onDismiss={dismiss}
-          />
-        )}
+        <ConfirmPopup
+          visible={updateAvailable && !!latestVersion}
+          title="Update Available"
+          message={`A new version (v${latestVersion}) is available.`}
+          confirmLabel="Download"
+          dismissLabel="Remind Me Later"
+          onConfirm={downloadUpdate}
+          onDismiss={dismiss}
+        />
         <NetworkError error={error} onRetry={retry} />
         {isLoading ? (
           <LoadingList />
