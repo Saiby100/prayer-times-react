@@ -49,9 +49,11 @@ const supabaseTransport: transportFunctionType<object> = (props) => {
     });
 };
 
+const isDev = __DEV__;
+
 const log = logger.createLogger({
   severity: 'debug',
-  transport: [consoleTransport, supabaseTransport],
+  transport: isDev ? [consoleTransport] : [consoleTransport, supabaseTransport],
   transportOptions: {
     colors: {
       debug: 'blue',
