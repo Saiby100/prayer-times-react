@@ -5,8 +5,10 @@ import LoadingList from '@/components/LoadingList';
 import Page from '@/components/Page';
 import CalendarPopup from '@/components/CalendarPopup';
 import InfoPopup from '@/components/InfoPopup';
+import Banner from '@/components/Banner';
 import Card from '@/components/Card';
 import usePTApi from '@/hooks/usePTApi';
+import useReleaseUpdate from '@/hooks/useReleaseUpdate';
 import NetworkError from '@/components/NetworkError';
 import useHijriDate from '@/hooks/useHijriDate';
 import OptionsMenu from '@/components/OptionsMenu';
@@ -38,6 +40,14 @@ export default function Home() {
   const { hijriDateString, hijriDateInfoList } = useHijriDate(date);
   const [hijriInfoVisible, setHijriInfoVisible] = useState(false);
   const hasHijriInfo = hijriDateInfoList.length > 0;
+  const {
+    updateAvailable,
+    latestVersion,
+    checkStatus,
+    downloadProgress,
+    downloadAndInstall,
+    dismiss,
+  } = useReleaseUpdate();
 
   const handleShareApp = async () => {
     await Share.share({
@@ -74,6 +84,21 @@ export default function Home() {
       }}
     >
       <View style={{ paddingHorizontal: 42 }}>
+        {updateAvailable && latestVersion && (
+          <Banner
+            icon={{ name: checkStatus === 'downloading' ? 'download' : 'arrow-up-circle' }}
+            message={
+              checkStatus === 'downloading'
+                ? `Downloading... ${downloadProgress}%`
+                : checkStatus === 'ready-to-install'
+                  ? 'Tap to install'
+                  : `v${latestVersion} available`
+            }
+            actionLabel={checkStatus === 'downloading' ? undefined : 'Update'}
+            onAction={downloadAndInstall}
+            onDismiss={checkStatus === 'downloading' ? undefined : dismiss}
+          />
+        )}
         <NetworkError error={error} onRetry={retry} />
         {isLoading ? (
           <LoadingList />

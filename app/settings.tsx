@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Text, useThemeMode } from '@rneui/themed';
 import Constants from 'expo-constants';
-import * as Updates from 'expo-updates';
 
 import Page from '@/components/Page';
 import Card from '@/components/Card';
@@ -11,33 +10,37 @@ import SettingsInfoRow from '@/components/SettingsInfoRow';
 import BackgroundPickerPopup from '@/components/BackgroundPickerPopup';
 import getStorage from '@/utils/localStore';
 import usePrayerReminders from '@/hooks/notifications/usePrayerReminders';
-import useUpdates, { type UpdateStatus } from '@/hooks/useUpdates';
+import useReleaseUpdate, { type ReleaseCheckStatus } from '@/hooks/useReleaseUpdate';
 import useBackgroundImage from '@/hooks/useBackgroundImage';
 import { getBackgroundById } from '@/theme/backgrounds';
 
 const REMINDER_HINT = 'Reminders are sent 5 minutes before each prayer time';
 
-const updateIconName: Record<UpdateStatus, string> = {
+const updateIconName: Record<ReleaseCheckStatus, string> = {
   idle: 'download',
   checking: 'download',
-  downloading: 'download',
   'up-to-date': 'check-circle',
+  'update-available': 'arrow-up-circle',
+  downloading: 'download',
+  'ready-to-install': 'check-circle',
   error: 'alert-circle',
 };
 
-const updateTitle: Record<UpdateStatus, string> = {
+const updateTitle: Record<ReleaseCheckStatus, string> = {
   idle: ' Check for updates',
   checking: ' Checking...',
-  downloading: ' Downloading...',
   'up-to-date': ' Up to date',
-  error: ' Update failed',
+  'update-available': ' Update available',
+  downloading: ' Downloading...',
+  'ready-to-install': ' Tap to install',
+  error: ' Check failed',
 };
 
 export default function Settings() {
   const { mode, setMode } = useThemeMode();
   const storage = getStorage();
   const { isScheduled, schedule, clear } = usePrayerReminders();
-  const { updateStatus, checkForUpdates } = useUpdates();
+  const { checkStatus, checkForUpdate, downloadAndInstall } = useReleaseUpdate();
   const { backgroundId, setBackgroundId } = useBackgroundImage();
   const [bgPickerVisible, setBgPickerVisible] = useState(false);
 
@@ -99,20 +102,23 @@ export default function Settings() {
         <Card title="About">
           <View style={styles.aboutRows}>
             <SettingsInfoRow label="Version" value={Constants.expoConfig?.version ?? '-'} />
-            {Updates.channel ? <SettingsInfoRow label="Channel" value={Updates.channel} /> : null}
           </View>
-          {Updates.channel ? (
-            <View style={styles.extraRow}>
-              <SettingsToggleRow
-                label="Updates"
-                iconName={updateIconName[updateStatus]}
-                title={updateTitle[updateStatus]}
-                loading={updateStatus === 'checking' || updateStatus === 'downloading'}
-                disabled={updateStatus !== 'idle'}
-                onPress={checkForUpdates}
-              />
-            </View>
-          ) : null}
+          <View style={styles.extraRow}>
+            <SettingsToggleRow
+              label="Updates"
+              iconName={updateIconName[checkStatus]}
+              title={updateTitle[checkStatus]}
+              loading={checkStatus === 'checking' || checkStatus === 'downloading'}
+              disabled={checkStatus === 'checking' || checkStatus === 'downloading'}
+              onPress={() => {
+                if (checkStatus === 'update-available') {
+                  downloadAndInstall();
+                } else {
+                  checkForUpdate({ skipThrottle: true, skipDismissed: true });
+                }
+              }}
+            />
+          </View>
         </Card>
       </ScrollView>
       <BackgroundPickerPopup
