@@ -20,66 +20,63 @@ export default function useReleaseUpdate() {
   const [checkStatus, setCheckStatus] = useState<ReleaseCheckStatus>('idle');
   const isChecking = useRef(false);
 
-  const checkForUpdate = useCallback(
-    async (options?: { skipThrottle?: boolean; skipDismissed?: boolean }) => {
-      if (__DEV__ || isChecking.current) return;
-      isChecking.current = true;
+  const checkForUpdate = useCallback(async (options?: { skipDismissed?: boolean }) => {
+    if (__DEV__ || isChecking.current) return;
+    isChecking.current = true;
 
-      const currentVersion = Constants.expoConfig?.version;
-      if (!currentVersion) {
-        isChecking.current = false;
-        return;
-      }
-
-      log.info('useReleaseUpdate: checking GitHub releases', { type: 'update' });
-      setCheckStatus('checking');
-
-      const release = await fetchLatestRelease();
-      markReleaseChecked();
-
-      if (!release) {
-        setCheckStatus('error');
-        setTimeout(() => setCheckStatus('idle'), 3000);
-        isChecking.current = false;
-        return;
-      }
-
-      const version = release.tagName.replace(/^v/, '');
-
-      if (isNewerVersion(release.tagName, currentVersion)) {
-        if (!options?.skipDismissed) {
-          const dismissed = getDismissedVersion();
-          if (dismissed === version) {
-            log.info('useReleaseUpdate: user dismissed this version', {
-              type: 'update',
-              version,
-            });
-            setCheckStatus('up-to-date');
-            setTimeout(() => setCheckStatus('idle'), 3000);
-            isChecking.current = false;
-            return;
-          }
-        }
-
-        log.info('useReleaseUpdate: new version available', {
-          type: 'update',
-          version,
-          current: currentVersion,
-        });
-        setLatestVersion(version);
-        setApkDownloadUrl(release.apkDownloadUrl);
-        setUpdateAvailable(true);
-        setCheckStatus('update-available');
-      } else {
-        log.info('useReleaseUpdate: app is up to date', { type: 'update' });
-        setCheckStatus('up-to-date');
-        setTimeout(() => setCheckStatus('idle'), 3000);
-      }
-
+    const currentVersion = Constants.expoConfig?.version;
+    if (!currentVersion) {
       isChecking.current = false;
-    },
-    []
-  );
+      return;
+    }
+
+    log.info('useReleaseUpdate: checking GitHub releases', { type: 'update' });
+    setCheckStatus('checking');
+
+    const release = await fetchLatestRelease();
+    markReleaseChecked();
+
+    if (!release) {
+      setCheckStatus('error');
+      setTimeout(() => setCheckStatus('idle'), 3000);
+      isChecking.current = false;
+      return;
+    }
+
+    const version = release.tagName.replace(/^v/, '');
+
+    if (isNewerVersion(release.tagName, currentVersion)) {
+      if (!options?.skipDismissed) {
+        const dismissed = getDismissedVersion();
+        if (dismissed === version) {
+          log.info('useReleaseUpdate: user dismissed this version', {
+            type: 'update',
+            version,
+          });
+          setCheckStatus('up-to-date');
+          setTimeout(() => setCheckStatus('idle'), 3000);
+          isChecking.current = false;
+          return;
+        }
+      }
+
+      log.info('useReleaseUpdate: new version available', {
+        type: 'update',
+        version,
+        current: currentVersion,
+      });
+      setLatestVersion(version);
+      setApkDownloadUrl(release.apkDownloadUrl);
+      setUpdateAvailable(true);
+      setCheckStatus('update-available');
+    } else {
+      log.info('useReleaseUpdate: app is up to date', { type: 'update' });
+      setCheckStatus('up-to-date');
+      setTimeout(() => setCheckStatus('idle'), 3000);
+    }
+
+    isChecking.current = false;
+  }, []);
 
   const downloadUpdate = useCallback(() => {
     if (!apkDownloadUrl) return;

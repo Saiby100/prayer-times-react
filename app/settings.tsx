@@ -110,7 +110,7 @@ export default function Settings() {
                 if (checkStatus === 'update-available') {
                   downloadUpdate();
                 } else {
-                  checkForUpdate({ skipThrottle: true, skipDismissed: true });
+                  checkForUpdate({ skipDismissed: true });
                 }
               }}
             />

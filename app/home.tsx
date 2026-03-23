@@ -64,11 +64,7 @@ export default function Home() {
         headerRight: () => (
           <OptionsMenu
             items={[
-              {
-                label: 'Settings',
-                icon: 'settings',
-                onPress: () => router.push('/settings' as any),
-              },
+              { label: 'Settings', icon: 'settings', onPress: () => router.push('/settings') },
               { label: 'Location', icon: 'map-pin', onPress: () => router.push('/areas') },
               { label: 'Share App', icon: 'share-2', onPress: handleShareApp },
             ]}
