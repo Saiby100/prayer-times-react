@@ -26,7 +26,7 @@ export default function Areas() {
   );
 
   return (
-    <Page name="areas" title="Select Area">
+    <Page name="areas" title="Select Area" showBackground>
       {error ? (
         <NetworkError onRetry={retry} />
       ) : isLoading ? (

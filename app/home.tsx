@@ -47,6 +47,7 @@ export default function Home() {
     <Page
       name="home"
       title={area}
+      showBackground
       options={{
         headerRight: () => (
           <Button

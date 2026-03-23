@@ -1,7 +1,12 @@
 import { ExpoConfig, ConfigContext } from 'expo/config';
 import { execSync } from 'child_process';
 
-const commitHash = execSync('git rev-parse --short HEAD').toString().trim();
+let commitHash = 'unknown';
+try {
+  commitHash = execSync('git rev-parse --short HEAD').toString().trim();
+} catch {
+  // EAS build environment may not have .git directory
+}
 
 const IS_DEV = process.env.APP_VARIANT === 'development';
 const IS_PREVIEW = process.env.APP_VARIANT === 'preview';
@@ -24,7 +29,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   slug: 'reminder',
   version: '1.0.0',
   orientation: 'portrait',
-  icon: './assets/images/myicon.png',
+  icon: './assets/images/icon.png',
   scheme: 'myapp',
   userInterfaceStyle: 'automatic',
   newArchEnabled: true,
@@ -43,15 +48,22 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-splash-screen',
       {
-        backgroundColor: '#ffffff',
+        backgroundColor: '#F7F5F0',
         image: './assets/images/splash-light.png',
         dark: {
           image: './assets/images/splash-dark.png',
-          backgroundColor: '#232634',
+          backgroundColor: '#0B1026',
         },
       },
     ],
     'expo-background-task',
+    [
+      'expo-notifications',
+      {
+        icon: './assets/images/notification-icon.png',
+        color: '#0D7C5F',
+      },
+    ],
   ],
   experiments: {
     typedRoutes: true,
@@ -67,6 +79,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     package: getBundleId(),
+    adaptiveIcon: {
+      foregroundImage: './assets/images/adaptive-icon.png',
+      backgroundColor: '#08182f',
+    },
   },
   owner: 'salasaiet',
   runtimeVersion: {
