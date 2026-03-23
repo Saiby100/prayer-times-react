@@ -113,7 +113,7 @@ export default function Settings() {
                 if (checkStatus === 'update-available') {
                   setUpdatePopupVisible(true);
                 } else {
-                  const found = await checkForUpdate({ skipDismissed: true });
+                  const found = await checkForUpdate();
                   if (found) setUpdatePopupVisible(true);
                 }
               }}
