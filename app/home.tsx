@@ -38,7 +38,6 @@ export default function Home() {
   const { hijriDateString, hijriDateInfoList } = useHijriDate(date);
   const [hijriInfoVisible, setHijriInfoVisible] = useState(false);
   const hasHijriInfo = hijriDateInfoList.length > 0;
-
   const handleShareApp = async () => {
     await Share.share({
       message:
@@ -61,11 +60,7 @@ export default function Home() {
         headerRight: () => (
           <OptionsMenu
             items={[
-              {
-                label: 'Settings',
-                icon: 'settings',
-                onPress: () => router.push('/settings' as any),
-              },
+              { label: 'Settings', icon: 'settings', onPress: () => router.push('/settings') },
               { label: 'Location', icon: 'map-pin', onPress: () => router.push('/areas') },
               { label: 'Share App', icon: 'share-2', onPress: handleShareApp },
             ]}
