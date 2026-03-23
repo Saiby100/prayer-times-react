@@ -66,11 +66,10 @@ export default function Home() {
       }}
     >
       <View style={{ paddingHorizontal: 42 }}>
-        {error ? (
-          <NetworkError onRetry={retry} />
-        ) : isLoading ? (
+        <NetworkError error={error} onRetry={retry} />
+        {isLoading ? (
           <LoadingList />
-        ) : (
+        ) : !error ? (
           <View>
             <View
               style={{
@@ -196,7 +195,7 @@ export default function Home() {
               />
             </View>
           </View>
-        )}
+        ) : null}
         <InfoPopup
           visible={hijriInfoVisible}
           onClose={() => setHijriInfoVisible(false)}

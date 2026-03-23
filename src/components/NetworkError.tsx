@@ -2,15 +2,19 @@ import { View, StyleSheet } from 'react-native';
 import { Button, Icon, Text, useTheme } from '@rneui/themed';
 
 type NetworkErrorProps = {
+  error: boolean;
   onRetry: () => void;
   message?: string;
 };
 
 const NetworkError: React.FC<NetworkErrorProps> = ({
+  error,
   onRetry,
   message = 'Unable to load data. Check your connection and try again.',
 }) => {
   const { theme } = useTheme();
+
+  if (!error) return null;
 
   return (
     <View style={styles.container}>
@@ -32,8 +36,6 @@ export default NetworkError;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
     gap: 16,
     padding: 32,

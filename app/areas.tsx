@@ -28,11 +28,10 @@ export default function Areas() {
 
   return (
     <Page name="areas" title="Select Area" showBackground>
-      {error ? (
-        <NetworkError onRetry={retry} />
-      ) : isLoading ? (
+      <NetworkError error={error} onRetry={retry} />
+      {isLoading ? (
         <LoadingList />
-      ) : (
+      ) : !error ? (
         <FlatList
           data={areas}
           keyExtractor={(item, index) => index.toString()}
@@ -50,7 +49,7 @@ export default function Areas() {
           )}
           contentContainerStyle={styles.list}
         ></FlatList>
-      )}
+      ) : null}
     </Page>
   );
 }
