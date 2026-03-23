@@ -11,7 +11,7 @@ import NetworkError from '@/components/NetworkError';
 import useHijriDate from '@/hooks/useHijriDate';
 import OptionsMenu from '@/components/OptionsMenu';
 import getStorage from '@/utils/localStore';
-import { StyleSheet, FlatList, TouchableOpacity, View } from 'react-native';
+import { Share, StyleSheet, FlatList, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Button, Text, useTheme } from '@rneui/themed';
 
@@ -39,6 +39,13 @@ export default function Home() {
   const [hijriInfoVisible, setHijriInfoVisible] = useState(false);
   const hasHijriInfo = hijriDateInfoList.length > 0;
 
+  const handleShareApp = async () => {
+    await Share.share({
+      message:
+        'Download Reminder - Prayer Times app: https://github.com/Saiby100/prayer-times-react/releases/latest',
+    });
+  };
+
   useFocusEffect(
     useCallback(() => {
       SplashScreen.hide();
@@ -60,6 +67,7 @@ export default function Home() {
                 onPress: () => router.push('/settings' as any),
               },
               { label: 'Location', icon: 'map-pin', onPress: () => router.push('/areas') },
+              { label: 'Share App', icon: 'share-2', onPress: handleShareApp },
             ]}
           />
         ),
