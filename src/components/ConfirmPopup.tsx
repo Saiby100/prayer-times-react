@@ -37,9 +37,20 @@ export default function ConfirmPopup({
       <View>
         <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 8 }}>{title}</Text>
         <Text style={{ fontSize: 14, opacity: 0.8, marginBottom: 24 }}>{message}</Text>
-        <View style={{ gap: 10 }}>
-          <Button title={confirmLabel} onPress={onConfirm} radius="md" />
-          <Button title={dismissLabel} onPress={onDismiss} type="outline" radius="md" />
+        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 10 }}>
+          <Button
+            title={dismissLabel}
+            onPress={onDismiss}
+            type="outline"
+            radius="md"
+            titleStyle={{ fontSize: 13 }}
+          />
+          <Button
+            title={confirmLabel}
+            onPress={onConfirm}
+            radius="md"
+            titleStyle={{ fontSize: 13 }}
+          />
         </View>
       </View>
     </Overlay>
