@@ -40,14 +40,7 @@ export default function Home() {
   const { hijriDateString, hijriDateInfoList } = useHijriDate(date);
   const [hijriInfoVisible, setHijriInfoVisible] = useState(false);
   const hasHijriInfo = hijriDateInfoList.length > 0;
-  const {
-    updateAvailable,
-    latestVersion,
-    checkStatus,
-    downloadProgress,
-    downloadAndInstall,
-    dismiss,
-  } = useReleaseUpdate();
+  const { updateAvailable, latestVersion, downloadUpdate, dismiss } = useReleaseUpdate();
 
   const handleShareApp = async () => {
     await Share.share({
@@ -86,17 +79,11 @@ export default function Home() {
       <View style={{ paddingHorizontal: 42 }}>
         {updateAvailable && latestVersion && (
           <Banner
-            icon={{ name: checkStatus === 'downloading' ? 'download' : 'arrow-up-circle' }}
-            message={
-              checkStatus === 'downloading'
-                ? `Downloading... ${downloadProgress}%`
-                : checkStatus === 'ready-to-install'
-                  ? 'Tap to install'
-                  : `v${latestVersion} available`
-            }
-            actionLabel={checkStatus === 'downloading' ? undefined : 'Update'}
-            onAction={downloadAndInstall}
-            onDismiss={checkStatus === 'downloading' ? undefined : dismiss}
+            icon={{ name: 'arrow-up-circle' }}
+            message={`v${latestVersion} available`}
+            actionLabel="Update"
+            onAction={downloadUpdate}
+            onDismiss={dismiss}
           />
         )}
         <NetworkError error={error} onRetry={retry} />

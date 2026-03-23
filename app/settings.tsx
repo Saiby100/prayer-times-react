@@ -21,8 +21,6 @@ const updateIconName: Record<ReleaseCheckStatus, string> = {
   checking: 'download',
   'up-to-date': 'check-circle',
   'update-available': 'arrow-up-circle',
-  downloading: 'download',
-  'ready-to-install': 'check-circle',
   error: 'alert-circle',
 };
 
@@ -31,8 +29,6 @@ const updateTitle: Record<ReleaseCheckStatus, string> = {
   checking: ' Checking...',
   'up-to-date': ' Up to date',
   'update-available': ' Update available',
-  downloading: ' Downloading...',
-  'ready-to-install': ' Tap to install',
   error: ' Check failed',
 };
 
@@ -40,7 +36,7 @@ export default function Settings() {
   const { mode, setMode } = useThemeMode();
   const storage = getStorage();
   const { isScheduled, schedule, clear } = usePrayerReminders();
-  const { checkStatus, loading, checkForUpdate, downloadAndInstall } = useReleaseUpdate();
+  const { checkStatus, loading, checkForUpdate, downloadUpdate } = useReleaseUpdate();
   const { backgroundId, setBackgroundId } = useBackgroundImage();
   const [bgPickerVisible, setBgPickerVisible] = useState(false);
 
@@ -112,7 +108,7 @@ export default function Settings() {
               disabled={loading}
               onPress={() => {
                 if (checkStatus === 'update-available') {
-                  downloadAndInstall();
+                  downloadUpdate();
                 } else {
                   checkForUpdate({ skipThrottle: true, skipDismissed: true });
                 }

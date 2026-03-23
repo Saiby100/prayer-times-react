@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
+import { Linking } from 'react-native';
 import Constants from 'expo-constants';
 import log from '@/utils/logger';
 import {
@@ -9,24 +10,14 @@ import {
   getDismissedVersion,
   setDismissedVersion,
 } from '@/services/github/releaseChecker';
-import { downloadAndInstallApk } from '@/services/github/apkInstaller';
 
-export type ReleaseCheckStatus =
-  | 'idle'
-  | 'checking'
-  | 'up-to-date'
-  | 'update-available'
-  | 'downloading'
-  | 'ready-to-install'
-  | 'error';
+export type ReleaseCheckStatus = 'idle' | 'checking' | 'up-to-date' | 'update-available' | 'error';
 
 export default function useReleaseUpdate() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
-  const [releaseUrl, setReleaseUrl] = useState<string | null>(null);
   const [apkDownloadUrl, setApkDownloadUrl] = useState<string | null>(null);
   const [latestVersion, setLatestVersion] = useState<string | null>(null);
   const [checkStatus, setCheckStatus] = useState<ReleaseCheckStatus>('idle');
-  const [downloadProgress, setDownloadProgress] = useState(0);
   const isChecking = useRef(false);
 
   const checkForUpdate = useCallback(
@@ -76,7 +67,6 @@ export default function useReleaseUpdate() {
           current: currentVersion,
         });
         setLatestVersion(version);
-        setReleaseUrl(release.htmlUrl);
         setApkDownloadUrl(release.apkDownloadUrl);
         setUpdateAvailable(true);
         setCheckStatus('update-available');
@@ -91,27 +81,10 @@ export default function useReleaseUpdate() {
     []
   );
 
-  const downloadAndInstall = useCallback(async () => {
+  const downloadUpdate = useCallback(() => {
     if (!apkDownloadUrl) return;
-
-    setCheckStatus('downloading');
-    setDownloadProgress(0);
-
-    try {
-      await downloadAndInstallApk(apkDownloadUrl, (progress) => {
-        setDownloadProgress(progress);
-        if (progress >= 100) {
-          setCheckStatus('ready-to-install');
-        }
-      });
-    } catch (e) {
-      log.error('useReleaseUpdate: download/install failed', {
-        type: 'update',
-        error: String(e),
-      });
-      setCheckStatus('error');
-      setTimeout(() => setCheckStatus('update-available'), 3000);
-    }
+    log.info('useReleaseUpdate: opening APK download URL', { type: 'update' });
+    Linking.openURL(apkDownloadUrl);
   }, [apkDownloadUrl]);
 
   useEffect(() => {
@@ -128,17 +101,15 @@ export default function useReleaseUpdate() {
     setCheckStatus('idle');
   }, [latestVersion]);
 
-  const loading = checkStatus === 'checking' || checkStatus === 'downloading';
+  const loading = checkStatus === 'checking';
 
   return {
     updateAvailable,
-    releaseUrl,
     latestVersion,
     checkStatus,
-    downloadProgress,
     loading,
     checkForUpdate,
-    downloadAndInstall,
+    downloadUpdate,
     dismiss,
   };
 }

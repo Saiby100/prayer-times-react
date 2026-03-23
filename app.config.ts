@@ -89,7 +89,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   android: {
     package: getBundleId(),
     versionCode: getVersionCode(appVersion),
-    permissions: ['android.permission.REQUEST_INSTALL_PACKAGES'],
     adaptiveIcon: {
       foregroundImage: './assets/images/adaptive-icon.png',
       backgroundColor: '#08182f',
