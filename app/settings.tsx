@@ -100,23 +100,6 @@ export default function Settings() {
           <View style={styles.aboutRows}>
             <SettingsInfoRow label="Version" value={Constants.expoConfig?.version ?? '-'} />
             {Updates.channel ? <SettingsInfoRow label="Channel" value={Updates.channel} /> : null}
-            {Constants.expoConfig?.extra?.commitHash ? (
-              <SettingsInfoRow
-                label="Commit"
-                value={Constants.expoConfig.extra.commitHash}
-                selectable
-              />
-            ) : null}
-            {Updates.createdAt ? (
-              <SettingsInfoRow
-                label="Published"
-                value={Updates.createdAt.toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}
-              />
-            ) : null}
           </View>
           {Updates.channel ? (
             <View style={styles.extraRow}>
