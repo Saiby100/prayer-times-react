@@ -7,6 +7,7 @@ type NameRowColors = {
   primary: string;
   text: string;
   sliderTrack: string;
+  bgLight: string;
 };
 
 type NameRowProps = {
@@ -18,39 +19,44 @@ const NameRow = memo(function NameRow({ item, colors }: NameRowProps) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <ListItem.Accordion
-      isExpanded={expanded}
-      onPress={() => setExpanded((prev) => !prev)}
-      icon={{ name: 'chevron-down', type: 'feather', size: 18, color: colors.primary }}
-      containerStyle={styles.container}
-      bottomDivider
-      content={
-        <View style={styles.content}>
-          <View style={styles.topRow}>
-            <View style={[styles.badge, { backgroundColor: colors.primary + '22' }]}>
-              <Text style={[styles.badgeText, { color: colors.primary }]}>{item.number}</Text>
+    <View style={[styles.card, { backgroundColor: colors.bgLight }]}>
+      <ListItem.Accordion
+        isExpanded={expanded}
+        onPress={() => setExpanded((prev) => !prev)}
+        icon={{ name: 'chevron-down', type: 'feather', size: 18, color: colors.primary }}
+        containerStyle={[styles.container, { backgroundColor: colors.bgLight }]}
+        content={
+          <View style={styles.content}>
+            <View style={styles.topRow}>
+              <View style={[styles.badge, { backgroundColor: colors.primary + '22' }]}>
+                <Text style={[styles.badgeText, { color: colors.primary }]}>{item.number}</Text>
+              </View>
+              <Text style={[styles.arabic, { color: colors.text }]}>{item.arabic}</Text>
             </View>
-            <Text style={[styles.arabic, { color: colors.text }]}>{item.arabic}</Text>
+            <View style={styles.bottomLeft}>
+              <Text style={[styles.transliteration, { color: colors.primary }]}>
+                {item.transliteration}
+              </Text>
+              <Text style={[styles.meaning, { color: colors.text }]}>{item.meaning}</Text>
+            </View>
           </View>
-          <View style={styles.bottomLeft}>
-            <Text style={[styles.transliteration, { color: colors.primary }]}>
-              {item.transliteration}
-            </Text>
-            <Text style={[styles.meaning, { color: colors.text }]}>{item.meaning}</Text>
-          </View>
+        }
+      >
+        <View style={[styles.description, { borderTopColor: colors.sliderTrack }]}>
+          <Text style={[styles.descriptionText, { color: colors.text }]}>{item.description}</Text>
         </View>
-      }
-    >
-      <View style={[styles.description, { borderTopColor: colors.sliderTrack }]}>
-        <Text style={[styles.descriptionText, { color: colors.text }]}>{item.description}</Text>
-      </View>
-    </ListItem.Accordion>
+      </ListItem.Accordion>
+    </View>
   );
 });
 
 export default NameRow;
 
 const styles = StyleSheet.create({
+  card: {
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
   container: {
     paddingHorizontal: 16,
     paddingVertical: 14,

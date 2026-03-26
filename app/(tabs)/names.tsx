@@ -11,6 +11,7 @@ export default function NamesScreen() {
     primary: theme.colors.primary,
     text: theme.colors.text,
     sliderTrack: theme.colors.sliderTrack,
+    bgLight: theme.colors.bgLight,
   };
 
   const renderItem = useCallback(
@@ -24,7 +25,7 @@ export default function NamesScreen() {
         data={allahNames}
         keyExtractor={(item) => item.number.toString()}
         renderItem={renderItem}
-        contentContainerStyle={{ paddingBottom: 24 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24, gap: 10 }}
         initialNumToRender={12}
         maxToRenderPerBatch={15}
         windowSize={5}
