@@ -62,6 +62,10 @@ Before starting any task — especially feature work, refactors, or anything wit
 - Prettier: single quotes, 100 print width, 2-space indent (`.prettierrc`)
 - ESLint extends `expo` config with `eslint-import-resolver-typescript` for `@/` alias resolution
 
+## Component Definition Style
+
+- **Do not use `React.FC`**: Define components as plain arrow functions with props typed inline — `const Foo = ({ bar }: FooProps) => { ... }`. This is consistent with the existing codebase (e.g. `LoadingList`). `React.FC` adds no value in React 18+ and is avoided here.
+
 ## UI Component Guidelines
 
 - **Keep screens thin**: Screen files in `app/` should primarily compose components and manage data fetching/navigation — not contain complex rendering logic.
