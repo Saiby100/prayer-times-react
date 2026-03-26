@@ -13,7 +13,6 @@ export default function NamesScreen() {
     primary: theme.colors.primary,
     text: theme.colors.text,
     sliderTrack: theme.colors.sliderTrack,
-    bgLight: theme.colors.bgLight,
   };
 
   const filteredNames = useMemo(() => {

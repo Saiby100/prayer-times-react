@@ -1,5 +1,13 @@
 import React from 'react';
-import { ImageBackground, StatusBar, StyleProp, StyleSheet, ViewStyle } from 'react-native';
+import {
+  Dimensions,
+  ImageBackground,
+  StatusBar,
+  StyleProp,
+  StyleSheet,
+  View,
+  ViewStyle,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, ScreenProps } from 'expo-router';
 import { useTheme } from '@rneui/themed';
@@ -42,13 +50,18 @@ const Page = ({
 
   if (useBackground) {
     return (
-      <SafeAreaView style={[styles.view, contentStyle]}>
-        <Stack.Screen name={name} options={headerOptions} />
-        <StatusBar backgroundColor={theme.colors.background} />
-        <ImageBackground source={backgroundSource} resizeMode="cover" style={styles.background}>
-          {content}
-        </ImageBackground>
-      </SafeAreaView>
+      <View style={styles.view}>
+        <ImageBackground
+          source={backgroundSource}
+          resizeMode="cover"
+          style={[StyleSheet.absoluteFill, { height: Dimensions.get('screen').height }]}
+        />
+        <SafeAreaView style={[styles.view, contentStyle]}>
+          <Stack.Screen name={name} options={headerOptions} />
+          <StatusBar backgroundColor={theme.colors.background} />
+          <View style={styles.background}>{content}</View>
+        </SafeAreaView>
+      </View>
     );
   }
 

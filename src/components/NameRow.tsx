@@ -1,13 +1,13 @@
 import { memo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ListItem, Text } from '@rneui/themed';
+import Scrim from '@/components/Scrim';
 import type { AllahName } from '@/config/ninetyNineNames';
 
 type NameRowColors = {
   primary: string;
   text: string;
   sliderTrack: string;
-  bgLight: string;
 };
 
 type NameRowProps = {
@@ -19,12 +19,12 @@ const NameRow = memo(function NameRow({ item, colors }: NameRowProps) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.bgLight }]}>
+    <Scrim style={styles.card}>
       <ListItem.Accordion
         isExpanded={expanded}
         onPress={() => setExpanded((prev) => !prev)}
         icon={{ name: 'chevron-down', type: 'feather', size: 18, color: colors.primary }}
-        containerStyle={[styles.container, { backgroundColor: colors.bgLight }]}
+        containerStyle={[styles.container, { backgroundColor: 'transparent' }]}
         content={
           <View style={styles.content}>
             <View style={styles.topRow}>
@@ -46,7 +46,7 @@ const NameRow = memo(function NameRow({ item, colors }: NameRowProps) {
           <Text style={[styles.descriptionText, { color: colors.text }]}>{item.description}</Text>
         </View>
       </ListItem.Accordion>
-    </View>
+    </Scrim>
   );
 });
 
@@ -56,6 +56,9 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 12,
     overflow: 'hidden',
+    marginHorizontal: 0,
+    marginVertical: 0,
+    paddingVertical: 0,
   },
   container: {
     paddingHorizontal: 16,
