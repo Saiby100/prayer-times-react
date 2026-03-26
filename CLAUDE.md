@@ -75,6 +75,13 @@ Before starting any task — especially feature work, refactors, or anything wit
 - **Composable and prop-driven**: Components should accept props for data and callbacks — avoid reaching into global state from deep UI components.
 - **Avoid premature abstraction**: Don't create a wrapper component for something used only once. Extract when there's actual reuse or the file becomes hard to follow.
 
+## UI Design Style
+
+- **Rounded cards**: List items and interactive rows should use rounded card styling — `borderRadius: 12`, `bgLight` background from theme, with horizontal padding. Avoid flat divider-separated rows (`bottomDivider`).
+- **FlatList layout**: Use `paddingHorizontal: 16`, `gap: 10`, and `paddingBottom: 24` on `contentContainerStyle` for consistent list spacing.
+- **Expandable cards**: When wrapping content that expands (e.g. `ListItem.Accordion`), wrap the whole component in a `View` with `borderRadius: 12` and `overflow: 'hidden'` so corners stay rounded in both collapsed and expanded states.
+- **Search bars**: For filterable lists, add a sticky `SearchBar` header with `round` style, themed input background (`bgLight`), and a solid `background` color on the container to prevent content showing through when scrolling.
+
 ## Type Definition Guidelines
 
 - **Use `type` over `interface`**: Prefer `type` for consistency. Use `interface` only when declaration merging is needed (e.g., theme augmentation in `src/theme/types.ts`).

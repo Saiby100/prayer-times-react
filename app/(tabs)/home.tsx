@@ -6,6 +6,7 @@ import Page from '@/components/Page';
 import CalendarPopup from '@/components/CalendarPopup';
 import InfoPopup from '@/components/InfoPopup';
 import Card from '@/components/Card';
+import Scrim from '@/components/Scrim';
 import usePTApi from '@/hooks/usePTApi';
 import NetworkError from '@/components/NetworkError';
 import useHijriDate from '@/hooks/useHijriDate';
@@ -68,7 +69,7 @@ export default function Home() {
         ),
       }}
     >
-      <View style={{ paddingHorizontal: 42 }}>
+      <Scrim style={styles.scrimContent}>
         <NetworkError error={error} onRetry={retry} />
         {isLoading ? (
           <LoadingList />
@@ -210,12 +211,16 @@ export default function Home() {
           onDateSelect={navigate.goToDate}
           selectedDate={date}
         />
-      </View>
+      </Scrim>
     </Page>
   );
 }
 
 const styles = StyleSheet.create({
+  scrimContent: {
+    paddingHorizontal: 42,
+    justifyContent: 'center',
+  },
   buttonLayout: {
     flexDirection: 'row',
     justifyContent: 'space-between',
