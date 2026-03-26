@@ -1,6 +1,6 @@
 import { memo, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
-import { Icon, Text } from '@rneui/themed';
+import { StyleSheet, View } from 'react-native';
+import { ListItem, Text } from '@rneui/themed';
 import type { AllahName } from '@/config/ninetyNineNames';
 
 type NameRowColors = {
@@ -18,33 +18,33 @@ const NameRow = memo(function NameRow({ item, colors }: NameRowProps) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <Pressable onPress={() => setExpanded((prev) => !prev)} style={styles.container}>
-      <View style={styles.topRow}>
-        <View style={[styles.badge, { backgroundColor: colors.primary + '22' }]}>
-          <Text style={[styles.badgeText, { color: colors.primary }]}>{item.number}</Text>
+    <ListItem.Accordion
+      isExpanded={expanded}
+      onPress={() => setExpanded((prev) => !prev)}
+      icon={{ name: 'chevron-down', type: 'feather', size: 18, color: colors.primary }}
+      containerStyle={styles.container}
+      bottomDivider
+      content={
+        <View style={styles.content}>
+          <View style={styles.topRow}>
+            <View style={[styles.badge, { backgroundColor: colors.primary + '22' }]}>
+              <Text style={[styles.badgeText, { color: colors.primary }]}>{item.number}</Text>
+            </View>
+            <Text style={[styles.arabic, { color: colors.text }]}>{item.arabic}</Text>
+          </View>
+          <View style={styles.bottomLeft}>
+            <Text style={[styles.transliteration, { color: colors.primary }]}>
+              {item.transliteration}
+            </Text>
+            <Text style={[styles.meaning, { color: colors.text }]}>{item.meaning}</Text>
+          </View>
         </View>
-        <View style={styles.topRight}>
-          <Text style={[styles.arabic, { color: colors.text }]}>{item.arabic}</Text>
-          <Icon
-            name={expanded ? 'chevron-up' : 'chevron-down'}
-            type="feather"
-            size={18}
-            color={colors.primary}
-          />
-        </View>
+      }
+    >
+      <View style={[styles.description, { borderTopColor: colors.sliderTrack }]}>
+        <Text style={[styles.descriptionText, { color: colors.text }]}>{item.description}</Text>
       </View>
-      <View style={styles.bottomLeft}>
-        <Text style={[styles.transliteration, { color: colors.primary }]}>
-          {item.transliteration}
-        </Text>
-        <Text style={[styles.meaning, { color: colors.text }]}>{item.meaning}</Text>
-      </View>
-      {expanded && (
-        <View style={[styles.description, { borderTopColor: colors.sliderTrack }]}>
-          <Text style={[styles.descriptionText, { color: colors.text }]}>{item.description}</Text>
-        </View>
-      )}
-    </Pressable>
+    </ListItem.Accordion>
   );
 });
 
@@ -54,6 +54,9 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
     paddingVertical: 14,
+  },
+  content: {
+    flex: 1,
   },
   topRow: {
     flexDirection: 'row',
@@ -71,11 +74,6 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 12,
     fontFamily: 'Inter-Medium',
-  },
-  topRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
   },
   arabic: {
     fontSize: 26,
@@ -95,8 +93,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Medium',
   },
   description: {
-    marginTop: 10,
-    paddingTop: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   descriptionText: {

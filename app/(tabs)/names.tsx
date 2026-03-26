@@ -1,11 +1,9 @@
 import { useCallback } from 'react';
 import { FlatList } from 'react-native';
-import { Divider, useTheme } from '@rneui/themed';
+import { useTheme } from '@rneui/themed';
 import Page from '@/components/Page';
 import NameRow from '@/components/NameRow';
 import { allahNames, type AllahName } from '@/config/ninetyNineNames';
-
-const Separator = () => <Divider />;
 
 export default function NamesScreen() {
   const { theme } = useTheme();
@@ -26,7 +24,6 @@ export default function NamesScreen() {
         data={allahNames}
         keyExtractor={(item) => item.number.toString()}
         renderItem={renderItem}
-        ItemSeparatorComponent={Separator}
         contentContainerStyle={{ paddingBottom: 24 }}
         initialNumToRender={12}
         maxToRenderPerBatch={15}
