@@ -12,9 +12,9 @@ import NetworkError from '@/components/NetworkError';
 import useHijriDate from '@/hooks/useHijriDate';
 import OptionsMenu from '@/components/OptionsMenu';
 import getStorage from '@/utils/localStore';
-import { Share, StyleSheet, FlatList, TouchableOpacity, View } from 'react-native';
+import { Share, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { Button, Text, useTheme } from '@rneui/themed';
+import { Button, Icon, Text, useTheme } from '@rneui/themed';
 
 export default function Home() {
   const storage = getStorage();
@@ -74,128 +74,90 @@ export default function Home() {
         {isLoading ? (
           <LoadingList />
         ) : !error ? (
-          <View>
-            <View
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                padding: 4,
-              }}
-            >
+          <View style={styles.mainContent}>
+            <View style={styles.dateHeader}>
               <View>
-                <Text>{dayString}</Text>
+                <Text style={styles.dayString}>{dayString}</Text>
                 {hijriDateString &&
                   (hasHijriInfo ? (
                     <TouchableOpacity onPress={() => setHijriInfoVisible(true)}>
-                      <Text
-                        style={{
-                          fontSize: 13,
-                          opacity: 0.7,
-                          textDecorationLine: 'underline',
-                        }}
-                      >
-                        {hijriDateString}
-                      </Text>
+                      <Text style={styles.hijriLink}>{hijriDateString}</Text>
                     </TouchableOpacity>
                   ) : (
-                    <Text style={{ fontSize: 13, opacity: 0.7 }}>{hijriDateString}</Text>
+                    <Text style={styles.hijriText}>{hijriDateString}</Text>
                   ))}
               </View>
-              <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+              <View style={styles.dateActions}>
                 <Button
                   size="sm"
                   radius="md"
                   type="outline"
-                  titleStyle={{
-                    padding: 4,
-                    fontSize: 14,
-                    paddingVertical: 4,
-                  }}
-                  buttonStyle={{ borderWidth: 1, paddingHorizontal: 6, paddingVertical: 1 }}
-                  title={JSON.stringify(new Date().getDate())}
-                  onPress={() => {
-                    navigate.today();
-                  }}
+                  titleStyle={styles.todayButtonTitle}
+                  buttonStyle={styles.todayButton}
+                  title={String(new Date().getDate())}
+                  onPress={() => navigate.today()}
                 />
                 <Button
                   size="sm"
                   radius="md"
                   type="outline"
-                  buttonStyle={{ borderWidth: 1, paddingHorizontal: 4, paddingVertical: 6 }}
-                  icon={{
-                    name: 'calendar',
-                    type: 'feather',
-                    size: 16,
-                  }}
+                  buttonStyle={styles.calendarButton}
+                  icon={{ name: 'calendar', type: 'feather', size: 16 }}
                   onPress={() => setCalendarVisible(true)}
                 />
               </View>
             </View>
-            <Card style={{ marginBottom: 24 }}>
-              <FlatList
-                data={Object.keys(todayTimes ?? {})}
-                renderItem={({ item, index }) => (
-                  <Text
-                    key={index}
+
+            <Card style={styles.timesCard}>
+              {Object.keys(todayTimes ?? {}).map((key) => {
+                const isHighlighted = todayTimes[key] === highlighted;
+                return (
+                  <View
+                    key={key}
                     style={[
-                      styles.textButton,
+                      styles.timeRow,
                       {
-                        width: '100%',
-                        borderWidth: 1.5,
-                        borderColor:
-                          todayTimes[item] === highlighted
-                            ? theme.colors.primary
-                            : theme.colors.bgLight,
+                        borderColor: isHighlighted ? theme.colors.primary : theme.colors.bgLight,
+                        backgroundColor: isHighlighted
+                          ? theme.colors.primary + '10'
+                          : 'transparent',
                       },
                     ]}
-                  >{`${item} : ${todayTimes[item]}`}</Text>
-                )}
-                contentContainerStyle={styles.list}
-                extraData={todayTimes}
-              ></FlatList>
+                  >
+                    <View style={styles.timeLabel}>
+                      <Icon
+                        name={getPrayerIcon(key)}
+                        type="feather"
+                        size={16}
+                        color={isHighlighted ? theme.colors.primary : theme.colors.text + '80'}
+                      />
+                      <Text
+                        style={[styles.timeName, isHighlighted && { color: theme.colors.primary }]}
+                      >
+                        {key}
+                      </Text>
+                    </View>
+                    <Text
+                      style={[styles.timeValue, isHighlighted && { color: theme.colors.primary }]}
+                    >
+                      {todayTimes[key]}
+                    </Text>
+                  </View>
+                );
+              })}
             </Card>
-            <View style={styles.buttonLayout}>
+
+            <View style={styles.navRow}>
               <Button
-                onPress={() => {
-                  navigate.prev();
-                }}
-                icon={{
-                  name: 'left',
-                  type: 'antdesign',
-                  size: 30,
-                }}
-                containerStyle={[
-                  {
-                    backgroundColor: theme.colors.bgLight,
-                    borderRadius: 8,
-                  },
-                ]}
+                onPress={() => navigate.prev()}
+                icon={{ name: 'chevron-left', type: 'feather', size: 24 }}
+                containerStyle={[styles.navButton, { backgroundColor: theme.colors.bgLight }]}
               />
-              <Text
-                style={{
-                  padding: 8,
-                  flex: 1,
-                  textAlign: 'center',
-                  fontSize: 18,
-                }}
-              >
-                {dateString}
-              </Text>
+              <Text style={styles.dateString}>{dateString}</Text>
               <Button
-                onPress={() => {
-                  navigate.next();
-                }}
-                icon={{
-                  name: 'right',
-                  type: 'antdesign',
-                  size: 30,
-                }}
-                containerStyle={[
-                  {
-                    borderRadius: 8,
-                  },
-                ]}
+                onPress={() => navigate.next()}
+                icon={{ name: 'chevron-right', type: 'feather', size: 24 }}
+                containerStyle={[styles.navButton, { backgroundColor: theme.colors.bgLight }]}
               />
             </View>
           </View>
@@ -216,24 +178,104 @@ export default function Home() {
   );
 }
 
+const PRAYER_ICONS: Record<string, string> = {
+  Fajr: 'sunrise',
+  Shuruq: 'sun',
+  Zuhr: 'sun',
+  Asr: 'cloud',
+  Maghrib: 'sunset',
+  Esha: 'moon',
+};
+
+const getPrayerIcon = (name: string) => PRAYER_ICONS[name] ?? 'clock';
+
 const styles = StyleSheet.create({
   scrimContent: {
-    paddingHorizontal: 42,
+    paddingHorizontal: 24,
     justifyContent: 'center',
   },
-  buttonLayout: {
+  mainContent: {
+    gap: 16,
+  },
+  dateHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 4,
   },
-  textButton: {
+  dayString: {
+    fontSize: 20,
+    fontFamily: 'Inter-Medium',
+  },
+  hijriText: {
+    fontSize: 13,
+    opacity: 0.6,
+    marginTop: 2,
+  },
+  hijriLink: {
+    fontSize: 13,
+    opacity: 0.6,
+    marginTop: 2,
+    textDecorationLine: 'underline',
+  },
+  dateActions: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
+  },
+  todayButtonTitle: {
+    fontSize: 14,
+    paddingHorizontal: 4,
+  },
+  todayButton: {
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  calendarButton: {
+    borderWidth: 1,
+    paddingHorizontal: 6,
+    paddingVertical: 6,
+  },
+  timesCard: {
     padding: 8,
-    borderRadius: 8,
-    textAlign: 'center',
-    fontSize: 18,
+    gap: 6,
   },
-  list: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    gap: 12,
+  timeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    borderWidth: 1.5,
+  },
+  timeLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  timeName: {
+    fontSize: 16,
+    fontFamily: 'Inter-Medium',
+  },
+  timeValue: {
+    fontSize: 16,
+    fontFamily: 'Inter-Medium',
+    opacity: 0.9,
+  },
+  navRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  navButton: {
+    borderRadius: 12,
+  },
+  dateString: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 16,
+    fontFamily: 'Inter-Medium',
   },
 });
