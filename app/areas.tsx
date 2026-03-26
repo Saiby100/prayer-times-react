@@ -1,16 +1,25 @@
-import { StyleSheet, FlatList } from 'react-native';
-import { useCallback } from 'react';
+import { StyleSheet, FlatList, View } from 'react-native';
+import { useCallback, useMemo, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
-import { ListItem, Icon } from '@rneui/themed';
+import { Icon, SearchBar, useTheme } from '@rneui/themed';
 import LoadingList from '@/components/LoadingList';
 import getStorage from '@/utils/localStore';
 import * as SplashScreen from 'expo-splash-screen';
 import Page from '@/components/Page';
 import usePTAreas from '@/hooks/usePTAreas';
 import NetworkError from '@/components/NetworkError';
+import AreaCard from '@/components/AreaCard';
 
 export default function Areas() {
   const { areas, isLoading, error, retry } = usePTAreas();
+  const [search, setSearch] = useState('');
+  const { theme } = useTheme();
+
+  const filteredAreas = useMemo(() => {
+    if (!search.trim()) return areas;
+    const query = search.toLowerCase().trim();
+    return areas.filter((area) => area.toLowerCase().includes(query));
+  }, [areas, search]);
 
   const navigateHome = (area: string) => {
     const storage = getStorage();
@@ -33,40 +42,61 @@ export default function Areas() {
         <LoadingList />
       ) : !error ? (
         <FlatList
-          data={areas}
+          data={filteredAreas}
           keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item, index }) => (
-            <ListItem
-              bottomDivider
-              onPress={() => {
-                navigateHome(item);
-              }}
-              containerStyle={[styles.item]}
-            >
-              <Icon name="location-pin" />
-              <ListItem.Title>{item}</ListItem.Title>
-            </ListItem>
-          )}
+          ListHeaderComponent={
+            <View style={[styles.searchContainer, { backgroundColor: theme.colors.background }]}>
+              <SearchBar
+                placeholder="Search areas..."
+                onChangeText={setSearch}
+                value={search}
+                platform="default"
+                round
+                containerStyle={[
+                  styles.searchBarContainer,
+                  { backgroundColor: 'transparent', borderTopWidth: 0, borderBottomWidth: 0 },
+                ]}
+                inputContainerStyle={[
+                  styles.searchInputContainer,
+                  { backgroundColor: theme.colors.bgLight },
+                ]}
+                inputStyle={{ color: theme.colors.text, fontFamily: 'Inter-Medium', fontSize: 16 }}
+                placeholderTextColor={theme.colors.text + '80'}
+                searchIcon={<Icon name="search" size={20} color={theme.colors.primary} />}
+                clearIcon={
+                  <Icon
+                    name="close"
+                    size={20}
+                    color={theme.colors.text}
+                    onPress={() => setSearch('')}
+                  />
+                }
+              />
+            </View>
+          }
+          renderItem={({ item }) => <AreaCard area={item} onPress={navigateHome} />}
           contentContainerStyle={styles.list}
-        ></FlatList>
+          stickyHeaderIndices={[0]}
+        />
       ) : null}
     </Page>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 40,
-    justifyContent: 'center',
+  searchContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 8,
   },
-  item: {
-    width: 250,
+  searchBarContainer: {
+    paddingHorizontal: 0,
+  },
+  searchInputContainer: {
+    borderRadius: 12,
   },
   list: {
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
+    paddingHorizontal: 16,
+    paddingBottom: 24,
+    gap: 10,
   },
 });
