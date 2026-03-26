@@ -19,24 +19,25 @@ const NameRow = memo(function NameRow({ item, colors }: NameRowProps) {
 
   return (
     <Pressable onPress={() => setExpanded((prev) => !prev)} style={styles.container}>
-      <View style={styles.row}>
+      <View style={styles.topRow}>
         <View style={[styles.badge, { backgroundColor: colors.primary + '22' }]}>
           <Text style={[styles.badgeText, { color: colors.primary }]}>{item.number}</Text>
         </View>
-        <View style={styles.textBlock}>
+        <View style={styles.topRight}>
           <Text style={[styles.arabic, { color: colors.text }]}>{item.arabic}</Text>
-          <Text style={[styles.transliteration, { color: colors.primary }]}>
-            {item.transliteration}
-          </Text>
-          <Text style={[styles.meaning, { color: colors.text }]}>{item.meaning}</Text>
+          <Icon
+            name={expanded ? 'chevron-up' : 'chevron-down'}
+            type="feather"
+            size={18}
+            color={colors.primary}
+          />
         </View>
-        <Icon
-          name={expanded ? 'chevron-up' : 'chevron-down'}
-          type="feather"
-          size={18}
-          color={colors.primary}
-          style={styles.chevron}
-        />
+      </View>
+      <View style={styles.bottomLeft}>
+        <Text style={[styles.transliteration, { color: colors.primary }]}>
+          {item.transliteration}
+        </Text>
+        <Text style={[styles.meaning, { color: colors.text }]}>{item.meaning}</Text>
       </View>
       {expanded && (
         <View style={[styles.description, { borderTopColor: colors.sliderTrack }]}>
@@ -54,8 +55,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
   },
-  row: {
+  topRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
   badge: {
@@ -64,22 +66,25 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
     flexShrink: 0,
   },
   badgeText: {
     fontSize: 12,
     fontFamily: 'Inter-Medium',
   },
-  textBlock: {
-    flex: 1,
-    gap: 2,
+  topRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   arabic: {
     fontSize: 26,
-    textAlign: 'right',
     writingDirection: 'rtl',
     lineHeight: 38,
+  },
+  bottomLeft: {
+    marginTop: 4,
+    gap: 2,
   },
   transliteration: {
     fontSize: 14,
@@ -88,10 +93,6 @@ const styles = StyleSheet.create({
   meaning: {
     fontSize: 15,
     fontFamily: 'Inter-Medium',
-  },
-  chevron: {
-    marginLeft: 8,
-    flexShrink: 0,
   },
   description: {
     marginTop: 10,
