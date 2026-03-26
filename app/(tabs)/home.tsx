@@ -8,7 +8,6 @@ import InfoPopup from '@/components/InfoPopup';
 import Card from '@/components/Card';
 import Scrim from '@/components/Scrim';
 import usePTApi from '@/hooks/usePTApi';
-import NetworkError from '@/components/NetworkError';
 import useHijriDate from '@/hooks/useHijriDate';
 import OptionsMenu from '@/components/OptionsMenu';
 import getStorage from '@/utils/localStore';
@@ -57,6 +56,8 @@ export default function Home() {
       name="home"
       title={area}
       showBackground
+      error={error}
+      onRetry={retry}
       options={{
         headerRight: () => (
           <OptionsMenu
@@ -70,10 +71,9 @@ export default function Home() {
       }}
     >
       <Scrim style={styles.scrimContent}>
-        <NetworkError error={error} onRetry={retry} />
         {isLoading ? (
           <LoadingList />
-        ) : !error ? (
+        ) : (
           <View style={styles.mainContent}>
             <View style={styles.dateHeader}>
               <View>
@@ -161,7 +161,7 @@ export default function Home() {
               />
             </View>
           </View>
-        ) : null}
+        )}
         <InfoPopup
           visible={hijriInfoVisible}
           onClose={() => setHijriInfoVisible(false)}

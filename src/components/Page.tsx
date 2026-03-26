@@ -4,15 +4,27 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, ScreenProps } from 'expo-router';
 import { useTheme } from '@rneui/themed';
 import useBackgroundImage from '@/hooks/useBackgroundImage';
+import NetworkError from '@/components/NetworkError';
 
-type Page = ScreenProps & {
+type PageProps = ScreenProps & {
   children?: React.ReactNode;
   title?: string;
   contentStyle?: StyleProp<ViewStyle>;
   showBackground?: boolean;
+  error?: boolean;
+  onRetry?: () => void;
 };
 
-const Page: React.FC<Page> = ({ children, name, options, title, contentStyle, showBackground }) => {
+const Page = ({
+  children,
+  name,
+  options,
+  title,
+  contentStyle,
+  showBackground,
+  error,
+  onRetry,
+}: PageProps) => {
   const { theme } = useTheme();
   const { backgroundSource } = useBackgroundImage();
 
@@ -25,6 +37,7 @@ const Page: React.FC<Page> = ({ children, name, options, title, contentStyle, sh
     ...options,
   };
 
+  const content = error && onRetry ? <NetworkError error={error} onRetry={onRetry} /> : children;
   const useBackground = showBackground && backgroundSource;
 
   if (useBackground) {
@@ -33,7 +46,7 @@ const Page: React.FC<Page> = ({ children, name, options, title, contentStyle, sh
         <Stack.Screen name={name} options={headerOptions} />
         <StatusBar backgroundColor={theme.colors.background} />
         <ImageBackground source={backgroundSource} resizeMode="cover" style={styles.background}>
-          {children}
+          {content}
         </ImageBackground>
       </SafeAreaView>
     );
@@ -43,7 +56,7 @@ const Page: React.FC<Page> = ({ children, name, options, title, contentStyle, sh
     <SafeAreaView style={[styles.view, { backgroundColor: theme.colors.background }, contentStyle]}>
       <Stack.Screen name={name} options={headerOptions} />
       <StatusBar backgroundColor={theme.colors.background} />
-      {children}
+      {content}
     </SafeAreaView>
   );
 };
