@@ -230,12 +230,11 @@ const styles = StyleSheet.create({
   todayButton: {
     borderWidth: 1,
     paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingVertical: 5,
   },
   calendarButton: {
     borderWidth: 1,
-    paddingHorizontal: 6,
-    paddingVertical: 6,
+    padding: 8,
   },
   timesCard: {
     padding: 8,
