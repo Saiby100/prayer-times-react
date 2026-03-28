@@ -22,7 +22,7 @@ const IS_PREVIEW = process.env.APP_VARIANT === 'preview';
 
 const getAppName = () => {
   if (IS_DEV) return 'Reminder (Dev)';
-  // if (IS_PREVIEW) return 'Reminder (Preview)';
+  if (IS_PREVIEW) return 'Reminder (Preview)';
   return 'Reminder';
 };
 
