@@ -90,6 +90,11 @@ Before starting any task — especially feature work, refactors, or anything wit
 - **Props types next to components**: Component prop types should be defined in the same file as the component, not in `src/types/`.
 - **Document type fields**: Every field in a `type` definition must have a brief JSDoc comment (`/** ... */`) describing its purpose.
 
+## Commit Guidelines
+
+- **One commit per task**: Separate tasks must be committed separately — never bundle unrelated changes into a single commit. If you completed multiple tasks before committing, create one commit per task.
+- **Ask when unsure**: If it's unclear whether changes belong in one commit or multiple, ask before committing.
+
 ## Maintaining this file
 
 When making changes that affect architecture, commands, key patterns, or storage keys, update the relevant sections of this CLAUDE.md to keep it accurate.
