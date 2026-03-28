@@ -33,16 +33,12 @@ The user must provide a bump type: `major`, `minor`, or `patch`.
    - Commit with message: `chore: Bump version to <new_version>`
    - Push `develop` to origin
 
-5. **Merge develop into main:**
-   - Checkout `main`
-   - Pull latest from origin
-   - Merge `develop` into `main` (no fast-forward)
-   - Push `main` to origin
+5. **Create PR to merge develop into main:**
+   - Create a pull request from `develop` into `main` with title `Release v<new_version>`
+   - Print the PR URL
 
-6. **Return to develop:**
-   - Checkout `develop`
-
-7. **Print next steps:**
+6. **Print next steps:**
    - Tell the user the release is ready and they should:
-     1. Run the production EAS build: `eas build --profile production --platform android`
-     2. After the build completes, trigger the release workflow: `gh workflow run release-production-android.yml`
+     1. Merge the PR on GitHub
+     2. Run the production EAS build: `eas build --profile production --platform android`
+     3. After the build completes, trigger the release workflow: `gh workflow run release-production-android.yml`
