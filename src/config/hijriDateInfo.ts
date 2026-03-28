@@ -1,9 +1,15 @@
 type HijriDateInfo = {
+  /** Hijri month name, or '*' to match any month. */
   month: string | '*';
+  /** First day of the date range (inclusive). */
   startDay: number;
+  /** Last day of the date range (inclusive). */
   endDay: number;
+  /** Sort priority when multiple events overlap. */
   priority: number;
+  /** Short display title of the event. */
   title: string;
+  /** Detailed explanation of the event. */
   description: string;
 };
 

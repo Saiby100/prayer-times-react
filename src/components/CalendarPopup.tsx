@@ -2,9 +2,13 @@ import { Calendar, DateData } from 'react-native-calendars';
 import { Overlay, useTheme } from '@rneui/themed';
 
 type CalendarPopupProps = {
+  /** Whether the calendar popup is shown. */
   visible: boolean;
+  /** Called to close the popup. */
   onClose: () => void;
+  /** Called when a date is picked from the calendar. */
   onDateSelect: (date: Date) => void;
+  /** Currently selected date, highlighted in the calendar. */
   selectedDate: Date;
 };
 

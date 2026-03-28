@@ -3,8 +3,11 @@ import { Icon, SearchBar, useTheme } from '@rneui/themed';
 import Scrim from '@/components/Scrim';
 
 type SearchHeaderProps = {
+  /** Current search input value. */
   value: string;
+  /** Called when the search text changes. */
   onChangeText: (text: string) => void;
+  /** Placeholder text shown when input is empty. */
   placeholder?: string;
 };
 

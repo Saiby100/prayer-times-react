@@ -1,8 +1,13 @@
 type AllahName = {
+  /** Position in the list (1–99). */
   number: number;
+  /** Name in Arabic script. */
   arabic: string;
+  /** Romanised transliteration. */
   transliteration: string;
+  /** English meaning of the name. */
   meaning: string;
+  /** Detailed explanation of the name. */
   description: string;
 };
 

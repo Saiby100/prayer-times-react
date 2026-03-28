@@ -5,13 +5,18 @@ import Scrim from '@/components/Scrim';
 import type { AllahName } from '@/config/ninetyNineNames';
 
 type NameRowColors = {
+  /** Primary accent color. */
   primary: string;
+  /** Main text color. */
   text: string;
+  /** Divider color between content and description. */
   sliderTrack: string;
 };
 
 type NameRowProps = {
+  /** Name of Allah data to display. */
   item: AllahName;
+  /** Theme-derived colors for the row. */
   colors: NameRowColors;
 };
 

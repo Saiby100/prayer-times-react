@@ -2,7 +2,9 @@ import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { useTheme } from '@rneui/themed';
 
 type ScrimProps = {
+  /** Content rendered inside the scrim overlay. */
   children: React.ReactNode;
+  /** Additional styles applied to the scrim container. */
   style?: StyleProp<ViewStyle>;
 };
 

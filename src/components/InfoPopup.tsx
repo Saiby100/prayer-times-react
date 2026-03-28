@@ -9,13 +9,18 @@ import {
 import { Overlay, Text, useTheme } from '@rneui/themed';
 
 type InfoItem = {
+  /** Heading for the info entry. */
   title: string;
+  /** Body text explaining the entry. */
   description: string;
 };
 
 type InfoPopupProps = {
+  /** Whether the popup is shown. */
   visible: boolean;
+  /** Called to close the popup. */
   onClose: () => void;
+  /** List of info entries to display. */
   items: InfoItem[];
 };
 

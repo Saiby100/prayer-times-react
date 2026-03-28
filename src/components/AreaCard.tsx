@@ -2,7 +2,9 @@ import { StyleSheet, TouchableOpacity } from 'react-native';
 import { Icon, Text, useTheme } from '@rneui/themed';
 
 type AreaCardProps = {
+  /** Area name to display. */
   area: string;
+  /** Called when the area card is pressed. */
   onPress: (area: string) => void;
 };
 

@@ -31,7 +31,7 @@ export default function NamesScreen() {
   );
 
   return (
-    <Page name="names" title="99 Names of Allah" showBackground>
+    <Page name="names" title="99 Names of Allah" showBackground deferContent>
       <FlatList
         data={filteredNames}
         keyExtractor={(item) => item.number.toString()}

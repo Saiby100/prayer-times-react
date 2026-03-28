@@ -88,6 +88,7 @@ Before starting any task — especially feature work, refactors, or anything wit
 - **No `any`**: Use `unknown` for truly unknown data, or type it properly. `Record<string, unknown>` over `Record<string, any>`.
 - **Prefer narrow types**: Use string literal unions over plain `string` for fields with known values.
 - **Props types next to components**: Component prop types should be defined in the same file as the component, not in `src/types/`.
+- **Document type fields**: Every field in a `type` definition must have a brief JSDoc comment (`/** ... */`) describing its purpose.
 
 ## Maintaining this file
 

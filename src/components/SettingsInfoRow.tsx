@@ -2,8 +2,11 @@ import { StyleSheet, View } from 'react-native';
 import { Text } from '@rneui/themed';
 
 type SettingsInfoRowProps = {
+  /** Label displayed on the left side. */
   label: string;
+  /** Value text displayed on the right side. */
   value: string;
+  /** Whether the value text is selectable for copying. */
   selectable?: boolean;
 };
 

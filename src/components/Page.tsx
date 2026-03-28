@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Dimensions,
   ImageBackground,
+  InteractionManager,
   StatusBar,
   StyleProp,
   StyleSheet,
@@ -15,11 +17,19 @@ import useBackgroundImage from '@/hooks/useBackgroundImage';
 import NetworkError from '@/components/NetworkError';
 
 type PageProps = ScreenProps & {
+  /** Page content. */
   children?: React.ReactNode;
+  /** Header title text. */
   title?: string;
+  /** Additional styles applied to the content container. */
   contentStyle?: StyleProp<ViewStyle>;
+  /** Show the themed background image behind content. */
   showBackground?: boolean;
+  /** Defer rendering children until navigation animations complete. */
+  deferContent?: boolean;
+  /** Whether an error occurred loading page data. */
   error?: boolean;
+  /** Callback to retry after an error. */
   onRetry?: () => void;
 };
 
@@ -30,11 +40,19 @@ const Page = ({
   title,
   contentStyle,
   showBackground,
+  deferContent,
   error,
   onRetry,
 }: PageProps) => {
   const { theme } = useTheme();
   const { backgroundSource } = useBackgroundImage();
+  const [ready, setReady] = useState(!deferContent);
+
+  useEffect(() => {
+    if (!deferContent) return;
+    const task = InteractionManager.runAfterInteractions(() => setReady(true));
+    return () => task.cancel();
+  }, [deferContent]);
 
   const headerOptions = {
     title,
@@ -45,7 +63,15 @@ const Page = ({
     ...options,
   };
 
-  const content = error && onRetry ? <NetworkError error={error} onRetry={onRetry} /> : children;
+  const content = !ready ? (
+    <View style={styles.loading}>
+      <ActivityIndicator size="large" color={theme.colors.primary} />
+    </View>
+  ) : error && onRetry ? (
+    <NetworkError error={error} onRetry={onRetry} />
+  ) : (
+    children
+  );
   const useBackground = showBackground && backgroundSource;
 
   if (useBackground) {
@@ -84,5 +110,10 @@ const styles = StyleSheet.create({
   background: {
     flex: 1,
     justifyContent: 'center',
+  },
+  loading: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
