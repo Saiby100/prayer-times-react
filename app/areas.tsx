@@ -47,6 +47,7 @@ export default function Areas() {
           renderItem={({ item }) => <AreaCard area={item} onPress={navigateHome} />}
           contentContainerStyle={styles.list}
           stickyHeaderIndices={[0]}
+          keyboardDismissMode="on-drag"
         />
       )}
     </Page>

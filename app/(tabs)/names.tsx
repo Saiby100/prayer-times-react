@@ -39,6 +39,7 @@ export default function NamesScreen() {
           <SearchHeader value={search} onChangeText={setSearch} placeholder="Search names..." />
         }
         renderItem={renderItem}
+        keyboardDismissMode="on-drag"
         contentContainerStyle={styles.list}
         stickyHeaderIndices={[0]}
         initialNumToRender={12}
