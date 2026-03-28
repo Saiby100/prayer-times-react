@@ -62,6 +62,10 @@ Before starting any task — especially feature work, refactors, or anything wit
 - Prettier: single quotes, 100 print width, 2-space indent (`.prettierrc`)
 - ESLint extends `expo` config with `eslint-import-resolver-typescript` for `@/` alias resolution
 
+## Component Definition Style
+
+- **Do not use `React.FC`**: Define components as plain arrow functions with props typed inline — `const Foo = ({ bar }: FooProps) => { ... }`. This is consistent with the existing codebase (e.g. `LoadingList`). `React.FC` adds no value in React 18+ and is avoided here.
+
 ## UI Component Guidelines
 
 - **Keep screens thin**: Screen files in `app/` should primarily compose components and manage data fetching/navigation — not contain complex rendering logic.
@@ -71,12 +75,25 @@ Before starting any task — especially feature work, refactors, or anything wit
 - **Composable and prop-driven**: Components should accept props for data and callbacks — avoid reaching into global state from deep UI components.
 - **Avoid premature abstraction**: Don't create a wrapper component for something used only once. Extract when there's actual reuse or the file becomes hard to follow.
 
+## UI Design Style
+
+- **Rounded cards**: List items and interactive rows should use rounded card styling — `borderRadius: 12`, `bgLight` background from theme, with horizontal padding. Avoid flat divider-separated rows (`bottomDivider`).
+- **FlatList layout**: Use `paddingHorizontal: 16`, `gap: 10`, and `paddingBottom: 24` on `contentContainerStyle` for consistent list spacing.
+- **Expandable cards**: When wrapping content that expands (e.g. `ListItem.Accordion`), wrap the whole component in a `View` with `borderRadius: 12` and `overflow: 'hidden'` so corners stay rounded in both collapsed and expanded states.
+- **Search bars**: For filterable lists, add a sticky `SearchBar` header with `round` style, themed input background (`bgLight`), and a solid `background` color on the container to prevent content showing through when scrolling.
+
 ## Type Definition Guidelines
 
 - **Use `type` over `interface`**: Prefer `type` for consistency. Use `interface` only when declaration merging is needed (e.g., theme augmentation in `src/theme/types.ts`).
 - **No `any`**: Use `unknown` for truly unknown data, or type it properly. `Record<string, unknown>` over `Record<string, any>`.
 - **Prefer narrow types**: Use string literal unions over plain `string` for fields with known values.
 - **Props types next to components**: Component prop types should be defined in the same file as the component, not in `src/types/`.
+- **Document type fields**: Every field in a `type` definition must have a brief JSDoc comment (`/** ... */`) describing its purpose.
+
+## Commit Guidelines
+
+- **One commit per task**: Separate tasks must be committed separately — never bundle unrelated changes into a single commit. If you completed multiple tasks before committing, create one commit per task.
+- **Ask when unsure**: If it's unclear whether changes belong in one commit or multiple, ask before committing.
 
 ## Maintaining this file
 

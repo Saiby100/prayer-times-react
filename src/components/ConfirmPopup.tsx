@@ -2,12 +2,19 @@ import { View } from 'react-native';
 import { Button, Overlay, Text, useTheme } from '@rneui/themed';
 
 type ConfirmPopupProps = {
+  /** Whether the popup is shown. */
   visible: boolean;
+  /** Popup heading text. */
   title: string;
+  /** Body text describing the action. */
   message: string;
+  /** Label for the confirm button. */
   confirmLabel: string;
+  /** Label for the dismiss button. */
   dismissLabel: string;
+  /** Called when the user confirms. */
   onConfirm: () => void;
+  /** Called when the user dismisses. */
   onDismiss: () => void;
 };
 

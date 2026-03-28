@@ -4,7 +4,9 @@ import { dateToHijriString, parseHijriDate } from '@/utils/date';
 import { getHijriDateInfo, type HijriDateInfo } from '@/config/hijriDateInfo';
 
 type UseHijriDateResult = {
+  /** Formatted Hijri date string, or null if conversion fails. */
   hijriDateString: string | null;
+  /** Events and info matching the current Hijri date. */
   hijriDateInfoList: HijriDateInfo[];
 };
 

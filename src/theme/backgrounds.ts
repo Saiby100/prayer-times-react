@@ -1,8 +1,11 @@
 import { ImageSourcePropType } from 'react-native';
 
 export type BackgroundOption = {
+  /** Unique identifier for the background option. */
   id: 'none' | 'light-mosque' | 'dark-mosque';
+  /** Display label shown in the picker. */
   label: string;
+  /** Image source asset; omitted for the 'none' option. */
   source?: ImageSourcePropType;
 };
 

@@ -8,7 +8,9 @@ import { getDeviceId } from '@/utils/deviceId';
 export type LogType = 'api' | 'notification' | 'background-task' | 'storage' | 'update' | 'app';
 
 type LogData = {
+  /** Category of the log entry. */
   type: LogType;
+  /** Arbitrary additional data attached to the log. */
   [key: string]: unknown;
 };
 

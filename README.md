@@ -1,50 +1,88 @@
-# Welcome to your Expo app 👋
+# Reminder - Prayer Times App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A mobile app that displays Islamic prayer (salah) times for areas in South Africa. Data is sourced from [masjids.co.za](https://masjids.co.za/salaahtimes) and presented with date navigation, Hijri calendar info, and configurable prayer reminders.
 
-## Get started
+Built with [Expo](https://expo.dev) and [React Native](https://reactnative.dev).
 
-1. Install dependencies
+## Features
 
-   ```bash
-   npm install
-   ```
+- **Prayer times by area** - Select your area and view daily prayer times scraped from masjids.co.za
+- **Date navigation** - Browse prayer times for any day with a calendar picker or swipe between dates
+- **Hijri calendar** - Displays the current Islamic date alongside the Gregorian date
+- **Prayer reminders** - Schedule notifications before each prayer, with configurable lead time
+- **Background scheduling** - A daily background task keeps reminders up to date automatically
+- **Dark mode** - Light and dark themes that follow system preference or manual selection
+- **Custom backgrounds** - Choose from a selection of background images
+- **Auto-updates** - Checks GitHub releases for new versions and prompts to update (Android)
+- **Share** - Share the app with others via the system share dialog
 
-2. Start the app
+## Getting Started
 
-   ```bash
-    npx expo start
-   ```
+### Prerequisites
 
-In the output, you'll find options to open the app in a
+- [Node.js](https://nodejs.org/) 20+
+- [Expo CLI](https://docs.expo.dev/get-started/installation/)
+- Android Studio (for Android development) or Xcode (for iOS development)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+### Installation
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Running the App
 
-## Learn more
+```bash
+npx expo start          # Start the dev server
+npx expo run:android    # Run on Android
+npx expo run:ios        # Run on iOS
+npx expo start --web    # Run on web
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+### Linting and Testing
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npm run lint            # Run ESLint
+npm test                # Run tests with jest-expo
+```
 
-## Join the community
+## Project Structure
 
-Join our community of developers creating universal apps.
+```
+app/                    # File-based routes (Expo Router)
+  _layout.tsx           # Root layout with theme provider
+  index.tsx             # Splash screen, redirects to /areas or /home
+  areas.tsx             # Area selector
+  home.tsx              # Main prayer times view
+  settings.tsx          # Notification and theme preferences
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+src/
+  components/           # Reusable UI components
+  hooks/                # Custom React hooks (data fetching, notifications, etc.)
+  services/             # Notification scheduling, GitHub API
+  backgroundTasks/      # Background task definitions
+  theme/                # Light/dark color schemes and component overrides
+  utils/                # API client, storage, date helpers
+  config/               # Hijri date configuration
+```
+
+## Tech Stack
+
+| Category      | Library                                  |
+| ------------- | ---------------------------------------- |
+| Framework     | Expo SDK 52, React Native 0.76           |
+| Routing       | Expo Router (file-based)                 |
+| UI            | @rneui/themed (React Native Elements)    |
+| Storage       | react-native-mmkv                        |
+| Notifications | expo-notifications, expo-background-task |
+| Data source   | react-native-cheerio (HTML scraping)     |
+| Backend       | Supabase                                 |
+
+## Build and Deploy
+
+Builds are managed with [EAS Build](https://docs.expo.dev/build/introduction/). CI workflows in `.github/workflows/` handle:
+
+- **Production build** - Triggers on push to `main`
+- **Preview / Dev builds** - Triggered manually
+- **OTA updates** - Published via `eas update`
+- **GitHub releases** - Downloads the APK from EAS and creates a tagged release

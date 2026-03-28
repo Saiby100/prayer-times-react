@@ -2,11 +2,17 @@ import { StyleSheet, View } from 'react-native';
 import { Button, Text } from '@rneui/themed';
 
 type SettingsToggleRowProps = {
+  /** Descriptive text shown below the title. */
   label: string;
+  /** Feather icon name displayed next to the title. */
   iconName: string;
+  /** Heading text for the row. */
   title: string;
+  /** Called when the toggle button is pressed. */
   onPress: () => void;
+  /** Show a loading indicator instead of the button. */
   loading?: boolean;
+  /** Disable the toggle button. */
   disabled?: boolean;
 };
 

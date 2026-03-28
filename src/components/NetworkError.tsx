@@ -2,8 +2,11 @@ import { View, StyleSheet } from 'react-native';
 import { Button, Icon, Text, useTheme } from '@rneui/themed';
 
 type NetworkErrorProps = {
+  /** Whether an error is present. */
   error: boolean;
+  /** Called when the retry button is pressed. */
   onRetry: () => void;
+  /** Custom error message to display. */
   message?: string;
 };
 

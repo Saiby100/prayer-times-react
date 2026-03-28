@@ -8,19 +8,20 @@ import {
   getScheduledNotifications,
 } from './notification';
 
-// Format prayer times with minutes before preference
+// Format prayer times for a specific date with minutes before preference
 function formatPrayerTimes(
-  todayTimes: Record<string, string>,
-  minutesBefore: number
+  prayerTimes: Record<string, string>,
+  minutesBefore: number,
+  date: Date
 ): Record<string, Date> {
   const result: Record<string, Date> = {};
 
-  for (const [prayerName, timeString] of Object.entries(todayTimes)) {
+  for (const [prayerName, timeString] of Object.entries(prayerTimes)) {
     if (!timeString) {
       continue;
     }
 
-    const dateTime = new Date();
+    const dateTime = new Date(date);
     const [hours, minutes] = timeString.split(':').map(Number);
     dateTime.setHours(hours, minutes - minutesBefore, 0, 0);
     result[prayerName] = dateTime;
@@ -29,8 +30,8 @@ function formatPrayerTimes(
   return result;
 }
 
-// Fetch prayer times for today
-async function fetchTodayPrayerTimes(): Promise<Record<string, string> | null> {
+// Fetch prayer times for a given date
+async function fetchPrayerTimesForDate(date: Date): Promise<Record<string, string> | null> {
   const storage = getStorage();
   const area = storage.getString('area');
 
@@ -39,15 +40,14 @@ async function fetchTodayPrayerTimes(): Promise<Record<string, string> | null> {
     return null;
   }
 
-  const today = new Date();
-  const cacheKey = `times_${today.getMonth()}_${today.getFullYear()}_${area}`;
+  const cacheKey = `times_${date.getMonth()}_${date.getFullYear()}_${area}`;
 
   // Try to get from cache first
   if (storage.contains(cacheKey)) {
     const timesData = storage.getString(cacheKey);
     if (timesData) {
       const times = JSON.parse(timesData);
-      return times[today.getDate() - 1];
+      return times[date.getDate() - 1];
     }
   }
 
@@ -55,12 +55,12 @@ async function fetchTodayPrayerTimes(): Promise<Record<string, string> | null> {
   try {
     const api = new PTApi();
     api.setArea(area);
-    const times = await api.fetchTimes(today);
+    const times = await api.fetchTimes(date);
 
     if (times && times.length > 0) {
       // Cache the data
       storage.set(cacheKey, JSON.stringify(times));
-      return times[today.getDate() - 1] as Record<string, string>;
+      return times[date.getDate() - 1] as Record<string, string>;
     }
   } catch (error) {
     log.error('scheduleReminders: error fetching times', {
@@ -87,35 +87,18 @@ async function clearExistingReminders(): Promise<void> {
   }
 }
 
-// Schedule notifications for today's prayers
-export async function scheduleTodayNotifications(): Promise<string[]> {
-  const storage = getStorage();
-  const remindersEnabled = storage.getBoolean('remindersEnabled') ?? false;
-
-  if (!remindersEnabled) {
-    log.debug('scheduleReminders: reminders are disabled', { type: 'notification' });
-    return [];
-  }
-
-  const todayTimes = await fetchTodayPrayerTimes();
-  if (!todayTimes) {
-    log.warn('scheduleReminders: could not fetch prayer times', { type: 'notification' });
-    return [];
-  }
-
-  const minutesBefore = storage.getNumber('prayerReminderPref') ?? 5;
-  const formattedTimes = formatPrayerTimes(todayTimes, minutesBefore);
-
-  // Clear existing reminders first
-  await clearExistingReminders();
-
-  // Schedule new notifications
+async function scheduleNotificationsForDate(
+  prayerTimes: Record<string, string>,
+  minutesBefore: number,
+  date: Date,
+  skipPast: boolean
+): Promise<string[]> {
+  const formattedTimes = formatPrayerTimes(prayerTimes, minutesBefore, date);
   const now = new Date();
   const scheduledIds: string[] = [];
 
   for (const [prayerName, reminderTime] of Object.entries(formattedTimes)) {
-    // Only schedule if the reminder time is in the future
-    if (reminderTime <= now) {
+    if (skipPast && reminderTime <= now) {
       log.debug('scheduleReminders: skipping prayer, time passed', {
         type: 'notification',
         prayer: prayerName,
@@ -125,7 +108,7 @@ export async function scheduleTodayNotifications(): Promise<string[]> {
 
     const id = await schedulePushNotification({
       title: `${prayerName} Reminder`,
-      body: `${prayerName} prayer at ${todayTimes[prayerName]}.`,
+      body: `${prayerName} prayer at ${prayerTimes[prayerName]}.`,
       data: { type: 'prayer_reminder', prayer: prayerName },
       date: reminderTime,
       channelId: 'prayer_reminder',
@@ -140,6 +123,52 @@ export async function scheduleTodayNotifications(): Promise<string[]> {
         time: reminderTime.toLocaleTimeString(),
       });
     }
+  }
+
+  return scheduledIds;
+}
+
+// Schedule notifications for today's remaining prayers and all of tomorrow's prayers.
+// Scheduling tomorrow ensures early morning prayers (e.g. Fajr) are covered even if
+// the background task fires after they would have passed.
+export async function scheduleTodayNotifications(): Promise<string[]> {
+  const storage = getStorage();
+  const remindersEnabled = storage.getBoolean('remindersEnabled') ?? false;
+
+  if (!remindersEnabled) {
+    log.debug('scheduleReminders: reminders are disabled', { type: 'notification' });
+    return [];
+  }
+
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const [todayTimes, tomorrowTimes] = await Promise.all([
+    fetchPrayerTimesForDate(today),
+    fetchPrayerTimesForDate(tomorrow),
+  ]);
+
+  if (!todayTimes && !tomorrowTimes) {
+    log.warn('scheduleReminders: could not fetch prayer times', { type: 'notification' });
+    return [];
+  }
+
+  const minutesBefore = storage.getNumber('prayerReminderPref') ?? 5;
+
+  // Clear existing reminders before rescheduling
+  await clearExistingReminders();
+
+  const scheduledIds: string[] = [];
+
+  if (todayTimes) {
+    const ids = await scheduleNotificationsForDate(todayTimes, minutesBefore, today, true);
+    scheduledIds.push(...ids);
+  }
+
+  if (tomorrowTimes) {
+    const ids = await scheduleNotificationsForDate(tomorrowTimes, minutesBefore, tomorrow, false);
+    scheduledIds.push(...ids);
   }
 
   log.info('scheduleReminders: scheduling complete', {

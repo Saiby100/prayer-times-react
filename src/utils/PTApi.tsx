@@ -2,6 +2,7 @@ import cheerio from 'react-native-cheerio';
 import log from '@/utils/logger';
 
 type Day = {
+  /** Prayer name to time string mapping for a single day. */
   [key: string]: string;
 };
 

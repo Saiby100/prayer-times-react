@@ -3,8 +3,11 @@ import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { Text, useTheme } from '@rneui/themed';
 
 type CardProps = {
+  /** Optional heading displayed above the card content. */
   title?: string;
+  /** Additional styles applied to the card container. */
   style?: StyleProp<ViewStyle>;
+  /** Card content. */
   children: ReactNode;
 };
 
