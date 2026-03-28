@@ -16,7 +16,10 @@ export default function TabsLayout() {
           backgroundColor: theme.colors.bgLight,
           paddingBottom: insets.bottom,
           height: 60 + insets.bottom,
+          borderTopWidth: 0,
+          elevation: 0,
         },
+        tabBarHideOnKeyboard: true,
         tabBarLabelStyle: {
           fontFamily: 'Inter-Medium',
           fontSize: 12,
