@@ -1,9 +1,7 @@
 name: Publish Preview Update
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   preview_update:

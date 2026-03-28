@@ -1,16 +1,23 @@
 import { StyleSheet, FlatList } from 'react-native';
-import { useCallback } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
-import { ListItem, Icon } from '@rneui/themed';
 import LoadingList from '@/components/LoadingList';
 import getStorage from '@/utils/localStore';
 import * as SplashScreen from 'expo-splash-screen';
 import Page from '@/components/Page';
 import usePTAreas from '@/hooks/usePTAreas';
-import NetworkError from '@/components/NetworkError';
+import AreaCard from '@/components/AreaCard';
+import SearchHeader from '@/components/SearchHeader';
 
 export default function Areas() {
   const { areas, isLoading, error, retry } = usePTAreas();
+  const [search, setSearch] = useState('');
+
+  const filteredAreas = useMemo(() => {
+    if (!search.trim()) return areas;
+    const query = search.toLowerCase().trim();
+    return areas.filter((area) => area.toLowerCase().includes(query));
+  }, [areas, search]);
 
   const navigateHome = (area: string) => {
     const storage = getStorage();
@@ -27,46 +34,30 @@ export default function Areas() {
   );
 
   return (
-    <Page name="areas" title="Select Area" showBackground>
-      <NetworkError error={error} onRetry={retry} />
+    <Page name="areas" title="Select Area" showBackground error={error} onRetry={retry}>
       {isLoading ? (
         <LoadingList />
-      ) : !error ? (
+      ) : (
         <FlatList
-          data={areas}
+          data={filteredAreas}
           keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item, index }) => (
-            <ListItem
-              bottomDivider
-              onPress={() => {
-                navigateHome(item);
-              }}
-              containerStyle={[styles.item]}
-            >
-              <Icon name="location-pin" />
-              <ListItem.Title>{item}</ListItem.Title>
-            </ListItem>
-          )}
+          ListHeaderComponent={
+            <SearchHeader value={search} onChangeText={setSearch} placeholder="Search areas..." />
+          }
+          renderItem={({ item }) => <AreaCard area={item} onPress={navigateHome} />}
           contentContainerStyle={styles.list}
-        ></FlatList>
-      ) : null}
+          stickyHeaderIndices={[0]}
+          keyboardDismissMode="on-drag"
+        />
+      )}
     </Page>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 40,
-    justifyContent: 'center',
-  },
-  item: {
-    width: 250,
-  },
   list: {
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
+    paddingHorizontal: 16,
+    paddingBottom: 24,
+    gap: 10,
   },
 });

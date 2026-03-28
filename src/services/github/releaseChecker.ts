@@ -5,8 +5,11 @@ const GITHUB_API_URL = 'https://api.github.com/repos/Saiby100/prayer-times-react
 const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 type LatestRelease = {
+  /** Git tag of the release (e.g. "v1.2.0"). */
   tagName: string;
+  /** URL to the GitHub release page. */
   htmlUrl: string;
+  /** Direct download URL for the APK asset, or null if unavailable. */
   apkDownloadUrl: string | null;
 };
 

@@ -13,6 +13,7 @@ import {
 export type ReleaseCheckStatus = 'idle' | 'checking' | 'up-to-date' | 'update-available' | 'error';
 
 type UseReleaseUpdateOptions = {
+  /** Whether to check for updates automatically on mount. */
   autoCheck?: boolean;
 };
 

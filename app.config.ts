@@ -22,7 +22,7 @@ const IS_PREVIEW = process.env.APP_VARIANT === 'preview';
 
 const getAppName = () => {
   if (IS_DEV) return 'Reminder (Dev)';
-  // if (IS_PREVIEW) return 'Reminder (Preview)';
+  if (IS_PREVIEW) return 'Reminder (Preview)';
   return 'Reminder';
 };
 
@@ -89,6 +89,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   android: {
     package: getBundleId(),
     versionCode: getVersionCode(appVersion),
+    permissions: ['SCHEDULE_EXACT_ALARM'],
     adaptiveIcon: {
       foregroundImage: './assets/images/adaptive-icon.png',
       backgroundColor: '#08182f',

@@ -13,9 +13,13 @@ import { Overlay, Text, useTheme } from '@rneui/themed';
 import { backgroundOptions, type BackgroundOption } from '@/theme/backgrounds';
 
 type BackgroundPickerPopupProps = {
+  /** Whether the picker popup is shown. */
   visible: boolean;
+  /** Called to close the popup. */
   onClose: () => void;
+  /** ID of the currently selected background. */
   selectedId: string;
+  /** Called when a background option is selected. */
   onSelect: (id: string) => void;
 };
 
@@ -114,12 +118,19 @@ export default function BackgroundPickerPopup({
 }
 
 type OptionCardProps = {
+  /** Background option data. */
   option: BackgroundOption;
+  /** Whether this option is currently active. */
   isSelected: boolean;
+  /** Called when this option is chosen. */
   onSelect: (id: string) => void;
+  /** Height of the image preview area. */
   previewHeight: number;
+  /** Theme background color for the 'none' preview. */
   themeBackground: string;
+  /** Theme primary color for the selection indicator. */
   primaryColor: string;
+  /** Theme slider track color for the border. */
   sliderTrackColor: string;
 };
 

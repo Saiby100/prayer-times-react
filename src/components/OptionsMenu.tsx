@@ -4,12 +4,16 @@ import { Button, Text, Overlay, useTheme } from '@rneui/themed';
 import { Icon } from '@rneui/themed';
 
 type OptionsMenuItem = {
+  /** Display text for the menu item. */
   label: string;
+  /** Icon name (Feather icon set). */
   icon: string;
+  /** Called when the menu item is pressed. */
   onPress: () => void;
 };
 
 type OptionsMenuProps = {
+  /** List of menu items to render. */
   items: OptionsMenuItem[];
 };
 

@@ -59,7 +59,9 @@ function dateToHijriString(current: Date): string | null {
 }
 
 type ParsedHijriDate = {
+  /** Day of the Hijri month. */
   day: number;
+  /** Hijri month name. */
   month: string;
 };
 

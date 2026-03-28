@@ -26,8 +26,11 @@ function emitChange() {
 }
 
 type UseBackgroundImage = {
+  /** Currently selected background option ID. */
   backgroundId: string;
+  /** Update the selected background option. */
   setBackgroundId: (id: string) => void;
+  /** Resolved image source for the selected background, or null for 'none'. */
   backgroundSource: ImageSourcePropType | null;
 };
 
