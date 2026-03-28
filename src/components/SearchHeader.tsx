@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Icon, SearchBar, useTheme } from '@rneui/themed';
-import Scrim from '@/components/Scrim';
 
 type SearchHeaderProps = {
   /** Current search input value. */
