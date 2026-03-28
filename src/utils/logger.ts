@@ -30,7 +30,7 @@ function parseTransportProps(props: Parameters<transportFunctionType<object>>[0]
 const supabaseTransport: transportFunctionType<object> = (props) => {
   const { message, levelName, type, data } = parseTransportProps(props);
 
-  if (levelName === 'debug') return;
+  if (levelName === 'debug' || !supabase) return;
 
   supabase
     .from('logs')
