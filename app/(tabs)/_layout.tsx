@@ -31,9 +31,16 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="quran"
+        options={{
+          title: 'Quran',
+          tabBarIcon: ({ color }) => <Icon name="book" type="feather" color={color} size={20} />,
+        }}
+      />
+      <Tabs.Screen
         name="names"
         options={{
-          title: '99 Names of Allah',
+          title: '99 Names',
           tabBarIcon: ({ color }) => (
             <Icon name="book-open" type="feather" color={color} size={20} />
           ),
