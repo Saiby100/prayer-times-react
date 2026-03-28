@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { useTheme as useNavTheme } from '@react-navigation/native';
 import { ThemeProvider, useTheme, ThemeMode } from '@rneui/themed';
+import * as SystemUI from 'expo-system-ui';
 import createAppTheme from '@/theme';
 import getStorage from '@/utils/localStore';
 import useReleaseUpdate from '@/hooks/useReleaseUpdate';
@@ -25,6 +26,10 @@ function InnerLayout() {
   // Override React Navigation's card background to match app theme,
   // preventing white flash during screen transitions
   colors.background = theme.colors.background;
+
+  useEffect(() => {
+    SystemUI.setBackgroundColorAsync(theme.colors.background);
+  }, [theme.colors.background]);
 
   return (
     <>
