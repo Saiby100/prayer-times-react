@@ -89,6 +89,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   android: {
     package: getBundleId(),
     versionCode: getVersionCode(appVersion),
+    permissions: ['SCHEDULE_EXACT_ALARM'],
     adaptiveIcon: {
       foregroundImage: './assets/images/adaptive-icon.png',
       backgroundColor: '#08182f',
