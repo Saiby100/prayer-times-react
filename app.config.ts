@@ -96,9 +96,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
   },
   owner: 'salasaiet',
-  runtimeVersion: {
-    policy: 'appVersion',
-  },
+  runtimeVersion: appVersion.split('.').slice(0, 2).join('.'),
   updates: {
     url: 'https://u.expo.dev/4f89f60c-f7fa-4e13-97c3-bb74260287e8',
   },
