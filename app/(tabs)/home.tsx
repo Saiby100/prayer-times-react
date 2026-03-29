@@ -41,7 +41,7 @@ export default function Home() {
   const handleShareApp = async () => {
     await Share.share({
       message:
-        'Download Reminder - Prayer Times app: https://github.com/Saiby100/prayer-times-react/releases/latest',
+        'Download Reminder - Prayer Times app: https://github.com/Saiby100/prayer-times-react/releases/latest/download/reminder.apk',
     });
   };
 
