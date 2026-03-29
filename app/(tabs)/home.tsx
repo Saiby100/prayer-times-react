@@ -10,14 +10,13 @@ import Scrim from '@/components/Scrim';
 import usePTApi from '@/hooks/usePTApi';
 import useHijriDate from '@/hooks/useHijriDate';
 import OptionsMenu from '@/components/OptionsMenu';
-import getStorage from '@/utils/localStore';
+import { getArea } from '@/stores';
 import { Share, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Button, Icon, Text, useTheme } from '@rneui/themed';
 
 export default function Home() {
-  const storage = getStorage();
-  const area = storage.getString('area') ?? '';
+  const area = getArea() ?? '';
   const router = useRouter();
 
   const { theme } = useTheme();

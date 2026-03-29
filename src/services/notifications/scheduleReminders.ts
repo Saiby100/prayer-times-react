@@ -1,7 +1,15 @@
 import PTApi from '@/utils/PTApi';
-import getStorage from '@/utils/localStore';
 import log from '@/utils/logger';
 import * as Notifications from 'expo-notifications';
+import {
+  getArea,
+  getCachedTimes,
+  setCachedTimes,
+  isRemindersEnabled,
+  getReminderOffset,
+  getDisabledPrayers,
+  getNotificationType,
+} from '@/stores';
 import {
   schedulePushNotification,
   clearScheduledNotifications,
@@ -32,23 +40,17 @@ function formatPrayerTimes(
 
 // Fetch prayer times for a given date
 async function fetchPrayerTimesForDate(date: Date): Promise<Record<string, string> | null> {
-  const storage = getStorage();
-  const area = storage.getString('area');
+  const area = getArea();
 
   if (!area) {
     log.warn('scheduleReminders: no area configured', { type: 'notification' });
     return null;
   }
 
-  const cacheKey = `times_${date.getMonth()}_${date.getFullYear()}_${area}`;
-
   // Try to get from cache first
-  if (storage.contains(cacheKey)) {
-    const timesData = storage.getString(cacheKey);
-    if (timesData) {
-      const times = JSON.parse(timesData);
-      return times[date.getDate() - 1];
-    }
+  const cached = getCachedTimes(date, area);
+  if (cached) {
+    return cached[date.getDate() - 1];
   }
 
   // Fetch from API if not in cache
@@ -58,8 +60,7 @@ async function fetchPrayerTimesForDate(date: Date): Promise<Record<string, strin
     const times = await api.fetchTimes(date);
 
     if (times && times.length > 0) {
-      // Cache the data
-      storage.set(cacheKey, JSON.stringify(times));
+      setCachedTimes(date, area, times as Record<string, string>[]);
       return times[date.getDate() - 1] as Record<string, string>;
     }
   } catch (error) {
@@ -93,11 +94,23 @@ async function scheduleNotificationsForDate(
   date: Date,
   skipPast: boolean
 ): Promise<string[]> {
+  const disabledPrayers = getDisabledPrayers();
+  const notificationType = getNotificationType();
+  const isAlarm = notificationType === 'alarm';
+
   const formattedTimes = formatPrayerTimes(prayerTimes, minutesBefore, date);
   const now = new Date();
   const scheduledIds: string[] = [];
 
   for (const [prayerName, reminderTime] of Object.entries(formattedTimes)) {
+    if (disabledPrayers.includes(prayerName)) {
+      log.debug('scheduleReminders: skipping disabled prayer', {
+        type: 'notification',
+        prayer: prayerName,
+      });
+      continue;
+    }
+
     if (skipPast && reminderTime <= now) {
       log.debug('scheduleReminders: skipping prayer, time passed', {
         type: 'notification',
@@ -111,8 +124,9 @@ async function scheduleNotificationsForDate(
       body: `${prayerName} prayer at ${prayerTimes[prayerName]}.`,
       data: { type: 'prayer_reminder', prayer: prayerName },
       date: reminderTime,
-      channelId: 'prayer_reminder',
+      channelId: isAlarm ? 'prayer_alarm' : 'prayer_reminder',
       priority: Notifications.AndroidNotificationPriority.MAX,
+      sticky: isAlarm,
     });
 
     if (id) {
@@ -132,10 +146,7 @@ async function scheduleNotificationsForDate(
 // Scheduling tomorrow ensures early morning prayers (e.g. Fajr) are covered even if
 // the background task fires after they would have passed.
 export async function scheduleTodayNotifications(): Promise<string[]> {
-  const storage = getStorage();
-  const remindersEnabled = storage.getBoolean('remindersEnabled') ?? false;
-
-  if (!remindersEnabled) {
+  if (!isRemindersEnabled()) {
     log.debug('scheduleReminders: reminders are disabled', { type: 'notification' });
     return [];
   }
@@ -154,7 +165,7 @@ export async function scheduleTodayNotifications(): Promise<string[]> {
     return [];
   }
 
-  const minutesBefore = storage.getNumber('prayerReminderPref') ?? 5;
+  const minutesBefore = getReminderOffset();
 
   // Clear existing reminders before rescheduling
   await clearExistingReminders();

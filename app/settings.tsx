@@ -8,14 +8,19 @@ import Card from '@/components/Card';
 import SettingsToggleRow from '@/components/SettingsToggleRow';
 import SettingsInfoRow from '@/components/SettingsInfoRow';
 import BackgroundPickerPopup from '@/components/BackgroundPickerPopup';
-import getStorage from '@/utils/localStore';
+import ReminderOffsetPopup from '@/components/ReminderOffsetPopup';
+import NotificationTypePicker from '@/components/NotificationTypePicker';
+import { setThemeMode, setRemindersEnabled } from '@/stores';
 import usePrayerReminders from '@/hooks/notifications/usePrayerReminders';
 import useReleaseUpdate, { type ReleaseCheckStatus } from '@/hooks/useReleaseUpdate';
 import ConfirmPopup from '@/components/ConfirmPopup';
 import useBackgroundImage from '@/hooks/useBackgroundImage';
 import { getBackgroundById } from '@/theme/backgrounds';
 
-const REMINDER_HINT = 'Reminders are sent 5 minutes before each prayer time';
+const NOTIFICATION_TYPE_LABEL: Record<string, string> = {
+  notification: 'Notification',
+  alarm: 'Alarm',
+};
 
 const updateIconName: Record<ReleaseCheckStatus, string> = {
   idle: 'download',
@@ -35,29 +40,38 @@ const updateTitle: Record<ReleaseCheckStatus, string> = {
 
 export default function Settings() {
   const { mode, setMode } = useThemeMode();
-  const storage = getStorage();
-  const { isScheduled, schedule, clear } = usePrayerReminders();
+  const {
+    isScheduled,
+    schedule,
+    clear,
+    reminderOffset,
+    setReminderOffset,
+    notificationType,
+    setNotificationType,
+  } = usePrayerReminders();
   const { latestVersion, checkStatus, loading, checkForUpdate, downloadUpdate } =
     useReleaseUpdate();
   const [updatePopupVisible, setUpdatePopupVisible] = useState(false);
   const { backgroundId, setBackgroundId } = useBackgroundImage();
   const [bgPickerVisible, setBgPickerVisible] = useState(false);
+  const [offsetPopupVisible, setOffsetPopupVisible] = useState(false);
+  const [typePickerVisible, setTypePickerVisible] = useState(false);
 
   const backgroundLabel = getBackgroundById(backgroundId)?.label ?? 'None';
 
   const toggleTheme = () => {
     const newMode = mode === 'light' ? 'dark' : 'light';
     setMode(newMode);
-    storage.set('themeMode', newMode);
+    setThemeMode(newMode);
   };
 
   const toggleReminders = () => {
     if (isScheduled) {
-      storage.set('remindersEnabled', false);
+      setRemindersEnabled(false);
       clear();
       return;
     }
-    storage.set('remindersEnabled', true);
+    setRemindersEnabled(true);
     schedule();
   };
 
@@ -95,7 +109,31 @@ export default function Settings() {
             title={isScheduled ? ' On' : ' Off'}
             onPress={toggleReminders}
           />
-          <Text style={styles.hint}>{REMINDER_HINT}</Text>
+          {isScheduled && (
+            <>
+              <View style={styles.extraRow}>
+                <SettingsToggleRow
+                  label="Reminder time"
+                  iconName="clock"
+                  title={` ${reminderOffset} min before`}
+                  onPress={() => setOffsetPopupVisible(true)}
+                />
+              </View>
+              <View style={styles.extraRow}>
+                <SettingsToggleRow
+                  label="Notification type"
+                  iconName={notificationType === 'alarm' ? 'alert-circle' : 'bell'}
+                  title={` ${NOTIFICATION_TYPE_LABEL[notificationType]}`}
+                  onPress={() => setTypePickerVisible(true)}
+                />
+              </View>
+            </>
+          )}
+          <Text style={styles.hint}>
+            {isScheduled
+              ? `Reminders are sent ${reminderOffset} minutes before each prayer time`
+              : 'Enable reminders to get notified before each prayer time'}
+          </Text>
         </Card>
 
         <Card title="About">
@@ -126,6 +164,18 @@ export default function Settings() {
         onClose={() => setBgPickerVisible(false)}
         selectedId={backgroundId}
         onSelect={setBackgroundId}
+      />
+      <ReminderOffsetPopup
+        visible={offsetPopupVisible}
+        currentValue={reminderOffset}
+        onSave={setReminderOffset}
+        onClose={() => setOffsetPopupVisible(false)}
+      />
+      <NotificationTypePicker
+        visible={typePickerVisible}
+        currentType={notificationType}
+        onSelect={setNotificationType}
+        onClose={() => setTypePickerVisible(false)}
       />
       <ConfirmPopup
         visible={updatePopupVisible}

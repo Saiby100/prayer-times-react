@@ -35,13 +35,22 @@ async function schedulePushNotification({
   date,
   channelId,
   priority,
+  sticky,
 }: {
+  /** Notification heading. */
   title: string;
+  /** Notification body text. */
   body: string;
+  /** Extra data attached to the notification. */
   data?: Record<string, unknown>;
+  /** When the notification should fire. */
   date: Date;
+  /** Android notification channel ID. */
   channelId?: string;
+  /** Android notification priority. */
   priority?: Notifications.AndroidNotificationPriority;
+  /** When true the notification stays until the user dismisses it. */
+  sticky?: boolean;
 }) {
   if (!(await notificationPermissionGranted())) return null;
   return await Notifications.scheduleNotificationAsync({
@@ -51,6 +60,7 @@ async function schedulePushNotification({
       data: data ?? {},
       ...(priority && { priority }),
       ...(channelId && { channelId }),
+      ...(sticky && { sticky }),
     },
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.DATE,
