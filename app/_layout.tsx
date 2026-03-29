@@ -1,18 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { useTheme as useNavTheme } from '@react-navigation/native';
-import { ThemeProvider, useTheme, ThemeMode } from '@rneui/themed';
+import { ThemeProvider, useTheme } from '@rneui/themed';
 import * as SystemUI from 'expo-system-ui';
 import createAppTheme from '@/theme';
-import getStorage from '@/utils/localStore';
+import { getThemeMode, getDismissedReleaseVersion } from '@/stores';
 import useReleaseUpdate from '@/hooks/useReleaseUpdate';
-import { getDismissedVersion } from '@/services/github/releaseChecker';
 import ConfirmPopup from '@/components/ConfirmPopup';
 
-const storage = getStorage();
-const savedMode = (storage.getString('themeMode') as ThemeMode) || 'light';
-
-if (!storage.getString('themeMode')) storage.set('themeMode', 'light');
+const savedMode = getThemeMode();
 
 function InnerLayout() {
   const { theme } = useTheme();
@@ -20,7 +16,7 @@ function InnerLayout() {
   const { updateAvailable, latestVersion, downloadUpdate, dismiss } = useReleaseUpdate({
     autoCheck: true,
   });
-  const isDismissed = latestVersion ? getDismissedVersion() === latestVersion : false;
+  const isDismissed = latestVersion ? getDismissedReleaseVersion() === latestVersion : false;
   const [popupDismissed, setPopupDismissed] = useState(false);
 
   // Override React Navigation's card background to match app theme,
