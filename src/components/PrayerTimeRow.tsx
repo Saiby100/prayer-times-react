@@ -9,8 +9,6 @@ type PrayerTimeRowProps = {
   time: string;
   /** Whether this is the current/upcoming prayer. */
   isHighlighted: boolean;
-  /** Whether notifications are disabled for this prayer. */
-  isDisabled: boolean;
   /** Theme colors object. */
   colors: Colors;
   /** Called on long-press to open settings popup. */
@@ -28,14 +26,7 @@ const PRAYER_ICONS: Record<string, string> = {
 
 const getPrayerIcon = (name: string) => PRAYER_ICONS[name] ?? 'clock';
 
-const PrayerTimeRow = ({
-  name,
-  time,
-  isHighlighted,
-  isDisabled,
-  colors,
-  onLongPress,
-}: PrayerTimeRowProps) => (
+const PrayerTimeRow = ({ name, time, isHighlighted, colors, onLongPress }: PrayerTimeRowProps) => (
   <Pressable
     onLongPress={onLongPress}
     style={({ pressed }) => [
@@ -59,10 +50,7 @@ const PrayerTimeRow = ({
       />
       <Text style={[styles.timeName, isHighlighted && { color: colors.primary }]}>{name}</Text>
     </View>
-    <View style={styles.timeRight}>
-      {isDisabled && <Icon name="bell-off" type="feather" size={14} color={colors.text + '40'} />}
-      <Text style={[styles.timeValue, isHighlighted && { color: colors.primary }]}>{time}</Text>
-    </View>
+    <Text style={[styles.timeValue, isHighlighted && { color: colors.primary }]}>{time}</Text>
   </Pressable>
 );
 
@@ -84,11 +72,6 @@ const styles = StyleSheet.create({
   timeName: {
     fontSize: 16,
     fontFamily: 'Inter-Medium',
-  },
-  timeRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
   },
   timeValue: {
     fontSize: 16,

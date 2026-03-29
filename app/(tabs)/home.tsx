@@ -11,7 +11,7 @@ import usePTApi from '@/hooks/usePTApi';
 import useHijriDate from '@/hooks/useHijriDate';
 import useDisabledPrayers from '@/hooks/notifications/useDisabledPrayers';
 import OptionsMenu from '@/components/OptionsMenu';
-import PrayerReminderPopup from '@/components/PrayerReminderPopup';
+import ConfirmPopup from '@/components/ConfirmPopup';
 import PrayerTimeRow from '@/components/PrayerTimeRow';
 import { getArea } from '@/stores';
 import { Share, StyleSheet, TouchableOpacity, View } from 'react-native';
@@ -113,17 +113,18 @@ export default function Home() {
             </View>
 
             <Card style={styles.timesCard}>
-              {Object.keys(todayTimes ?? {}).map((key) => (
-                <PrayerTimeRow
-                  key={key}
-                  name={key}
-                  time={todayTimes[key]}
-                  isHighlighted={todayTimes[key] === highlighted}
-                  isDisabled={isPrayerDisabled(key)}
-                  colors={theme.colors}
-                  onLongPress={() => setPopupPrayer(key)}
-                />
-              ))}
+              {Object.keys(todayTimes ?? {})
+                .filter((key) => !isPrayerDisabled(key))
+                .map((key) => (
+                  <PrayerTimeRow
+                    key={key}
+                    name={key}
+                    time={todayTimes[key]}
+                    isHighlighted={todayTimes[key] === highlighted}
+                    colors={theme.colors}
+                    onLongPress={() => setPopupPrayer(key)}
+                  />
+                ))}
             </Card>
 
             <View style={styles.navRow}>
@@ -141,12 +142,25 @@ export default function Home() {
             </View>
           </View>
         )}
-        <PrayerReminderPopup
+        <ConfirmPopup
           visible={popupPrayer !== null}
-          prayerName={popupPrayer ?? ''}
-          isEnabled={popupPrayer ? !isPrayerDisabled(popupPrayer) : true}
-          onToggle={() => popupPrayer && togglePrayer(popupPrayer)}
-          onClose={() => setPopupPrayer(null)}
+          title={
+            popupPrayer && isPrayerDisabled(popupPrayer)
+              ? `Show ${popupPrayer}?`
+              : `Hide ${popupPrayer}?`
+          }
+          message={
+            popupPrayer && isPrayerDisabled(popupPrayer)
+              ? `${popupPrayer} will be visible on the home screen and notifications will resume.`
+              : `${popupPrayer} will be hidden from the home screen. You will no longer receive notifications for this prayer.`
+          }
+          confirmLabel={popupPrayer && isPrayerDisabled(popupPrayer) ? 'Show' : 'Hide'}
+          dismissLabel="Cancel"
+          onConfirm={() => {
+            if (popupPrayer) togglePrayer(popupPrayer);
+            setPopupPrayer(null);
+          }}
+          onDismiss={() => setPopupPrayer(null)}
         />
         <InfoPopup
           visible={hijriInfoVisible}
