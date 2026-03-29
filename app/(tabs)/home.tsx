@@ -9,11 +9,14 @@ import Card from '@/components/Card';
 import Scrim from '@/components/Scrim';
 import usePTApi from '@/hooks/usePTApi';
 import useHijriDate from '@/hooks/useHijriDate';
+import useDisabledPrayers from '@/hooks/notifications/useDisabledPrayers';
 import OptionsMenu from '@/components/OptionsMenu';
+import PrayerReminderPopup from '@/components/PrayerReminderPopup';
+import PrayerTimeRow from '@/components/PrayerTimeRow';
 import { getArea } from '@/stores';
 import { Share, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { Button, Icon, Text, useTheme } from '@rneui/themed';
+import { Button, Text, useTheme } from '@rneui/themed';
 
 export default function Home() {
   const area = getArea() ?? '';
@@ -35,6 +38,8 @@ export default function Home() {
     area,
   });
   const { hijriDateString, hijriDateInfoList } = useHijriDate(date);
+  const { togglePrayer, isPrayerDisabled } = useDisabledPrayers();
+  const [popupPrayer, setPopupPrayer] = useState<string | null>(null);
   const [hijriInfoVisible, setHijriInfoVisible] = useState(false);
   const hasHijriInfo = hijriDateInfoList.length > 0;
   const handleShareApp = async () => {
@@ -108,42 +113,17 @@ export default function Home() {
             </View>
 
             <Card style={styles.timesCard}>
-              {Object.keys(todayTimes ?? {}).map((key) => {
-                const isHighlighted = todayTimes[key] === highlighted;
-                return (
-                  <View
-                    key={key}
-                    style={[
-                      styles.timeRow,
-                      {
-                        borderColor: isHighlighted ? theme.colors.primary : theme.colors.bgLight,
-                        backgroundColor: isHighlighted
-                          ? theme.colors.primary + '10'
-                          : 'transparent',
-                      },
-                    ]}
-                  >
-                    <View style={styles.timeLabel}>
-                      <Icon
-                        name={getPrayerIcon(key)}
-                        type="feather"
-                        size={16}
-                        color={isHighlighted ? theme.colors.primary : theme.colors.text + '80'}
-                      />
-                      <Text
-                        style={[styles.timeName, isHighlighted && { color: theme.colors.primary }]}
-                      >
-                        {key}
-                      </Text>
-                    </View>
-                    <Text
-                      style={[styles.timeValue, isHighlighted && { color: theme.colors.primary }]}
-                    >
-                      {todayTimes[key]}
-                    </Text>
-                  </View>
-                );
-              })}
+              {Object.keys(todayTimes ?? {}).map((key) => (
+                <PrayerTimeRow
+                  key={key}
+                  name={key}
+                  time={todayTimes[key]}
+                  isHighlighted={todayTimes[key] === highlighted}
+                  isDisabled={isPrayerDisabled(key)}
+                  colors={theme.colors}
+                  onLongPress={() => setPopupPrayer(key)}
+                />
+              ))}
             </Card>
 
             <View style={styles.navRow}>
@@ -161,6 +141,13 @@ export default function Home() {
             </View>
           </View>
         )}
+        <PrayerReminderPopup
+          visible={popupPrayer !== null}
+          prayerName={popupPrayer ?? ''}
+          isEnabled={popupPrayer ? !isPrayerDisabled(popupPrayer) : true}
+          onToggle={() => popupPrayer && togglePrayer(popupPrayer)}
+          onClose={() => setPopupPrayer(null)}
+        />
         <InfoPopup
           visible={hijriInfoVisible}
           onClose={() => setHijriInfoVisible(false)}
@@ -176,17 +163,6 @@ export default function Home() {
     </Page>
   );
 }
-
-const PRAYER_ICONS: Record<string, string> = {
-  Fajr: 'sunrise',
-  Shuruq: 'sun',
-  Zuhr: 'sun',
-  Asr: 'cloud',
-  Maghrib: 'sunset',
-  Esha: 'moon',
-};
-
-const getPrayerIcon = (name: string) => PRAYER_ICONS[name] ?? 'clock';
 
 const styles = StyleSheet.create({
   scrimContent: {
@@ -238,29 +214,6 @@ const styles = StyleSheet.create({
   timesCard: {
     padding: 8,
     gap: 6,
-  },
-  timeRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 10,
-    borderWidth: 1.5,
-  },
-  timeLabel: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  timeName: {
-    fontSize: 16,
-    fontFamily: 'Inter-Medium',
-  },
-  timeValue: {
-    fontSize: 16,
-    fontFamily: 'Inter-Medium',
-    opacity: 0.9,
   },
   navRow: {
     flexDirection: 'row',
