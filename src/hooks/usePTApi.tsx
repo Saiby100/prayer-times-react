@@ -1,6 +1,6 @@
 import PTApi from '@/utils/PTApi';
 import { useRef, useState, useEffect, useMemo } from 'react';
-import { getCachedTimes, setCachedTimes } from '@/stores';
+import { getCachedTimes, setCachedTimes, getDisabledPrayers } from '@/stores';
 import { getNextDay, getPrevDay, dateToString } from '@/utils/date';
 import log from '@/utils/logger';
 
@@ -111,9 +111,11 @@ function usePTApi({ area }: { area: string }) {
   const highlighted = useMemo(() => {
     if (date.getDate() !== new Date().getDate()) return '';
     const now = new Date();
-    // Find the first time that is after now
-    const upcoming = Object.values(todayTimes)
-      .map((timeStr) => {
+    const hiddenPrayers = getDisabledPrayers();
+    // Find the first visible prayer time that is after now
+    const upcoming = Object.entries(todayTimes)
+      .filter(([name]) => !hiddenPrayers.includes(name))
+      .map(([, timeStr]) => {
         const [hours, minutes] = timeStr.split(':').map(Number);
         const time = new Date(now);
         time.setHours(hours, minutes, 0, 0);
