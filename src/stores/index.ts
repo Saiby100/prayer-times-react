@@ -1,11 +1,11 @@
 export { getArea, setArea } from './areaStore';
 export { getCachedTimes, setCachedTimes } from './prayerTimesCache';
 export {
-  getThemeMode,
-  setThemeMode,
-  subscribeBackground,
-  getBackgroundId,
-  setBackgroundId,
+  getThemeId,
+  setThemeId,
+  getWallpaperEnabled,
+  setWallpaperEnabled,
+  subscribeAppearance,
 } from './appearanceStore';
 export {
   isRemindersEnabled,

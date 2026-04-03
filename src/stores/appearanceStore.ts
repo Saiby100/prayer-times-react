@@ -1,38 +1,75 @@
 import getStorage from '@/utils/localStore';
+import { type ThemePresetId, DEFAULT_PRESET_ID } from '@/theme/presets';
 
-type ThemeMode = 'light' | 'dark';
+const THEME_ID_KEY = 'themeId';
+const WALLPAPER_ENABLED_KEY = 'wallpaperEnabled';
 
-const THEME_KEY = 'themeMode';
-const BACKGROUND_KEY = 'backgroundImage';
+// Legacy keys for one-time migration
+const LEGACY_THEME_MODE_KEY = 'themeMode';
+const LEGACY_BACKGROUND_KEY = 'backgroundImage';
 
-// --- Theme ---
+let migrated = false;
 
-export function getThemeMode(): ThemeMode {
-  return (getStorage().getString(THEME_KEY) as ThemeMode) || 'light';
+function migrateLegacyKeys(): void {
+  if (migrated) return;
+  migrated = true;
+
+  const storage = getStorage();
+  const hasNewKey = storage.contains(THEME_ID_KEY);
+  if (hasNewKey) return;
+
+  const legacyMode = storage.getString(LEGACY_THEME_MODE_KEY);
+  const legacyBg = storage.getString(LEGACY_BACKGROUND_KEY);
+
+  if (legacyMode || legacyBg) {
+    const themeId: ThemePresetId = legacyMode === 'dark' ? 'dark-mosque' : 'light-mosque';
+    const wallpaperEnabled = legacyBg !== 'none';
+
+    storage.set(THEME_ID_KEY, themeId);
+    storage.set(WALLPAPER_ENABLED_KEY, wallpaperEnabled ? 'true' : 'false');
+    storage.delete(LEGACY_THEME_MODE_KEY);
+    storage.delete(LEGACY_BACKGROUND_KEY);
+  }
 }
 
-export function setThemeMode(mode: ThemeMode): void {
-  getStorage().set(THEME_KEY, mode);
-}
-
-// --- Background image ---
+// --- Pub-sub ---
 
 let listeners: (() => void)[] = [];
 
-export function subscribeBackground(listener: () => void) {
+export function subscribeAppearance(listener: () => void) {
   listeners = [...listeners, listener];
   return () => {
     listeners = listeners.filter((l) => l !== listener);
   };
 }
 
-export function getBackgroundId(): string {
-  return getStorage().getString(BACKGROUND_KEY) ?? 'none';
-}
-
-export function setBackgroundId(id: string): void {
-  getStorage().set(BACKGROUND_KEY, id);
+function notifyListeners(): void {
   for (const listener of listeners) {
     listener();
   }
+}
+
+// --- Theme preset ---
+
+export function getThemeId(): ThemePresetId {
+  migrateLegacyKeys();
+  return (getStorage().getString(THEME_ID_KEY) as ThemePresetId) || DEFAULT_PRESET_ID;
+}
+
+export function setThemeId(id: ThemePresetId): void {
+  getStorage().set(THEME_ID_KEY, id);
+  notifyListeners();
+}
+
+// --- Wallpaper toggle ---
+
+export function getWallpaperEnabled(): boolean {
+  migrateLegacyKeys();
+  const value = getStorage().getString(WALLPAPER_ENABLED_KEY);
+  return value !== 'false';
+}
+
+export function setWallpaperEnabled(enabled: boolean): void {
+  getStorage().set(WALLPAPER_ENABLED_KEY, enabled ? 'true' : 'false');
+  notifyListeners();
 }

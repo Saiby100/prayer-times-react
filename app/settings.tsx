@@ -1,22 +1,22 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
-import { Text, useThemeMode } from '@rneui/themed';
+import { Text, useTheme, useThemeMode } from '@rneui/themed';
 import Constants from 'expo-constants';
 
 import Page from '@/components/Page';
 import Card from '@/components/Card';
 import SettingsToggleRow from '@/components/SettingsToggleRow';
 import SettingsInfoRow from '@/components/SettingsInfoRow';
-import BackgroundPickerPopup from '@/components/BackgroundPickerPopup';
+import ThemePickerPopup from '@/components/ThemePickerPopup';
 import ReminderOffsetPopup from '@/components/ReminderOffsetPopup';
 import NotificationTypePicker from '@/components/NotificationTypePicker';
-import { setThemeMode, setRemindersEnabled } from '@/stores';
+import { setRemindersEnabled } from '@/stores';
 import usePrayerReminders from '@/hooks/notifications/usePrayerReminders';
 import useDisabledPrayers from '@/hooks/notifications/useDisabledPrayers';
 import useReleaseUpdate, { type ReleaseCheckStatus } from '@/hooks/useReleaseUpdate';
 import ConfirmPopup from '@/components/ConfirmPopup';
-import useBackgroundImage from '@/hooks/useBackgroundImage';
-import { getBackgroundById } from '@/theme/backgrounds';
+import useAppearance from '@/hooks/useAppearance';
+import { getPresetById, type ThemePresetId } from '@/theme/presets';
 
 const NOTIFICATION_TYPE_LABEL: Record<string, string> = {
   notification: 'Notification',
@@ -40,7 +40,8 @@ const updateTitle: Record<ReleaseCheckStatus, string> = {
 };
 
 export default function Settings() {
-  const { mode, setMode } = useThemeMode();
+  const { updateTheme } = useTheme();
+  const { setMode } = useThemeMode();
   const {
     isScheduled,
     schedule,
@@ -53,19 +54,22 @@ export default function Settings() {
   const { latestVersion, checkStatus, loading, checkForUpdate, downloadUpdate } =
     useReleaseUpdate();
   const [updatePopupVisible, setUpdatePopupVisible] = useState(false);
-  const { backgroundId, setBackgroundId } = useBackgroundImage();
+  const { themeId, setThemeId, wallpaperEnabled, setWallpaperEnabled } = useAppearance();
   const { disabledPrayers, resetAll } = useDisabledPrayers();
-  const [bgPickerVisible, setBgPickerVisible] = useState(false);
+  const [themePickerVisible, setThemePickerVisible] = useState(false);
   const [resetPopupVisible, setResetPopupVisible] = useState(false);
   const [offsetPopupVisible, setOffsetPopupVisible] = useState(false);
   const [typePickerVisible, setTypePickerVisible] = useState(false);
 
-  const backgroundLabel = getBackgroundById(backgroundId)?.label ?? 'None';
+  const themeLabel = getPresetById(themeId)?.label ?? 'Light Mosque';
 
-  const toggleTheme = () => {
-    const newMode = mode === 'light' ? 'dark' : 'light';
-    setMode(newMode);
-    setThemeMode(newMode);
+  const handleThemeSelect = (id: ThemePresetId) => {
+    setThemeId(id);
+    const preset = getPresetById(id);
+    if (!preset) return;
+    setMode(preset.mode);
+    const colorKey = preset.mode === 'light' ? 'lightColors' : 'darkColors';
+    updateTheme({ [colorKey]: preset.colors });
   };
 
   const toggleReminders = () => {
@@ -91,15 +95,15 @@ export default function Settings() {
         <Card title="Appearance" gap={16}>
           <SettingsToggleRow
             label="Theme"
-            iconName={mode === 'light' ? 'moon' : 'sun'}
-            title={mode === 'light' ? ' Dark mode' : ' Light mode'}
-            onPress={toggleTheme}
+            iconName="image"
+            title={` ${themeLabel}`}
+            onPress={() => setThemePickerVisible(true)}
           />
           <SettingsToggleRow
-            label="Background"
-            iconName="image"
-            title={` ${backgroundLabel}`}
-            onPress={() => setBgPickerVisible(true)}
+            label="Wallpaper"
+            iconName={wallpaperEnabled ? 'eye' : 'eye-off'}
+            title={wallpaperEnabled ? ' On' : ' Off'}
+            onPress={() => setWallpaperEnabled(!wallpaperEnabled)}
           />
         </Card>
 
@@ -162,11 +166,11 @@ export default function Settings() {
           />
         </Card>
       </ScrollView>
-      <BackgroundPickerPopup
-        visible={bgPickerVisible}
-        onClose={() => setBgPickerVisible(false)}
-        selectedId={backgroundId}
-        onSelect={setBackgroundId}
+      <ThemePickerPopup
+        visible={themePickerVisible}
+        onClose={() => setThemePickerVisible(false)}
+        selectedId={themeId}
+        onSelect={handleThemeSelect}
       />
       <ReminderOffsetPopup
         visible={offsetPopupVisible}

@@ -10,25 +10,25 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { Overlay, Text, useTheme } from '@rneui/themed';
-import { backgroundOptions, type BackgroundOption } from '@/theme/backgrounds';
+import { themePresets, type ThemePreset, type ThemePresetId } from '@/theme/presets';
 
-type BackgroundPickerPopupProps = {
+type ThemePickerPopupProps = {
   /** Whether the picker popup is shown. */
   visible: boolean;
   /** Called to close the popup. */
   onClose: () => void;
-  /** ID of the currently selected background. */
-  selectedId: string;
-  /** Called when a background option is selected. */
-  onSelect: (id: string) => void;
+  /** ID of the currently selected theme preset. */
+  selectedId: ThemePresetId;
+  /** Called when a theme preset is selected. */
+  onSelect: (id: ThemePresetId) => void;
 };
 
-export default function BackgroundPickerPopup({
+export default function ThemePickerPopup({
   visible,
   onClose,
   selectedId,
   onSelect,
-}: BackgroundPickerPopupProps) {
+}: ThemePickerPopupProps) {
   const { theme } = useTheme();
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const [activeIndex, setActiveIndex] = useState(0);
@@ -36,9 +36,8 @@ export default function BackgroundPickerPopup({
 
   const overlayWidth = screenWidth * 0.85;
   const contentWidth = overlayWidth - 48;
-  // Cap preview height so the overlay fits on screen (title + dots + padding ~ 100px)
   const maxPreviewHeight = screenHeight * 0.6;
-  const naturalHeight = contentWidth * (3 / 2); // images are 2:3 ratio
+  const naturalHeight = contentWidth * (3 / 2);
   const previewHeight = Math.min(naturalHeight, maxPreviewHeight);
 
   const handleScrollEnd = useCallback(
@@ -50,13 +49,13 @@ export default function BackgroundPickerPopup({
   );
 
   const handleOpen = useCallback(() => {
-    const index = backgroundOptions.findIndex((opt) => opt.id === selectedId);
+    const index = themePresets.findIndex((preset) => preset.id === selectedId);
     const startIndex = index >= 0 ? index : 0;
     setActiveIndex(startIndex);
     flatListRef.current?.scrollToOffset({ offset: startIndex * contentWidth, animated: false });
   }, [selectedId, contentWidth]);
 
-  const handleSelect = (id: string) => {
+  const handleSelect = (id: ThemePresetId) => {
     onSelect(id);
     onClose();
   };
@@ -75,10 +74,10 @@ export default function BackgroundPickerPopup({
       }}
     >
       <View>
-        <Text style={styles.title}>Choose Background</Text>
+        <Text style={styles.title}>Choose Theme</Text>
         <FlatList
           ref={flatListRef}
-          data={backgroundOptions}
+          data={themePresets}
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
@@ -86,12 +85,11 @@ export default function BackgroundPickerPopup({
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <View style={{ width: contentWidth }}>
-              <OptionCard
-                option={item}
+              <PresetCard
+                preset={item}
                 isSelected={item.id === selectedId}
                 onSelect={handleSelect}
                 previewHeight={previewHeight}
-                themeBackground={theme.colors.background}
                 primaryColor={theme.colors.primary}
                 sliderTrackColor={theme.colors.sliderTrack}
               />
@@ -99,7 +97,7 @@ export default function BackgroundPickerPopup({
           )}
         />
         <View style={styles.dots}>
-          {backgroundOptions.map((_, i) => (
+          {themePresets.map((_, i) => (
             <View
               key={i}
               style={[
@@ -117,34 +115,31 @@ export default function BackgroundPickerPopup({
   );
 }
 
-type OptionCardProps = {
-  /** Background option data. */
-  option: BackgroundOption;
-  /** Whether this option is currently active. */
+type PresetCardProps = {
+  /** Theme preset data. */
+  preset: ThemePreset;
+  /** Whether this preset is currently active. */
   isSelected: boolean;
-  /** Called when this option is chosen. */
-  onSelect: (id: string) => void;
+  /** Called when this preset is chosen. */
+  onSelect: (id: ThemePresetId) => void;
   /** Height of the image preview area. */
   previewHeight: number;
-  /** Theme background color for the 'none' preview. */
-  themeBackground: string;
   /** Theme primary color for the selection indicator. */
   primaryColor: string;
   /** Theme slider track color for the border. */
   sliderTrackColor: string;
 };
 
-function OptionCard({
-  option,
+function PresetCard({
+  preset,
   isSelected,
   onSelect,
   previewHeight,
-  themeBackground,
   primaryColor,
   sliderTrackColor,
-}: OptionCardProps) {
+}: PresetCardProps) {
   return (
-    <TouchableOpacity onPress={() => onSelect(option.id)} activeOpacity={0.7}>
+    <TouchableOpacity onPress={() => onSelect(preset.id)} activeOpacity={0.7}>
       <View
         style={[
           styles.card,
@@ -155,19 +150,13 @@ function OptionCard({
           },
         ]}
       >
-        {option.source ? (
-          <Image
-            source={option.source}
-            style={[styles.preview, { height: previewHeight }]}
-            resizeMode="contain"
-          />
-        ) : (
-          <View
-            style={[styles.preview, { height: previewHeight, backgroundColor: themeBackground }]}
-          />
-        )}
+        <Image
+          source={preset.previewSource}
+          style={[styles.preview, { height: previewHeight }]}
+          resizeMode="contain"
+        />
       </View>
-      <Text style={styles.label}>{option.label}</Text>
+      <Text style={styles.label}>{preset.label}</Text>
     </TouchableOpacity>
   );
 }

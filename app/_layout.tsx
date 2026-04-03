@@ -4,11 +4,14 @@ import { useTheme as useNavTheme } from '@react-navigation/native';
 import { ThemeProvider, useTheme } from '@rneui/themed';
 import * as SystemUI from 'expo-system-ui';
 import createAppTheme from '@/theme';
-import { getThemeMode, getDismissedReleaseVersion } from '@/stores';
+import { getThemeId, getDismissedReleaseVersion } from '@/stores';
+import { getPresetById } from '@/theme/presets';
 import useReleaseUpdate from '@/hooks/useReleaseUpdate';
 import ConfirmPopup from '@/components/ConfirmPopup';
 
-const savedMode = getThemeMode();
+const savedPreset = getPresetById(getThemeId());
+const savedMode = savedPreset?.mode ?? 'light';
+const savedColors = savedPreset?.colors;
 
 function InnerLayout() {
   const { theme } = useTheme();
@@ -55,7 +58,7 @@ function InnerLayout() {
 
 export default function RootLayout() {
   return (
-    <ThemeProvider theme={createAppTheme(savedMode)}>
+    <ThemeProvider theme={createAppTheme(savedMode, savedColors)}>
       <InnerLayout />
     </ThemeProvider>
   );
