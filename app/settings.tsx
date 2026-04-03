@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 import { Text, useThemeMode } from '@rneui/themed';
 import Constants from 'expo-constants';
 
@@ -88,58 +88,52 @@ export default function Settings() {
       contentStyle={styles.content}
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Card title="Appearance">
+        <Card title="Appearance" gap={16}>
           <SettingsToggleRow
             label="Theme"
             iconName={mode === 'light' ? 'moon' : 'sun'}
             title={mode === 'light' ? ' Dark mode' : ' Light mode'}
             onPress={toggleTheme}
           />
-          <View style={styles.extraRow}>
-            <SettingsToggleRow
-              label="Background"
-              iconName="image"
-              title={` ${backgroundLabel}`}
-              onPress={() => setBgPickerVisible(true)}
-            />
-          </View>
+          <SettingsToggleRow
+            label="Background"
+            iconName="image"
+            title={` ${backgroundLabel}`}
+            onPress={() => setBgPickerVisible(true)}
+          />
         </Card>
 
-        <Card title="Notifications">
+        <Card title="Notifications" gap={16}>
           <SettingsToggleRow
-            label="Prayer reminders (Beta)"
+            label="Prayer reminders"
             iconName={isScheduled ? 'bell' : 'bell-off'}
             title={isScheduled ? ' On' : ' Off'}
             onPress={toggleReminders}
           />
           {isScheduled && (
             <>
-              <View style={styles.extraRow}>
-                <SettingsToggleRow
-                  label="Reminder time"
-                  iconName="clock"
-                  title={` ${reminderOffset} min before`}
-                  onPress={() => setOffsetPopupVisible(true)}
-                />
-              </View>
-              <View style={styles.extraRow}>
-                <SettingsToggleRow
-                  label="Notification type"
-                  iconName={notificationType === 'alarm' ? 'alert-circle' : 'bell'}
-                  title={` ${NOTIFICATION_TYPE_LABEL[notificationType]}`}
-                  onPress={() => setTypePickerVisible(true)}
-                />
-              </View>
+              <SettingsToggleRow
+                label="Reminder time"
+                iconName="clock"
+                title={` ${reminderOffset} min before`}
+                onPress={() => setOffsetPopupVisible(true)}
+              />
+              <SettingsToggleRow
+                label="Notification type"
+                iconName={notificationType === 'alarm' ? 'alert-circle' : 'bell'}
+                title={` ${NOTIFICATION_TYPE_LABEL[notificationType]}`}
+                onPress={() => setTypePickerVisible(true)}
+              />
             </>
           )}
-          <Text style={styles.hint}>
-            {isScheduled
-              ? `Reminders are sent ${reminderOffset} minutes before each prayer time`
-              : 'Enable reminders to get notified before each prayer time'}
-          </Text>
+          {!isScheduled && (
+            <Text style={styles.hint}>
+              Enable reminders to get notified before each prayer time
+            </Text>
+          )}
         </Card>
 
-        <Card title="Preferences">
+        <Card title="Preferences" gap={16}>
           <SettingsToggleRow
             label="Hidden prayers"
             iconName="eye-off"
@@ -149,27 +143,23 @@ export default function Settings() {
           />
         </Card>
 
-        <Card title="About">
-          <View style={styles.aboutRows}>
-            <SettingsInfoRow label="Version" value={Constants.expoConfig?.version ?? '-'} />
-          </View>
-          <View style={styles.extraRow}>
-            <SettingsToggleRow
-              label="Updates"
-              iconName={updateIconName[checkStatus]}
-              title={updateTitle[checkStatus]}
-              loading={loading}
-              disabled={loading}
-              onPress={async () => {
-                if (checkStatus === 'update-available') {
-                  setUpdatePopupVisible(true);
-                } else {
-                  const found = await checkForUpdate();
-                  if (found) setUpdatePopupVisible(true);
-                }
-              }}
-            />
-          </View>
+        <Card title="About" gap={16}>
+          <SettingsInfoRow label="Version" value={Constants.expoConfig?.version ?? '-'} />
+          <SettingsToggleRow
+            label="Updates"
+            iconName={updateIconName[checkStatus]}
+            title={updateTitle[checkStatus]}
+            loading={loading}
+            disabled={loading}
+            onPress={async () => {
+              if (checkStatus === 'update-available') {
+                setUpdatePopupVisible(true);
+              } else {
+                const found = await checkForUpdate();
+                if (found) setUpdatePopupVisible(true);
+              }
+            }}
+          />
         </Card>
       </ScrollView>
       <BackgroundPickerPopup
@@ -227,16 +217,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     gap: 16,
   },
-  extraRow: {
-    marginTop: 16,
-  },
   hint: {
     fontSize: 14,
     textAlign: 'center',
     opacity: 0.6,
     marginTop: 16,
-  },
-  aboutRows: {
-    gap: 12,
   },
 });
