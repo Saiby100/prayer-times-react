@@ -107,6 +107,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontFamily: 'Inter-Medium',
+    alignSelf: 'flex-start',
   },
   subtitle: {
     fontSize: 14,

@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontFamily: 'Inter-Medium',
-    textAlign: 'center',
+    textAlign: 'left',
     marginBottom: 4,
   },
   optionRow: {
