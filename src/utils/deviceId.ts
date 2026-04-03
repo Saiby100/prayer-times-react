@@ -1,1 +1,1 @@
-export { getDeviceId } from '@/stores';
+export { getDeviceId } from '@/stores/deviceStore';
