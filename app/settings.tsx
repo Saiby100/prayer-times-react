@@ -12,6 +12,7 @@ import ReminderOffsetPopup from '@/components/ReminderOffsetPopup';
 import NotificationTypePicker from '@/components/NotificationTypePicker';
 import { setThemeMode, setRemindersEnabled } from '@/stores';
 import usePrayerReminders from '@/hooks/notifications/usePrayerReminders';
+import useDisabledPrayers from '@/hooks/notifications/useDisabledPrayers';
 import useReleaseUpdate, { type ReleaseCheckStatus } from '@/hooks/useReleaseUpdate';
 import ConfirmPopup from '@/components/ConfirmPopup';
 import useBackgroundImage from '@/hooks/useBackgroundImage';
@@ -53,7 +54,9 @@ export default function Settings() {
     useReleaseUpdate();
   const [updatePopupVisible, setUpdatePopupVisible] = useState(false);
   const { backgroundId, setBackgroundId } = useBackgroundImage();
+  const { disabledPrayers, resetAll } = useDisabledPrayers();
   const [bgPickerVisible, setBgPickerVisible] = useState(false);
+  const [resetPopupVisible, setResetPopupVisible] = useState(false);
   const [offsetPopupVisible, setOffsetPopupVisible] = useState(false);
   const [typePickerVisible, setTypePickerVisible] = useState(false);
 
@@ -136,6 +139,16 @@ export default function Settings() {
           </Text>
         </Card>
 
+        <Card title="Preferences">
+          <SettingsToggleRow
+            label="Hidden prayers"
+            iconName="eye-off"
+            title={` ${disabledPrayers.length} hidden`}
+            disabled={disabledPrayers.length === 0}
+            onPress={() => setResetPopupVisible(true)}
+          />
+        </Card>
+
         <Card title="About">
           <View style={styles.aboutRows}>
             <SettingsInfoRow label="Version" value={Constants.expoConfig?.version ?? '-'} />
@@ -176,6 +189,18 @@ export default function Settings() {
         currentType={notificationType}
         onSelect={setNotificationType}
         onClose={() => setTypePickerVisible(false)}
+      />
+      <ConfirmPopup
+        visible={resetPopupVisible}
+        title="Reset hidden prayers?"
+        message="All hidden prayers will be visible on the home screen again."
+        confirmLabel="Reset"
+        dismissLabel="Cancel"
+        onConfirm={() => {
+          setResetPopupVisible(false);
+          resetAll();
+        }}
+        onDismiss={() => setResetPopupVisible(false)}
       />
       <ConfirmPopup
         visible={updatePopupVisible}

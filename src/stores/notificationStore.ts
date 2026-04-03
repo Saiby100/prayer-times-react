@@ -34,13 +34,30 @@ export function setNotificationType(type: NotificationType): void {
 
 // --- Disabled prayers ---
 
+let disabledPrayerListeners: (() => void)[] = [];
+let disabledPrayersSnapshot: string[] | null = null;
+
+export function subscribeDisabledPrayers(listener: () => void) {
+  disabledPrayerListeners = [...disabledPrayerListeners, listener];
+  return () => {
+    disabledPrayerListeners = disabledPrayerListeners.filter((l) => l !== listener);
+  };
+}
+
 export function getDisabledPrayers(): string[] {
-  const raw = getStorage().getString('disabledPrayerReminders');
-  return raw ? JSON.parse(raw) : [];
+  if (!disabledPrayersSnapshot) {
+    const raw = getStorage().getString('disabledPrayerReminders');
+    disabledPrayersSnapshot = raw ? JSON.parse(raw) : [];
+  }
+  return disabledPrayersSnapshot;
 }
 
 export function setDisabledPrayers(prayers: string[]): void {
   getStorage().set('disabledPrayerReminders', JSON.stringify(prayers));
+  disabledPrayersSnapshot = prayers;
+  for (const listener of disabledPrayerListeners) {
+    listener();
+  }
 }
 
 // --- Notification permission ---

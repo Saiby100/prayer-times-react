@@ -14,6 +14,7 @@ export {
   setReminderOffset,
   getNotificationType,
   setNotificationType,
+  subscribeDisabledPrayers,
   getDisabledPrayers,
   setDisabledPrayers,
   isNotificationPermissionDenied,

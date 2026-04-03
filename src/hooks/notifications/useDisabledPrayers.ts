@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { getDisabledPrayers, setDisabledPrayers } from '@/stores';
+import { useSyncExternalStore } from 'react';
+import { subscribeDisabledPrayers, getDisabledPrayers, setDisabledPrayers } from '@/stores';
 import { scheduleTodayNotifications } from '@/services/notifications/scheduleReminders';
 
 function useDisabledPrayers() {
-  const [disabledPrayers, setLocalDisabledPrayers] = useState<string[]>(getDisabledPrayers);
+  const disabledPrayers = useSyncExternalStore(subscribeDisabledPrayers, getDisabledPrayers);
 
   const isPrayerDisabled = (name: string) => disabledPrayers.includes(name);
 
@@ -13,11 +13,15 @@ function useDisabledPrayers() {
       : [...disabledPrayers, name];
 
     setDisabledPrayers(updated);
-    setLocalDisabledPrayers(updated);
     scheduleTodayNotifications();
   };
 
-  return { disabledPrayers, togglePrayer, isPrayerDisabled };
+  const resetAll = () => {
+    setDisabledPrayers([]);
+    scheduleTodayNotifications();
+  };
+
+  return { disabledPrayers, togglePrayer, isPrayerDisabled, resetAll };
 }
 
 export default useDisabledPrayers;
