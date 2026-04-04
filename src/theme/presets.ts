@@ -43,7 +43,7 @@ export const themePresets: ThemePreset[] = [
     mode: 'light',
     colors: lightColors,
     wallpaperSource: require('../../assets/images/backgrounds/light-mosque.png'),
-    previewSource: require('../../assets/images/backgrounds/light-mosque.png'),
+    previewSource: require('../../assets/images/previews/light-mosque.jpg'),
   },
   {
     id: 'dark-mosque',
@@ -51,7 +51,7 @@ export const themePresets: ThemePreset[] = [
     mode: 'dark',
     colors: darkColors,
     wallpaperSource: require('../../assets/images/backgrounds/dark-mosque.png'),
-    previewSource: require('../../assets/images/backgrounds/dark-mosque.png'),
+    previewSource: require('../../assets/images/previews/dark-mosque.jpg'),
   },
   {
     id: 'serene-night',
@@ -59,7 +59,7 @@ export const themePresets: ThemePreset[] = [
     mode: 'dark',
     colors: warmDarkColors,
     wallpaperSource: require('../../assets/images/backgrounds/serene-night.png'),
-    previewSource: require('../../assets/images/backgrounds/serene-night.png'),
+    previewSource: require('../../assets/images/previews/serene-night.jpg'),
   },
 ];
 
