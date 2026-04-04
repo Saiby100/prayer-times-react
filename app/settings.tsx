@@ -1,21 +1,27 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { Text, useThemeMode } from '@rneui/themed';
+import { ScrollView, StyleSheet } from 'react-native';
+import { Text, useTheme, useThemeMode } from '@rneui/themed';
 import Constants from 'expo-constants';
 
 import Page from '@/components/Page';
 import Card from '@/components/Card';
 import SettingsToggleRow from '@/components/SettingsToggleRow';
 import SettingsInfoRow from '@/components/SettingsInfoRow';
-import BackgroundPickerPopup from '@/components/BackgroundPickerPopup';
-import getStorage from '@/utils/localStore';
+import ThemePickerPopup from '@/components/ThemePickerPopup';
+import ReminderOffsetPopup from '@/components/ReminderOffsetPopup';
+import NotificationTypePicker from '@/components/NotificationTypePicker';
+import { setRemindersEnabled } from '@/stores';
 import usePrayerReminders from '@/hooks/notifications/usePrayerReminders';
+import useDisabledPrayers from '@/hooks/notifications/useDisabledPrayers';
 import useReleaseUpdate, { type ReleaseCheckStatus } from '@/hooks/useReleaseUpdate';
 import ConfirmPopup from '@/components/ConfirmPopup';
-import useBackgroundImage from '@/hooks/useBackgroundImage';
-import { getBackgroundById } from '@/theme/backgrounds';
+import useAppearance from '@/hooks/useAppearance';
+import { getPresetById, type ThemePresetId } from '@/theme/presets';
 
-const REMINDER_HINT = 'Reminders are sent 5 minutes before each prayer time';
+const NOTIFICATION_TYPE_LABEL: Record<string, string> = {
+  notification: 'Notification',
+  alarm: 'Alarm',
+};
 
 const updateIconName: Record<ReleaseCheckStatus, string> = {
   idle: 'download',
@@ -34,30 +40,45 @@ const updateTitle: Record<ReleaseCheckStatus, string> = {
 };
 
 export default function Settings() {
-  const { mode, setMode } = useThemeMode();
-  const storage = getStorage();
-  const { isScheduled, schedule, clear } = usePrayerReminders();
+  const { updateTheme } = useTheme();
+  const { setMode } = useThemeMode();
+  const {
+    isScheduled,
+    schedule,
+    clear,
+    reminderOffset,
+    setReminderOffset,
+    notificationType,
+    setNotificationType,
+  } = usePrayerReminders();
   const { latestVersion, checkStatus, loading, checkForUpdate, downloadUpdate } =
     useReleaseUpdate();
   const [updatePopupVisible, setUpdatePopupVisible] = useState(false);
-  const { backgroundId, setBackgroundId } = useBackgroundImage();
-  const [bgPickerVisible, setBgPickerVisible] = useState(false);
+  const { themeId, setThemeId, wallpaperEnabled, setWallpaperEnabled } = useAppearance();
+  const { disabledPrayers, resetAll } = useDisabledPrayers();
+  const [themePickerVisible, setThemePickerVisible] = useState(false);
+  const [resetPopupVisible, setResetPopupVisible] = useState(false);
+  const [offsetPopupVisible, setOffsetPopupVisible] = useState(false);
+  const [typePickerVisible, setTypePickerVisible] = useState(false);
 
-  const backgroundLabel = getBackgroundById(backgroundId)?.label ?? 'None';
+  const themeLabel = getPresetById(themeId)?.label ?? 'Light Mosque';
 
-  const toggleTheme = () => {
-    const newMode = mode === 'light' ? 'dark' : 'light';
-    setMode(newMode);
-    storage.set('themeMode', newMode);
+  const handleThemeSelect = (id: ThemePresetId) => {
+    setThemeId(id);
+    const preset = getPresetById(id);
+    if (!preset) return;
+    setMode(preset.mode);
+    const colorKey = preset.mode === 'light' ? 'lightColors' : 'darkColors';
+    updateTheme({ [colorKey]: preset.colors });
   };
 
   const toggleReminders = () => {
     if (isScheduled) {
-      storage.set('remindersEnabled', false);
+      setRemindersEnabled(false);
       clear();
       return;
     }
-    storage.set('remindersEnabled', true);
+    setRemindersEnabled(true);
     schedule();
   };
 
@@ -71,61 +92,109 @@ export default function Settings() {
       contentStyle={styles.content}
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Card title="Appearance">
+        <Card title="Appearance" gap={16}>
           <SettingsToggleRow
             label="Theme"
-            iconName={mode === 'light' ? 'moon' : 'sun'}
-            title={mode === 'light' ? ' Dark mode' : ' Light mode'}
-            onPress={toggleTheme}
+            iconName="image"
+            title={` ${themeLabel}`}
+            onPress={() => setThemePickerVisible(true)}
           />
-          <View style={styles.extraRow}>
-            <SettingsToggleRow
-              label="Background"
-              iconName="image"
-              title={` ${backgroundLabel}`}
-              onPress={() => setBgPickerVisible(true)}
-            />
-          </View>
+          <SettingsToggleRow
+            label="Wallpaper"
+            iconName={wallpaperEnabled ? 'eye' : 'eye-off'}
+            title={wallpaperEnabled ? ' On' : ' Off'}
+            onPress={() => setWallpaperEnabled(!wallpaperEnabled)}
+          />
         </Card>
 
-        <Card title="Notifications">
+        <Card title="Notifications" gap={16}>
           <SettingsToggleRow
-            label="Prayer reminders (Beta)"
+            label="Prayer reminders"
             iconName={isScheduled ? 'bell' : 'bell-off'}
             title={isScheduled ? ' On' : ' Off'}
             onPress={toggleReminders}
           />
-          <Text style={styles.hint}>{REMINDER_HINT}</Text>
+          {isScheduled && (
+            <>
+              <SettingsToggleRow
+                label="Reminder time"
+                iconName="clock"
+                title={` ${reminderOffset} min before`}
+                onPress={() => setOffsetPopupVisible(true)}
+              />
+              <SettingsToggleRow
+                label="Notification type"
+                iconName={notificationType === 'alarm' ? 'alert-circle' : 'bell'}
+                title={` ${NOTIFICATION_TYPE_LABEL[notificationType]}`}
+                onPress={() => setTypePickerVisible(true)}
+              />
+            </>
+          )}
+          {!isScheduled && (
+            <Text style={styles.hint}>
+              Enable reminders to get notified before each prayer time
+            </Text>
+          )}
         </Card>
 
-        <Card title="About">
-          <View style={styles.aboutRows}>
-            <SettingsInfoRow label="Version" value={Constants.expoConfig?.version ?? '-'} />
-          </View>
-          <View style={styles.extraRow}>
-            <SettingsToggleRow
-              label="Updates"
-              iconName={updateIconName[checkStatus]}
-              title={updateTitle[checkStatus]}
-              loading={loading}
-              disabled={loading}
-              onPress={async () => {
-                if (checkStatus === 'update-available') {
-                  setUpdatePopupVisible(true);
-                } else {
-                  const found = await checkForUpdate();
-                  if (found) setUpdatePopupVisible(true);
-                }
-              }}
-            />
-          </View>
+        <Card title="Preferences" gap={16}>
+          <SettingsToggleRow
+            label="Hidden prayers"
+            iconName="eye-off"
+            title={` ${disabledPrayers.length} hidden`}
+            disabled={disabledPrayers.length === 0}
+            onPress={() => setResetPopupVisible(true)}
+          />
+        </Card>
+
+        <Card title="About" gap={16}>
+          <SettingsInfoRow label="Version" value={Constants.expoConfig?.version ?? '-'} />
+          <SettingsToggleRow
+            label="Updates"
+            iconName={updateIconName[checkStatus]}
+            title={updateTitle[checkStatus]}
+            loading={loading}
+            disabled={loading}
+            onPress={async () => {
+              if (checkStatus === 'update-available') {
+                setUpdatePopupVisible(true);
+              } else {
+                const found = await checkForUpdate();
+                if (found) setUpdatePopupVisible(true);
+              }
+            }}
+          />
         </Card>
       </ScrollView>
-      <BackgroundPickerPopup
-        visible={bgPickerVisible}
-        onClose={() => setBgPickerVisible(false)}
-        selectedId={backgroundId}
-        onSelect={setBackgroundId}
+      <ThemePickerPopup
+        visible={themePickerVisible}
+        onClose={() => setThemePickerVisible(false)}
+        selectedId={themeId}
+        onSelect={handleThemeSelect}
+      />
+      <ReminderOffsetPopup
+        visible={offsetPopupVisible}
+        currentValue={reminderOffset}
+        onSave={setReminderOffset}
+        onClose={() => setOffsetPopupVisible(false)}
+      />
+      <NotificationTypePicker
+        visible={typePickerVisible}
+        currentType={notificationType}
+        onSelect={setNotificationType}
+        onClose={() => setTypePickerVisible(false)}
+      />
+      <ConfirmPopup
+        visible={resetPopupVisible}
+        title="Reset hidden prayers?"
+        message="All hidden prayers will be visible on the home screen again."
+        confirmLabel="Reset"
+        dismissLabel="Cancel"
+        onConfirm={() => {
+          setResetPopupVisible(false);
+          resetAll();
+        }}
+        onDismiss={() => setResetPopupVisible(false)}
       />
       <ConfirmPopup
         visible={updatePopupVisible}
@@ -152,16 +221,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     gap: 16,
   },
-  extraRow: {
-    marginTop: 16,
-  },
   hint: {
     fontSize: 14,
     textAlign: 'center',
     opacity: 0.6,
     marginTop: 16,
-  },
-  aboutRows: {
-    gap: 12,
   },
 });

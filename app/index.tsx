@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { useRouter, useFocusEffect } from 'expo-router';
-import getStorage from '@/utils/localStore';
+import { getArea } from '@/stores';
 import * as SplashScreen from 'expo-splash-screen';
 import { registerDefinedTask } from '@/backgroundTasks';
 import { scheduleTodayNotifications } from '@/services/notifications/scheduleReminders';
@@ -10,7 +10,6 @@ SplashScreen.preventAutoHideAsync();
 
 export default function Index() {
   const router = useRouter();
-  const storage = getStorage();
   useEffect(() => {
     log.info('index: app init started', { type: 'app' });
 
@@ -23,7 +22,7 @@ export default function Index() {
 
   useFocusEffect(
     useCallback(() => {
-      const area = storage.getString('area');
+      const area = getArea();
 
       if (area) {
         router.replace('/home');
