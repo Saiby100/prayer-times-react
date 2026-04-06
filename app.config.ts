@@ -71,6 +71,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       {
         icon: './assets/images/notification-icon.png',
         color: '#0D7C5F',
+        sounds: ['./assets/sounds/alarm.wav'],
       },
     ],
   ],

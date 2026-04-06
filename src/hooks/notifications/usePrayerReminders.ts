@@ -5,12 +5,19 @@ import {
   requestNotificationPermission,
   getScheduledNotifications,
 } from '@/services/notifications/notification';
+import { registerAlarmCategory } from '@/services/notifications/alarmCategory';
 import { scheduleTodayNotifications } from '@/services/notifications/scheduleReminders';
-import getStorage from '@/utils/localStore';
+import {
+  isNotificationPermissionDenied,
+  setNotificationPermissionDenied,
+  getReminderOffset,
+  setReminderOffset as storeSetReminderOffset,
+  getNotificationType,
+  setNotificationType as storeSetNotificationType,
+} from '@/stores';
 import log from '@/utils/logger';
 
 function usePrayerReminders() {
-  const storage = getStorage();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [scheduledIds, setScheduledIds] = useState<string[]>([]);
 
@@ -21,21 +28,33 @@ function usePrayerReminders() {
   }, []);
 
   async function setupNotifications() {
-    const permissionDenied = storage.getBoolean('notificationPermissionDenied') || false;
-    if (permissionDenied) return;
+    if (isNotificationPermissionDenied()) return;
 
     const result = await requestNotificationPermission();
-    storage.set('notificationPermissionDenied', !result);
+    setNotificationPermissionDenied(!result);
 
     if (!result) {
       setNotificationsEnabled(false);
       return;
     }
 
-    await createNotificationChannel('prayer_reminder', 'Prayer reminder notifications');
-    log.info('usePrayerReminders: notification channel created', {
+    await Promise.all([
+      createNotificationChannel({
+        channelId: 'prayer_reminder',
+        name: 'Prayer reminder notifications',
+      }),
+      createNotificationChannel({
+        channelId: 'prayer_alarm',
+        name: 'Prayer alarm notifications',
+        sound: 'alarm.wav',
+        useAlarmStream: true,
+        bypassDnd: true,
+      }),
+      registerAlarmCategory(),
+    ]);
+    log.info('usePrayerReminders: notification channels created', {
       type: 'notification',
-      channel: 'prayer_reminder',
+      channels: ['prayer_reminder', 'prayer_alarm'],
     });
     setNotificationsEnabled(true);
 
@@ -63,7 +82,28 @@ function usePrayerReminders() {
     setScheduledIds([]);
   }
 
-  return { isScheduled, schedule, clear };
+  const reminderOffset = getReminderOffset();
+  const notificationType = getNotificationType();
+
+  function setReminderOffset(minutes: number) {
+    storeSetReminderOffset(minutes);
+    schedule();
+  }
+
+  function setNotificationType(type: 'notification' | 'alarm') {
+    storeSetNotificationType(type);
+    schedule();
+  }
+
+  return {
+    isScheduled,
+    schedule,
+    clear,
+    reminderOffset,
+    setReminderOffset,
+    notificationType,
+    setNotificationType,
+  };
 }
 
 export default usePrayerReminders;

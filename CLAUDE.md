@@ -31,7 +31,8 @@ Build and deploy use EAS (`eas build`, `eas update`). CI workflows live in `.git
 ### Source (`src/`)
 
 - **`utils/PTApi.tsx`** — API client class. Scrapes HTML from `masjids.co.za/salaahtimes` using `react-native-cheerio`. Returns area list and monthly prayer time tables.
-- **`utils/localStore.tsx`** — `getStorage(id)` factory function returning MMKV instances with lazy initialization and multi-process support.
+- **`utils/localStore.ts`** — Internal MMKV instance factory. Not imported directly — use `@/stores` instead.
+- **`stores/`** — Domain-scoped storage modules. Each module owns its MMKV keys with typed getters/setters. Barrel re-export at `stores/index.ts`.
 - **`hooks/usePTApi.tsx`** — Manages prayer time fetching, date navigation, and caching logic.
 - **`hooks/notifications/usePrayerReminders.ts`** — Manages notification permission, channel setup, and prayer reminder scheduling lifecycle.
 - **`services/notifications/notification.ts`** — Core notification APIs (schedule, permissions, channels).
@@ -47,7 +48,7 @@ Build and deploy use EAS (`eas build`, `eas update`). CI workflows live in `.git
 - **UI library** — `@rneui/themed` (React Native Elements) for components and theming.
 - **Notification flow** — On app open, `registerBackgroundTask()` (from `backgroundTasks/`) sets up daily task → `scheduleTodayNotifications()` (from `services/notifications/scheduleReminders`) runs immediately → background task repeats every 24h.
 - **Background task pattern** — Each task exports `NAME`, `handler`, and `options` constants. `registerDefinedTask` object provides per-task registration methods.
-- **Storage keys** — `area`, `themeMode`, `times_${month}_${year}_${area}` (cached prayer times), `prayerReminderPref` (minutes before prayer), `remindersEnabled`, `notificationPermissionDenied`.
+- **Storage** — All MMKV access is centralized in `src/stores/` with domain-scoped modules (`areaStore`, `prayerTimesCache`, `appearanceStore`, `notificationStore`, `releaseStore`, `deviceStore`). Barrel export at `@/stores`. No file outside `src/stores/` should import `getStorage` directly.
 
 ## IMPORTANT: Always Clarify Before Acting
 

@@ -1,12 +1,11 @@
 import PTApi from '@/utils/PTApi';
 import { useRef, useState, useEffect, useMemo } from 'react';
-import getStorage from '@/utils/localStore';
+import { getCachedTimes, setCachedTimes, getDisabledPrayers } from '@/stores';
 import { getNextDay, getPrevDay, dateToString } from '@/utils/date';
 import log from '@/utils/logger';
 
 function usePTApi({ area }: { area: string }) {
   const api = useRef(new PTApi());
-  const storage = useRef(getStorage());
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
 
@@ -22,16 +21,15 @@ function usePTApi({ area }: { area: string }) {
   };
 
   const fetchTimes = async () => {
-    const cacheKey = `times_${date.getMonth()}_${date.getFullYear()}_${area}`;
-    if (storage.current.contains(cacheKey)) {
+    const cached = getCachedTimes(date, area);
+    if (cached) {
       log.debug('usePTApi: cache hit', {
         type: 'api',
         area,
         month: date.getMonth(),
         year: date.getFullYear(),
       });
-      const timesData = storage.current.getString(cacheKey);
-      return timesData ? JSON.parse(timesData) : [];
+      return cached;
     } else {
       log.info('usePTApi: fetching times from API', {
         type: 'api',
@@ -77,11 +75,11 @@ function usePTApi({ area }: { area: string }) {
       date.getFullYear() !== new Date().getFullYear()
     )
       return;
-    if (storage.current.contains(`times_${date.getMonth()}_${date.getFullYear()}_${area}`)) return;
+    if (getCachedTimes(date, area)) return;
     const month = new Date().getMonth();
     const year = new Date().getFullYear();
     log.info('usePTApi: saving times to storage', { type: 'storage', month, year, area });
-    storage.current.set(`times_${month}_${year}_${area}`, JSON.stringify(times));
+    setCachedTimes(date, area, times);
   }, [JSON.stringify(times)]);
 
   const nextDay = () => {
@@ -113,9 +111,11 @@ function usePTApi({ area }: { area: string }) {
   const highlighted = useMemo(() => {
     if (date.getDate() !== new Date().getDate()) return '';
     const now = new Date();
-    // Find the first time that is after now
-    const upcoming = Object.values(todayTimes)
-      .map((timeStr) => {
+    const hiddenPrayers = getDisabledPrayers();
+    // Find the first visible prayer time that is after now
+    const upcoming = Object.entries(todayTimes)
+      .filter(([name]) => !hiddenPrayers.includes(name))
+      .map(([, timeStr]) => {
         const [hours, minutes] = timeStr.split(':').map(Number);
         const time = new Date(now);
         time.setHours(hours, minutes, 0, 0);

@@ -5,19 +5,21 @@ import { Text, useTheme } from '@rneui/themed';
 type CardProps = {
   /** Optional heading displayed above the card content. */
   title?: string;
+  /** Vertical spacing between child elements. */
+  gap?: number;
   /** Additional styles applied to the card container. */
   style?: StyleProp<ViewStyle>;
   /** Card content. */
   children: ReactNode;
 };
 
-export default function Card({ title, style, children }: CardProps) {
+export default function Card({ title, gap, style, children }: CardProps) {
   const { theme } = useTheme();
 
   return (
     <View style={[styles.card, { backgroundColor: theme.colors.bgLight }, style]}>
       {title && <Text style={styles.title}>{title}</Text>}
-      {children}
+      <View style={gap != null && { gap }}>{children}</View>
     </View>
   );
 }

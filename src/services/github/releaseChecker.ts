@@ -1,4 +1,9 @@
-import getStorage from '@/utils/localStore';
+import {
+  getLastReleaseCheck,
+  setLastReleaseCheck,
+  getDismissedReleaseVersion,
+  setDismissedReleaseVersion,
+} from '@/stores';
 import log from '@/utils/logger';
 
 const GITHUB_API_URL = 'https://api.github.com/repos/Saiby100/prayer-times-react/releases/latest';
@@ -28,23 +33,19 @@ export function isNewerVersion(latest: string, current: string): boolean {
 }
 
 export function shouldCheckForRelease(): boolean {
-  const storage = getStorage();
-  const lastCheck = storage.getNumber('lastReleaseCheck');
+  const lastCheck = getLastReleaseCheck();
   if (!lastCheck) return true;
   return Date.now() - lastCheck >= CHECK_INTERVAL_MS;
 }
 
 export function markReleaseChecked(): void {
-  const storage = getStorage();
-  storage.set('lastReleaseCheck', Date.now());
+  setLastReleaseCheck(Date.now());
 }
 
-export function getDismissedVersion(): string | undefined {
-  return getStorage().getString('dismissedReleaseVersion');
-}
+export { getDismissedReleaseVersion as getDismissedVersion };
 
 export function setDismissedVersion(version: string): void {
-  getStorage().set('dismissedReleaseVersion', version);
+  setDismissedReleaseVersion(version);
 }
 
 export async function fetchLatestRelease(): Promise<LatestRelease | null> {
