@@ -25,7 +25,7 @@ const OPTIONS: { type: NotificationType; label: string; icon: string; descriptio
     type: 'alarm',
     label: 'Alarm',
     icon: 'alert-circle',
-    description: 'High-priority persistent notification',
+    description: 'Alarm sound until dismissed',
   },
 ];
 

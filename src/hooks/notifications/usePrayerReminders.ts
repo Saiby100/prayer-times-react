@@ -5,6 +5,7 @@ import {
   requestNotificationPermission,
   getScheduledNotifications,
 } from '@/services/notifications/notification';
+import { registerAlarmCategory } from '@/services/notifications/alarmCategory';
 import { scheduleTodayNotifications } from '@/services/notifications/scheduleReminders';
 import {
   isNotificationPermissionDenied,
@@ -38,8 +39,18 @@ function usePrayerReminders() {
     }
 
     await Promise.all([
-      createNotificationChannel('prayer_reminder', 'Prayer reminder notifications'),
-      createNotificationChannel('prayer_alarm', 'Prayer alarm notifications'),
+      createNotificationChannel({
+        channelId: 'prayer_reminder',
+        name: 'Prayer reminder notifications',
+      }),
+      createNotificationChannel({
+        channelId: 'prayer_alarm',
+        name: 'Prayer alarm notifications',
+        sound: 'alarm.wav',
+        useAlarmStream: true,
+        bypassDnd: true,
+      }),
+      registerAlarmCategory(),
     ]);
     log.info('usePrayerReminders: notification channels created', {
       type: 'notification',

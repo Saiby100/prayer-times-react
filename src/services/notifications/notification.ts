@@ -15,16 +15,45 @@ if (!handlerSet) {
   handlerSet = true;
 }
 
-async function createNotificationChannel(channelId: string, name: string) {
+type ChannelOptions = {
+  /** Android notification channel ID. */
+  channelId: string;
+  /** Human-readable channel name. */
+  name: string;
+  /** Custom sound filename (e.g. 'alarm.wav'). */
+  sound?: string;
+  /** Route audio through the alarm stream so it respects alarm volume. */
+  useAlarmStream?: boolean;
+  /** Whether the channel should bypass Do Not Disturb. */
+  bypassDnd?: boolean;
+};
+
+async function createNotificationChannel({
+  channelId,
+  name,
+  sound,
+  useAlarmStream,
+  bypassDnd,
+}: ChannelOptions) {
   if (!(await notificationPermissionGranted())) return;
   if (Platform.OS !== 'android') return;
 
-  const notificationChannel = await Notifications.getNotificationChannelAsync(channelId);
-  if (notificationChannel) return;
+  // Delete existing channel so updated sound/audio settings take effect
+  // (Android channels are immutable after creation)
+  await Notifications.deleteNotificationChannelAsync(channelId);
 
   await Notifications.setNotificationChannelAsync(channelId, {
     name,
     importance: Notifications.AndroidImportance.MAX,
+    ...(sound && { sound }),
+    ...(bypassDnd && { bypassDnd: true }),
+    enableVibrate: true,
+    ...(useAlarmStream && {
+      audioAttributes: {
+        usage: Notifications.AndroidAudioUsage.ALARM,
+        contentType: Notifications.AndroidAudioContentType.SONIFICATION,
+      },
+    }),
   });
 }
 
@@ -36,6 +65,8 @@ async function schedulePushNotification({
   channelId,
   priority,
   sticky,
+  sound,
+  categoryIdentifier,
 }: {
   /** Notification heading. */
   title: string;
@@ -51,6 +82,10 @@ async function schedulePushNotification({
   priority?: Notifications.AndroidNotificationPriority;
   /** When true the notification stays until the user dismisses it. */
   sticky?: boolean;
+  /** Custom sound filename (e.g. 'alarm.wav'). Used on iOS; Android uses channel sound. */
+  sound?: string;
+  /** Notification category identifier for action buttons. */
+  categoryIdentifier?: string;
 }) {
   if (!(await notificationPermissionGranted())) return null;
   return await Notifications.scheduleNotificationAsync({
@@ -61,6 +96,8 @@ async function schedulePushNotification({
       ...(priority && { priority }),
       ...(channelId && { channelId }),
       ...(sticky && { sticky }),
+      ...(sound && { sound }),
+      ...(categoryIdentifier && { categoryIdentifier }),
     },
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.DATE,

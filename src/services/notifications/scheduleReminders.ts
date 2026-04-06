@@ -127,6 +127,7 @@ async function scheduleNotificationsForDate(
       channelId: isAlarm ? 'prayer_alarm' : 'prayer_reminder',
       priority: Notifications.AndroidNotificationPriority.MAX,
       sticky: isAlarm,
+      ...(isAlarm && { sound: 'alarm.wav', categoryIdentifier: 'prayer_alarm' }),
     });
 
     if (id) {
