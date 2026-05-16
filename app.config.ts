@@ -67,6 +67,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
     'expo-background-task',
     [
+      'expo-location',
+      {
+        locationWhenInUsePermission: 'Location is used to determine the Qibla direction.',
+      },
+    ],
+    [
       'expo-notifications',
       {
         icon: './assets/images/notification-icon.png',
