@@ -34,6 +34,13 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="qibla"
+        options={{
+          title: 'Qibla',
+          tabBarIcon: ({ color }) => <Icon name="compass" type="feather" color={color} size={20} />,
+        }}
+      />
+      <Tabs.Screen
         name="names"
         options={{
           title: '99 Names of Allah',
