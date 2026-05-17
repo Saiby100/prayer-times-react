@@ -13,7 +13,7 @@ const getVersionCode = (version: string): number => {
 let commitHash = 'unknown';
 try {
   commitHash = execSync('git rev-parse --short HEAD').toString().trim();
-} catch {
+} catch (_) {
   // EAS build environment may not have .git directory
 }
 
