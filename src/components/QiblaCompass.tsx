@@ -98,9 +98,9 @@ const QiblaCompass = ({ qiblaBearing, dialRotation, bearingLabel }: QiblaCompass
           </Animated.View>
 
           <Animated.View style={[styles.qiblaIndicator, qiblaLineStyle]}>
-            <View style={[styles.arrowTip, { borderBottomColor: theme.colors.primary }]} />
-            <View style={[styles.arrowNeck, { backgroundColor: theme.colors.primary }]} />
-            <View style={[styles.arrowKaabaRing, { backgroundColor: theme.colors.primary }]}>
+            <View style={[styles.arrowTip, { borderBottomColor: theme.colors.secondary }]} />
+            <View style={[styles.arrowNeck, { backgroundColor: theme.colors.secondary }]} />
+            <View style={[styles.arrowKaabaRing, { backgroundColor: theme.colors.secondary }]}>
               <FontAwesome6 name="kaaba" size={16} color={theme.colors.background} />
             </View>
           </Animated.View>
