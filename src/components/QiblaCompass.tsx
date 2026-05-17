@@ -2,6 +2,7 @@ import { Dimensions, StyleSheet, View } from 'react-native';
 import { Text, useTheme } from '@rneui/themed';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { SharedValue } from 'react-native-reanimated';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 type QiblaCompassProps = {
   /** Qibla bearing in degrees from true north. */
@@ -13,6 +14,7 @@ type QiblaCompassProps = {
 };
 
 const COMPASS_SIZE = Dimensions.get('window').width * 0.8;
+const COMPASS_RADIUS = COMPASS_SIZE / 2;
 const TICK_COUNT = 72;
 const CARDINAL_DIRECTIONS = [
   { label: 'N', angle: 0 },
@@ -28,84 +30,89 @@ const QiblaCompass = ({ qiblaBearing, dialRotation, bearingLabel }: QiblaCompass
     transform: [{ rotate: `${dialRotation.value}deg` }],
   }));
 
-  const kaabaStyle = useAnimatedStyle(() => ({
-    transform: [
-      { rotate: `${dialRotation.value + qiblaBearing}deg` },
-      { translateY: -(COMPASS_SIZE / 2 - 30) },
-    ],
+  const qiblaLineStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${dialRotation.value + qiblaBearing}deg` }],
   }));
 
   return (
     <View style={styles.container}>
-      <View style={[styles.compassWrapper, { width: COMPASS_SIZE, height: COMPASS_SIZE }]}>
-        <Animated.View
-          style={[
-            styles.dial,
-            { width: COMPASS_SIZE, height: COMPASS_SIZE, borderColor: theme.colors.primary + '40' },
-            dialStyle,
-          ]}
-        >
-          {CARDINAL_DIRECTIONS.map(({ label, angle }) => (
-            <View
-              key={label}
-              style={[
-                styles.cardinalContainer,
-                {
-                  transform: [{ rotate: `${angle}deg` }, { translateY: -(COMPASS_SIZE / 2 - 24) }],
-                },
-              ]}
-            >
-              <Text
+      <View style={[styles.scrim, { backgroundColor: theme.colors.background + 'CC' }]}>
+        <View style={[styles.compassWrapper, { width: COMPASS_SIZE, height: COMPASS_SIZE }]}>
+          <Animated.View
+            style={[
+              styles.dial,
+              {
+                width: COMPASS_SIZE,
+                height: COMPASS_SIZE,
+                borderColor: theme.colors.text + '35',
+              },
+              dialStyle,
+            ]}
+          >
+            {CARDINAL_DIRECTIONS.map(({ label, angle }) => (
+              <View
+                key={label}
                 style={[
-                  styles.cardinalLabel,
+                  styles.cardinalContainer,
                   {
-                    color: label === 'N' ? theme.colors.primary : theme.colors.text,
-                    transform: [{ rotate: `${-angle}deg` }],
+                    transform: [{ rotate: `${angle}deg` }, { translateY: -(COMPASS_RADIUS - 24) }],
                   },
                 ]}
               >
-                {label}
-              </Text>
+                <Text
+                  style={[
+                    styles.cardinalLabel,
+                    {
+                      color: label === 'N' ? theme.colors.primary : theme.colors.text,
+                      transform: [{ rotate: `${-angle}deg` }],
+                    },
+                  ]}
+                >
+                  {label}
+                </Text>
+              </View>
+            ))}
+
+            {Array.from({ length: TICK_COUNT }).map((_, i) => {
+              const angle = (360 / TICK_COUNT) * i;
+              const isMajor = angle % 90 === 0;
+              const isMinor = angle % 30 === 0;
+              if (isMajor) return null;
+              return (
+                <View
+                  key={i}
+                  style={[
+                    styles.tick,
+                    {
+                      height: isMinor ? 10 : 5,
+                      backgroundColor: theme.colors.text + (isMinor ? '50' : '20'),
+                      transform: [
+                        { rotate: `${angle}deg` },
+                        { translateY: -(COMPASS_RADIUS - (isMinor ? 8 : 5)) },
+                      ],
+                    },
+                  ]}
+                />
+              );
+            })}
+          </Animated.View>
+
+          <Animated.View style={[styles.qiblaIndicator, qiblaLineStyle]}>
+            <View style={[styles.arrowTip, { borderBottomColor: theme.colors.primary }]} />
+            <View style={[styles.arrowNeck, { backgroundColor: theme.colors.primary }]} />
+            <View style={[styles.arrowKaabaRing, { backgroundColor: theme.colors.primary }]}>
+              <FontAwesome6 name="kaaba" size={16} color={theme.colors.background} />
             </View>
-          ))}
+          </Animated.View>
 
-          {Array.from({ length: TICK_COUNT }).map((_, i) => {
-            const angle = (360 / TICK_COUNT) * i;
-            const isMajor = angle % 90 === 0;
-            const isMinor = angle % 30 === 0;
-            if (isMajor) return null;
-            return (
-              <View
-                key={i}
-                style={[
-                  styles.tick,
-                  {
-                    height: isMinor ? 10 : 5,
-                    backgroundColor: theme.colors.text + (isMinor ? '60' : '30'),
-                    transform: [
-                      { rotate: `${angle}deg` },
-                      { translateY: -(COMPASS_SIZE / 2 - (isMinor ? 8 : 5)) },
-                    ],
-                  },
-                ]}
-              />
-            );
-          })}
-        </Animated.View>
+          <View style={[styles.directionArrow, { borderBottomColor: theme.colors.primary }]} />
+        </View>
 
-        <Animated.View style={[styles.kaabaIndicator, kaabaStyle]}>
-          <View style={[styles.kaabaIcon, { backgroundColor: theme.colors.secondary }]}>
-            <Text style={styles.kaabaEmoji}>🕋</Text>
-          </View>
-        </Animated.View>
-
-        <View style={[styles.centerDot, { backgroundColor: theme.colors.primary }]} />
-
-        <View style={[styles.directionArrow, { borderBottomColor: theme.colors.primary }]} />
+        <Text style={[styles.bearingText, { color: theme.colors.text }]}>{bearingLabel}</Text>
+        <Text style={[styles.subText, { color: theme.colors.text + '80' }]}>
+          Direction to Qibla
+        </Text>
       </View>
-
-      <Text style={[styles.bearingText, { color: theme.colors.text }]}>{bearingLabel}</Text>
-      <Text style={[styles.subText, { color: theme.colors.text + '80' }]}>Direction to Qibla</Text>
     </View>
   );
 };
@@ -118,13 +125,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flex: 1,
   },
+  scrim: {
+    alignItems: 'center',
+    overflow: 'hidden',
+    borderRadius: 24,
+    paddingHorizontal: 24,
+    paddingTop: 32,
+    paddingBottom: 28,
+  },
   compassWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   dial: {
-    borderRadius: COMPASS_SIZE / 2,
-    borderWidth: 2,
+    borderRadius: COMPASS_RADIUS,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -141,26 +156,32 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 1.5,
   },
-  kaabaIndicator: {
+  qiblaIndicator: {
     position: 'absolute',
     alignItems: 'center',
-    justifyContent: 'center',
+    height: COMPASS_SIZE,
   },
-  kaabaIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  arrowTip: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 10,
+    borderRightWidth: 10,
+    borderBottomWidth: 18,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+  },
+  arrowNeck: {
+    width: 3,
+    height: COMPASS_RADIUS - 56,
+    borderRadius: 1.5,
+  },
+  arrowKaabaRing: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  kaabaEmoji: {
-    fontSize: 22,
-  },
-  centerDot: {
-    position: 'absolute',
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    marginTop: 4,
   },
   directionArrow: {
     position: 'absolute',

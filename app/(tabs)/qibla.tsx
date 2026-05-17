@@ -1,11 +1,14 @@
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Share, StyleSheet, View } from 'react-native';
 import { Button, Text, useTheme } from '@rneui/themed';
+import { useRouter } from 'expo-router';
 import Page from '@/components/Page';
 import QiblaCompass from '@/components/QiblaCompass';
+import OptionsMenu from '@/components/OptionsMenu';
 import useQiblaCompass from '@/hooks/useQiblaCompass';
 
 export default function QiblaScreen() {
   const { theme } = useTheme();
+  const router = useRouter();
   const {
     qiblaBearing,
     dialRotation,
@@ -69,7 +72,30 @@ export default function QiblaScreen() {
   };
 
   return (
-    <Page name="qibla" title="Qibla" showBackground>
+    <Page
+      name="qibla"
+      title="Qibla"
+      showBackground
+      options={{
+        headerRight: () => (
+          <OptionsMenu
+            items={[
+              { label: 'Settings', icon: 'settings', onPress: () => router.push('/settings') },
+              { label: 'Location', icon: 'map-pin', onPress: () => router.push('/areas') },
+              {
+                label: 'Share App',
+                icon: 'share-2',
+                onPress: () =>
+                  Share.share({
+                    message:
+                      'Download Reminder - Prayer Times app: https://github.com/Saiby100/prayer-times-react/releases/latest/download/reminder.apk',
+                  }),
+              },
+            ]}
+          />
+        ),
+      }}
+    >
       {renderContent()}
     </Page>
   );
