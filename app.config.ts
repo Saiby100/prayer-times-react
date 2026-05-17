@@ -80,6 +80,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         sounds: ['./assets/sounds/alarm.wav'],
       },
     ],
+    '@notifee/react-native',
+    './plugins/withAlarmSound',
   ],
   experiments: {
     typedRoutes: true,

@@ -1,11 +1,10 @@
 import { useMemo, useEffect, useState } from 'react';
 import {
-  createNotificationChannel,
   clearScheduledNotifications,
   requestNotificationPermission,
   getScheduledNotifications,
 } from '@/services/notifications/notification';
-import { registerAlarmCategory } from '@/services/notifications/alarmCategory';
+import { ensureChannelsExist } from '@/services/notifications/setup';
 import { scheduleTodayNotifications } from '@/services/notifications/scheduleReminders';
 import {
   isNotificationPermissionDenied,
@@ -38,24 +37,8 @@ function usePrayerReminders() {
       return;
     }
 
-    await Promise.all([
-      createNotificationChannel({
-        channelId: 'prayer_reminder',
-        name: 'Prayer reminder notifications',
-      }),
-      createNotificationChannel({
-        channelId: 'prayer_alarm',
-        name: 'Prayer alarm notifications',
-        sound: 'alarm.wav',
-        useAlarmStream: true,
-        bypassDnd: true,
-      }),
-      registerAlarmCategory(),
-    ]);
-    log.info('usePrayerReminders: notification channels created', {
-      type: 'notification',
-      channels: ['prayer_reminder', 'prayer_alarm'],
-    });
+    await ensureChannelsExist();
+    log.info('usePrayerReminders: notification channels created', { type: 'notification' });
     setNotificationsEnabled(true);
 
     const scheduled = await getScheduledNotifications();

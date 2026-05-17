@@ -1,6 +1,5 @@
 import PTApi from '@/utils/PTApi';
 import log from '@/utils/logger';
-import * as Notifications from 'expo-notifications';
 import {
   getArea,
   getCachedTimes,
@@ -15,6 +14,7 @@ import {
   clearScheduledNotifications,
   getScheduledNotifications,
 } from './notification';
+import { scheduleAlarmNotification, cancelAllAlarmNotifications } from './alarmNotification';
 
 // Format prayer times for a specific date with minutes before preference
 function formatPrayerTimes(
@@ -73,7 +73,6 @@ async function fetchPrayerTimesForDate(date: Date): Promise<Record<string, strin
   return null;
 }
 
-// Clear existing prayer reminders
 async function clearExistingReminders(): Promise<void> {
   const scheduled = await getScheduledNotifications();
   const prayerReminders = scheduled.filter((n) => n.content.data?.type === 'prayer_reminder');
@@ -81,11 +80,14 @@ async function clearExistingReminders(): Promise<void> {
 
   if (ids.length > 0) {
     await clearScheduledNotifications(ids);
-    log.info('scheduleReminders: cleared existing reminders', {
-      type: 'notification',
-      count: ids.length,
-    });
   }
+
+  await cancelAllAlarmNotifications();
+
+  log.info('scheduleReminders: cleared existing reminders', {
+    type: 'notification',
+    expoCount: ids.length,
+  });
 }
 
 async function scheduleNotificationsForDate(
@@ -119,16 +121,20 @@ async function scheduleNotificationsForDate(
       continue;
     }
 
-    const id = await schedulePushNotification({
-      title: `${prayerName} Reminder`,
-      body: `${prayerName} prayer at ${prayerTimes[prayerName]}.`,
-      data: { type: 'prayer_reminder', prayer: prayerName },
-      date: reminderTime,
-      channelId: isAlarm ? 'prayer_alarm' : 'prayer_reminder',
-      priority: Notifications.AndroidNotificationPriority.MAX,
-      sticky: isAlarm,
-      ...(isAlarm && { sound: 'alarm.wav', categoryIdentifier: 'prayer_alarm' }),
-    });
+    const id = isAlarm
+      ? await scheduleAlarmNotification({
+          title: `${prayerName} Reminder`,
+          body: `${prayerName} prayer at ${prayerTimes[prayerName]}.`,
+          data: { type: 'prayer_reminder', prayer: prayerName },
+          date: reminderTime,
+        })
+      : await schedulePushNotification({
+          title: `${prayerName} Reminder`,
+          body: `${prayerName} prayer at ${prayerTimes[prayerName]}.`,
+          data: { type: 'prayer_reminder', prayer: prayerName },
+          date: reminderTime,
+          channelId: 'prayer_reminder',
+        });
 
     if (id) {
       scheduledIds.push(id);
