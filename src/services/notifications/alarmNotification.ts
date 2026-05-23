@@ -54,6 +54,8 @@ async function scheduleAlarmNotification({
         android: {
           channelId: ALARM_CHANNEL_ID,
           category: AndroidCategory.ALARM,
+          smallIcon: 'notification_icon',
+          color: '#0D7C5F',
           sound: 'alarm',
           loopSound: true,
           ongoing: true,
