@@ -2,7 +2,7 @@ import { StyleSheet, FlatList } from 'react-native';
 import { useCallback, useMemo, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
 import LoadingList from '@/components/LoadingList';
-import getStorage from '@/utils/localStore';
+import { setArea } from '@/stores';
 import * as SplashScreen from 'expo-splash-screen';
 import Page from '@/components/Page';
 import usePTAreas from '@/hooks/usePTAreas';
@@ -20,9 +20,7 @@ export default function Areas() {
   }, [areas, search]);
 
   const navigateHome = (area: string) => {
-    const storage = getStorage();
-    storage.set('area', area);
-
+    setArea(area);
     router.dismissAll();
     router.replace('/home');
   };

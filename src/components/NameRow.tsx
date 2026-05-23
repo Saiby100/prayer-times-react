@@ -1,6 +1,6 @@
 import { memo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { ListItem, Text } from '@rneui/themed';
+import { ListItem, Text, useTheme } from '@rneui/themed';
 import Scrim from '@/components/Scrim';
 import type { AllahName } from '@/config/ninetyNineNames';
 
@@ -21,10 +21,11 @@ type NameRowProps = {
 };
 
 const NameRow = memo(function NameRow({ item, colors }: NameRowProps) {
+  const { theme } = useTheme();
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <Scrim style={styles.card}>
+    <Scrim style={[styles.card, expanded && { backgroundColor: theme.colors.background }]}>
       <ListItem.Accordion
         isExpanded={expanded}
         onPress={() => setExpanded((prev) => !prev)}

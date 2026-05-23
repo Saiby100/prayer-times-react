@@ -13,7 +13,7 @@ const getVersionCode = (version: string): number => {
 let commitHash = 'unknown';
 try {
   commitHash = execSync('git rev-parse --short HEAD').toString().trim();
-} catch {
+} catch (_) {
   // EAS build environment may not have .git directory
 }
 
@@ -67,12 +67,20 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
     'expo-background-task',
     [
+      'expo-location',
+      {
+        locationWhenInUsePermission: 'Location is used to determine the Qibla direction.',
+      },
+    ],
+    [
       'expo-notifications',
       {
         icon: './assets/images/notification-icon.png',
         color: '#0D7C5F',
+        sounds: ['./assets/sounds/alarm.wav'],
       },
     ],
+    './plugins/withAlarmSound',
   ],
   experiments: {
     typedRoutes: true,

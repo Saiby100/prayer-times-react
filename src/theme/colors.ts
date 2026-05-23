@@ -15,3 +15,12 @@ export const darkColors = {
   background: '#0B1026',
   sliderTrack: '#2A2F4A',
 };
+
+export const warmDarkColors = {
+  primary: '#C9944A',
+  secondary: '#A67B4B',
+  text: '#E8DFD2',
+  bgLight: '#1E1912',
+  background: '#12100B',
+  sliderTrack: '#3D3428',
+};

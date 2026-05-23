@@ -1,29 +1,29 @@
 import { useEffect, useCallback } from 'react';
 import { useRouter, useFocusEffect } from 'expo-router';
-import getStorage from '@/utils/localStore';
+import { getArea } from '@/stores';
 import * as SplashScreen from 'expo-splash-screen';
 import { registerDefinedTask } from '@/backgroundTasks';
 import { scheduleTodayNotifications } from '@/services/notifications/scheduleReminders';
+import { ensureChannelsExist } from '@/services/notifications/setup';
 import log from '@/utils/logger';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function Index() {
   const router = useRouter();
-  const storage = getStorage();
   useEffect(() => {
-    log.info('index: app init started', { type: 'app' });
-
-    // Register background task for daily notification scheduling
-    registerDefinedTask.prayerReminderTask();
-
-    // Schedule today's notifications immediately on app open
-    scheduleTodayNotifications();
+    async function init() {
+      log.info('index: app init started', { type: 'app' });
+      registerDefinedTask.prayerReminderTask();
+      await ensureChannelsExist();
+      scheduleTodayNotifications();
+    }
+    init();
   }, []);
 
   useFocusEffect(
     useCallback(() => {
-      const area = storage.getString('area');
+      const area = getArea();
 
       if (area) {
         router.replace('/home');
