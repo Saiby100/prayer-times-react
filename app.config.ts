@@ -13,7 +13,7 @@ const getVersionCode = (version: string): number => {
 let commitHash = 'unknown';
 try {
   commitHash = execSync('git rev-parse --short HEAD').toString().trim();
-} catch {
+} catch (_) {
   // EAS build environment may not have .git directory
 }
 
@@ -67,12 +67,20 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
     'expo-background-task',
     [
+      'expo-location',
+      {
+        locationWhenInUsePermission: 'Location is used to determine the Qibla direction.',
+      },
+    ],
+    [
       'expo-notifications',
       {
         icon: './assets/images/notification-icon.png',
         color: '#0D7C5F',
+        sounds: ['./assets/sounds/alarm.wav'],
       },
     ],
+    './plugins/withAlarmSound',
   ],
   experiments: {
     typedRoutes: true,
@@ -96,9 +104,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
   },
   owner: 'salasaiet',
-  runtimeVersion: {
-    policy: 'appVersion',
-  },
+  runtimeVersion: appVersion.split('.').slice(0, 2).join('.'),
   updates: {
     url: 'https://u.expo.dev/4f89f60c-f7fa-4e13-97c3-bb74260287e8',
   },

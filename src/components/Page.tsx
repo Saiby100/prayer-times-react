@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, ScreenProps } from 'expo-router';
 import { useTheme } from '@rneui/themed';
-import useBackgroundImage from '@/hooks/useBackgroundImage';
+import useAppearance from '@/hooks/useAppearance';
 import NetworkError from '@/components/NetworkError';
 
 type PageProps = ScreenProps & {
@@ -45,7 +45,7 @@ const Page = ({
   onRetry,
 }: PageProps) => {
   const { theme } = useTheme();
-  const { backgroundSource } = useBackgroundImage();
+  const { wallpaperSource } = useAppearance();
   const [ready, setReady] = useState(!deferContent);
 
   useEffect(() => {
@@ -72,13 +72,13 @@ const Page = ({
   ) : (
     children
   );
-  const useBackground = showBackground && backgroundSource;
+  const useBackground = showBackground && wallpaperSource;
 
   if (useBackground) {
     return (
       <View style={styles.view}>
         <ImageBackground
-          source={backgroundSource}
+          source={wallpaperSource}
           resizeMode="cover"
           style={[StyleSheet.absoluteFill, { height: Dimensions.get('screen').height }]}
         />
