@@ -7,10 +7,10 @@ on:
 
 jobs:
   detect:
-    name: Check if patch release
+    name: Check if OTA-eligible release
     runs-on: ubuntu-latest
     outputs:
-      is_patch: ${{ steps.check.outputs.is_patch }}
+      is_ota: ${{ steps.check.outputs.is_ota }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -24,22 +24,22 @@ jobs:
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
           PREV_VERSION="${LATEST_TAG#v}"
 
-          CURRENT_MINOR="${CURRENT_VERSION%.*}"
-          PREV_MINOR="${PREV_VERSION%.*}"
+          CURRENT_MAJOR="${CURRENT_VERSION%%.*}"
+          PREV_MAJOR="${PREV_VERSION%%.*}"
 
           echo "Latest tag: $LATEST_TAG (version: $PREV_VERSION)"
           echo "Current version: $CURRENT_VERSION"
 
-          if [ "$CURRENT_MINOR" = "$PREV_MINOR" ]; then
-            echo "is_patch=true" >> "$GITHUB_OUTPUT"
+          if [ "$CURRENT_MAJOR" = "$PREV_MAJOR" ]; then
+            echo "is_ota=true" >> "$GITHUB_OUTPUT"
           else
-            echo "is_patch=false" >> "$GITHUB_OUTPUT"
+            echo "is_ota=false" >> "$GITHUB_OUTPUT"
           fi
 
   ota_update:
     name: Publish OTA Update
     needs: detect
-    if: needs.detect.outputs.is_patch == 'true'
+    if: needs.detect.outputs.is_ota == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Check for EXPO_TOKEN
