@@ -1,9 +1,11 @@
 import notifee, {
   AndroidImportance,
   AndroidCategory,
+  AndroidFlags,
   TriggerType,
   type TimestampTrigger,
 } from '@notifee/react-native';
+import log from '@/utils/logger';
 
 const ALARM_CHANNEL_ID = 'prayer_alarm_notifee';
 
@@ -43,29 +45,45 @@ async function scheduleAlarmNotification({
     alarmManager: { allowWhileIdle: true },
   };
 
-  return await notifee.createTriggerNotification(
-    {
-      title,
-      body,
-      data: data ?? {},
-      android: {
-        channelId: ALARM_CHANNEL_ID,
-        category: AndroidCategory.ALARM,
-        sound: 'alarm',
-        ongoing: true,
-        autoCancel: false,
-        importance: AndroidImportance.HIGH,
-        flags: [4], // FLAG_INSISTENT — loops the sound until dismissed
-        actions: [
-          {
-            title: 'Dismiss',
-            pressAction: { id: 'dismiss' },
-          },
-        ],
+  try {
+    const id = await notifee.createTriggerNotification(
+      {
+        title,
+        body,
+        data: data ?? {},
+        android: {
+          channelId: ALARM_CHANNEL_ID,
+          category: AndroidCategory.ALARM,
+          sound: 'alarm',
+          loopSound: true,
+          ongoing: true,
+          autoCancel: false,
+          importance: AndroidImportance.HIGH,
+          flags: [AndroidFlags.FLAG_INSISTENT],
+          pressAction: { id: 'default' },
+          actions: [
+            {
+              title: 'Dismiss',
+              pressAction: { id: 'dismiss' },
+            },
+          ],
+        },
       },
-    },
-    trigger
-  );
+      trigger
+    );
+    log.info('alarmNotification: scheduled', {
+      type: 'notification',
+      id,
+      date: date.toISOString(),
+    });
+    return id;
+  } catch (error) {
+    log.error('alarmNotification: failed to schedule', {
+      type: 'notification',
+      error: String(error),
+    });
+    throw error;
+  }
 }
 
 async function cancelAllAlarmNotifications() {
