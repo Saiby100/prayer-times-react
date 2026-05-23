@@ -10,12 +10,7 @@ import SettingsInfoRow from '@/components/SettingsInfoRow';
 import ThemePickerPopup from '@/components/ThemePickerPopup';
 import ReminderOffsetPopup from '@/components/ReminderOffsetPopup';
 import NotificationTypePicker from '@/components/NotificationTypePicker';
-import { TouchableOpacity } from 'react-native';
-import { Icon } from '@rneui/themed';
-import { setRemindersEnabled, getNotificationType } from '@/stores';
-import { schedulePushNotification } from '@/services/notifications/notification';
-import { scheduleAlarmNotification } from '@/services/notifications/alarmNotification';
-import { ensureChannelsExist } from '@/services/notifications/setup';
+import { setRemindersEnabled } from '@/stores';
 import usePrayerReminders from '@/hooks/notifications/usePrayerReminders';
 import useDisabledPrayers from '@/hooks/notifications/useDisabledPrayers';
 import useReleaseUpdate, { type ReleaseCheckStatus } from '@/hooks/useReleaseUpdate';
@@ -68,28 +63,6 @@ export default function Settings() {
 
   const themeLabel = getPresetById(themeId)?.label ?? 'Light Mosque';
 
-  const testNotification = async () => {
-    await ensureChannelsExist();
-    const date = new Date(Date.now() + 5000);
-    const type = getNotificationType();
-    if (type === 'alarm') {
-      await scheduleAlarmNotification({
-        title: 'Test Alarm',
-        body: 'This is a test alarm notification.',
-        data: { type: 'prayer_reminder', prayer: 'Test' },
-        date,
-      });
-    } else {
-      await schedulePushNotification({
-        title: 'Test Notification',
-        body: 'This is a test notification.',
-        data: { type: 'prayer_reminder', prayer: 'Test' },
-        date,
-        channelId: 'prayer_reminder',
-      });
-    }
-  };
-
   const handleThemeSelect = (id: ThemePresetId) => {
     setThemeId(id);
     const preset = getPresetById(id);
@@ -115,11 +88,6 @@ export default function Settings() {
       title="Settings"
       options={{
         headerBackVisible: true,
-        headerRight: () => (
-          <TouchableOpacity onPress={testNotification} style={{ marginRight: 8 }}>
-            <Icon name="play" type="feather" size={22} color={theme.colors.text} />
-          </TouchableOpacity>
-        ),
       }}
       contentStyle={styles.content}
     >
