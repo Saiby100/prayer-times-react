@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import { Platform, ScrollView, StyleSheet } from 'react-native';
 import { Text, useTheme, useThemeMode } from '@rneui/themed';
 import Constants from 'expo-constants';
 
@@ -122,12 +122,14 @@ export default function Settings() {
                 title={` ${reminderOffset} min before`}
                 onPress={() => setOffsetPopupVisible(true)}
               />
-              <SettingsToggleRow
-                label="Notification type"
-                iconName={notificationType === 'alarm' ? 'alert-circle' : 'bell'}
-                title={` ${NOTIFICATION_TYPE_LABEL[notificationType]}`}
-                onPress={() => setTypePickerVisible(true)}
-              />
+              {Platform.OS === 'android' && (
+                <SettingsToggleRow
+                  label="Notification type"
+                  iconName={notificationType === 'alarm' ? 'alert-circle' : 'bell'}
+                  title={` ${NOTIFICATION_TYPE_LABEL[notificationType]}`}
+                  onPress={() => setTypePickerVisible(true)}
+                />
+              )}
             </>
           )}
           {!isScheduled && (
