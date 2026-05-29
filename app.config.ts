@@ -45,6 +45,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: true,
     bundleIdentifier: getBundleId(),
+    infoPlist: {
+      ITSAppUsesNonExemptEncryption: false,
+    },
   },
   web: {
     bundler: 'metro',
