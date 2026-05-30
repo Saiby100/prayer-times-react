@@ -10,16 +10,16 @@ import Scrim from '@/components/Scrim';
 import usePTApi from '@/hooks/usePTApi';
 import useHijriDate from '@/hooks/useHijriDate';
 import useDisabledPrayers from '@/hooks/notifications/useDisabledPrayers';
+import useArea from '@/hooks/useArea';
 import OptionsMenu from '@/components/OptionsMenu';
 import ConfirmPopup from '@/components/ConfirmPopup';
 import PrayerTimeRow from '@/components/PrayerTimeRow';
-import { getArea } from '@/stores';
 import { Share, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Button, Text, useTheme } from '@rneui/themed';
 
 export default function Home() {
-  const area = getArea() ?? '';
+  const area = useArea() ?? '';
   const router = useRouter();
 
   const { theme } = useTheme();

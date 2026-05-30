@@ -61,8 +61,11 @@ function usePTApi({ area }: { area: string }) {
   };
 
   useEffect(() => {
+    fetchAndSetTimes();
+  }, [area]);
+
+  useEffect(() => {
     if (savedDate?.getMonth() !== date.getMonth()) {
-      // Fetch times data
       fetchAndSetTimes();
     }
   }, [JSON.stringify(date)]);
