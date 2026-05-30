@@ -41,6 +41,13 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="mosques"
+        options={{
+          title: 'Mosques',
+          tabBarIcon: ({ color }) => <Icon name="map-pin" type="feather" color={color} size={20} />,
+        }}
+      />
+      <Tabs.Screen
         name="names"
         options={{
           href: null,

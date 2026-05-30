@@ -73,7 +73,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-location',
       {
-        locationWhenInUsePermission: 'Location is used to determine the Qibla direction.',
+        locationWhenInUsePermission:
+          'Location is used to determine the Qibla direction and find nearby mosques.',
       },
     ],
     [
@@ -90,6 +91,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     typedRoutes: true,
   },
   extra: {
+    googlePlacesApiKey: process.env.GOOGLE_PLACES_API_KEY ?? '',
     commitHash,
     router: {
       origin: false,
