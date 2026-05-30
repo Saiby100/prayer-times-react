@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { ExpoConfig, ConfigContext } from 'expo/config';
 import { execSync } from 'child_process';
 import packageJson from './package.json';
