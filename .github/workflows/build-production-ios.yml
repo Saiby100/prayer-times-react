@@ -1,9 +1,7 @@
 name: Build Production iOS
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   ios_build:
