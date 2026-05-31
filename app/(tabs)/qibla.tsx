@@ -1,4 +1,4 @@
-import { ActivityIndicator, Share, StyleSheet, View } from 'react-native';
+import { Share, StyleSheet, View } from 'react-native';
 import { Button, Text, useTheme } from '@rneui/themed';
 import { useRouter } from 'expo-router';
 import Page from '@/components/Page';
@@ -20,14 +20,6 @@ export default function QiblaScreen() {
   } = useQiblaCompass();
 
   const renderContent = () => {
-    if (isLoading) {
-      return (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-        </View>
-      );
-    }
-
     if (permissionDenied) {
       return (
         <View style={styles.centered}>
@@ -76,6 +68,7 @@ export default function QiblaScreen() {
       name="qibla"
       title="Qibla"
       showBackground
+      loading={isLoading}
       options={{
         headerRight: () => (
           <OptionsMenu

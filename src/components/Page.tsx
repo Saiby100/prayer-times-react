@@ -25,6 +25,8 @@ type PageProps = ScreenProps & {
   contentStyle?: StyleProp<ViewStyle>;
   /** Show the themed background image behind content. */
   showBackground?: boolean;
+  /** Show a loading spinner instead of children. */
+  loading?: boolean;
   /** Defer rendering children until navigation animations complete. */
   deferContent?: boolean;
   /** Whether an error occurred loading page data. */
@@ -40,6 +42,7 @@ const Page = ({
   title,
   contentStyle,
   showBackground,
+  loading,
   deferContent,
   error,
   onRetry,
@@ -63,15 +66,16 @@ const Page = ({
     ...options,
   };
 
-  const content = !ready ? (
-    <View style={styles.loading}>
-      <ActivityIndicator size="large" color={theme.colors.primary} />
-    </View>
-  ) : error && onRetry ? (
-    <NetworkError error={error} onRetry={onRetry} />
-  ) : (
-    children
-  );
+  const content =
+    !ready || loading ? (
+      <View style={styles.loading}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    ) : error && onRetry ? (
+      <NetworkError error={error} onRetry={onRetry} />
+    ) : (
+      children
+    );
   const useBackground = showBackground && wallpaperSource;
 
   if (useBackground) {
