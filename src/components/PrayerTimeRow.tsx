@@ -19,6 +19,7 @@ const PRAYER_ICONS: Record<string, string> = {
   Fajr: 'sunrise',
   Shuruq: 'sun',
   Zuhr: 'sun',
+  Zawal: 'sun',
   Asr: 'cloud',
   Maghrib: 'sunset',
   Esha: 'moon',

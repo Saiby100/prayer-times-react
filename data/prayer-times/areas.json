@@ -1,0 +1,67 @@
+[
+  {
+    "name": "Cape Town",
+    "slug": "capetown",
+    "days": 365
+  },
+  {
+    "name": "Benoni",
+    "slug": "benoni",
+    "days": 365
+  },
+  {
+    "name": "Bergville",
+    "slug": "bergville",
+    "days": 365
+  },
+  {
+    "name": "Bloemfontein",
+    "slug": "bloemfontein",
+    "days": 365
+  },
+  {
+    "name": "Colesberg",
+    "slug": "colesberg",
+    "days": 365
+  },
+  {
+    "name": "Durban",
+    "slug": "durban",
+    "days": 365
+  },
+  {
+    "name": "East London",
+    "slug": "eastlondon",
+    "days": 365
+  },
+  {
+    "name": "Johannesburg",
+    "slug": "johannesburg",
+    "days": 365
+  },
+  {
+    "name": "Kimberley",
+    "slug": "kimberley",
+    "days": 365
+  },
+  {
+    "name": "King William's Town",
+    "slug": "kingwilliamstown",
+    "days": 365
+  },
+  {
+    "name": "Pietermaritzburg",
+    "slug": "pietermaritzburg",
+    "days": 365
+  },
+  {
+    "name": "Port Elizabeth",
+    "slug": "portelizabeth",
+    "days": 365
+  },
+  {
+    "name": "Pretoria",
+    "slug": "pretoria",
+    "days": 365
+  }
+]
