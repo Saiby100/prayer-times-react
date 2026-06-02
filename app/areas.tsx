@@ -16,7 +16,7 @@ export default function Areas() {
   const filteredAreas = useMemo(() => {
     if (!search.trim()) return areas;
     const query = search.toLowerCase().trim();
-    return areas.filter((area) => area.toLowerCase().includes(query));
+    return areas.filter((area) => area.name.toLowerCase().includes(query));
   }, [areas, search]);
 
   const navigateHome = (area: string) => {
@@ -38,11 +38,11 @@ export default function Areas() {
       ) : (
         <FlatList
           data={filteredAreas}
-          keyExtractor={(item, index) => index.toString()}
+          keyExtractor={(item) => item.slug}
           ListHeaderComponent={
             <SearchHeader value={search} onChangeText={setSearch} placeholder="Search areas..." />
           }
-          renderItem={({ item }) => <AreaCard area={item} onPress={navigateHome} />}
+          renderItem={({ item }) => <AreaCard area={item.name} onPress={navigateHome} />}
           contentContainerStyle={styles.list}
           stickyHeaderIndices={[0]}
           keyboardDismissMode="on-drag"
