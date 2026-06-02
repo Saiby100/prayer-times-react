@@ -52,7 +52,20 @@ export async function fetchTimes(areaSlug: string, date: Date): Promise<Record<s
     return [];
   }
 
-  return (data ?? []).map((row) => row.times as Record<string, string>);
+  return (data ?? []).map((row) => sortTimesByTime(row.times as Record<string, string>));
+}
+
+/** Convert an "HH:MM" time string to minutes since midnight for comparison. */
+function timeToMinutes(time: string): number {
+  const [hours, minutes] = time.split(':').map(Number);
+  return hours * 60 + minutes;
+}
+
+/** Reorder a prayer-times record so its entries are in ascending time order. */
+function sortTimesByTime(times: Record<string, string>): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(times).sort(([, a], [, b]) => timeToMinutes(a) - timeToMinutes(b))
+  );
 }
 
 export function areaToSlug(area: string): string {
