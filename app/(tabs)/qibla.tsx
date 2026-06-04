@@ -17,6 +17,7 @@ export default function QiblaScreen() {
     sensorAvailable,
     requestPermission,
     bearingLabel,
+    isAligned,
   } = useQiblaCompass();
 
   const renderContent = () => {
@@ -56,6 +57,7 @@ export default function QiblaScreen() {
           qiblaBearing={qiblaBearing}
           dialRotation={dialRotation}
           bearingLabel={bearingLabel}
+          isAligned={isAligned}
         />
       );
     }

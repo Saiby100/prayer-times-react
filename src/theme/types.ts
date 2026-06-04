@@ -8,5 +8,7 @@ declare module '@rneui/themed' {
     bgLight: string;
     /** Color for slider tracks and subtle dividers. */
     sliderTrack: string;
+    /** Color used to highlight the Qibla arrow when it aligns with the pointer. */
+    aligned: string;
   }
 }
