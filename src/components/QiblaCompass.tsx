@@ -11,6 +11,8 @@ type QiblaCompassProps = {
   dialRotation: SharedValue<number>;
   /** Formatted bearing label (e.g., "24° NE"). */
   bearingLabel: string;
+  /** Whether the Qibla is currently aligned with the pointer arrow. */
+  isAligned: boolean;
 };
 
 const COMPASS_SIZE = Dimensions.get('window').width * 0.8;
@@ -23,8 +25,15 @@ const CARDINAL_DIRECTIONS = [
   { label: 'W', angle: 270 },
 ];
 
-const QiblaCompass = ({ qiblaBearing, dialRotation, bearingLabel }: QiblaCompassProps) => {
+const QiblaCompass = ({
+  qiblaBearing,
+  dialRotation,
+  bearingLabel,
+  isAligned,
+}: QiblaCompassProps) => {
   const { theme } = useTheme();
+  const arrowColor = isAligned ? theme.colors.aligned : theme.colors.secondary;
+  const pointerColor = isAligned ? theme.colors.aligned : theme.colors.primary;
 
   const dialStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${dialRotation.value}deg` }],
@@ -98,14 +107,14 @@ const QiblaCompass = ({ qiblaBearing, dialRotation, bearingLabel }: QiblaCompass
           </Animated.View>
 
           <Animated.View style={[styles.qiblaIndicator, qiblaLineStyle]}>
-            <View style={[styles.arrowTip, { borderBottomColor: theme.colors.secondary }]} />
-            <View style={[styles.arrowNeck, { backgroundColor: theme.colors.secondary }]} />
-            <View style={[styles.arrowKaabaRing, { backgroundColor: theme.colors.secondary }]}>
+            <View style={[styles.arrowTip, { borderBottomColor: arrowColor }]} />
+            <View style={[styles.arrowNeck, { backgroundColor: arrowColor }]} />
+            <View style={[styles.arrowKaabaRing, { backgroundColor: arrowColor }]}>
               <FontAwesome6 name="kaaba" size={16} color={theme.colors.background} />
             </View>
           </Animated.View>
 
-          <View style={[styles.directionArrow, { borderBottomColor: theme.colors.primary }]} />
+          <View style={[styles.directionArrow, { borderBottomColor: pointerColor }]} />
         </View>
 
         <Text style={[styles.bearingText, { color: theme.colors.text }]}>{bearingLabel}</Text>

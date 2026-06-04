@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Location from 'expo-location';
+import * as Haptics from 'expo-haptics';
 import { useSharedValue, withTiming, Easing, SharedValue } from 'react-native-reanimated';
 import { calculateQiblaBearing, getBearingCardinal } from '@/utils/qibla';
 import { getAreaCoordinates } from '@/config/areaCoordinates';
 import getStorage from '@/utils/localStore';
+
+/** Degrees of tolerance within which the Qibla is considered aligned with the pointer. */
+const ALIGNMENT_TOLERANCE_DEG = 8;
 
 type QiblaCompassState = {
   /** Qibla bearing in degrees from true north (0-360). Null if location unknown. */
@@ -22,6 +26,8 @@ type QiblaCompassState = {
   requestPermission: () => Promise<void>;
   /** Readable bearing string like "24° NE". */
   bearingLabel: string;
+  /** Whether the device is currently pointing at the Qibla within tolerance. */
+  isAligned: boolean;
 };
 
 const shortestAngleDelta = (from: number, to: number): number => {
@@ -35,11 +41,14 @@ const useQiblaCompass = (): QiblaCompassState => {
   const [isLoading, setIsLoading] = useState(true);
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [sensorAvailable, setSensorAvailable] = useState(true);
+  const [isAligned, setIsAligned] = useState(false);
 
   const dialRotation = useSharedValue(0);
   const currentRotation = useRef(0);
   const headingSubscription = useRef<Location.LocationSubscription | null>(null);
   const previousHeading = useRef<number | null>(null);
+  const qiblaBearingRef = useRef<number | null>(null);
+  const alignedRef = useRef(false);
 
   const resolveLocation = useCallback(async (): Promise<{ lat: number; lng: number } | null> => {
     const { status } = await Location.requestForegroundPermissionsAsync();
@@ -82,6 +91,18 @@ const useQiblaCompass = (): QiblaCompassState => {
 
         setCompassHeading(heading);
 
+        const bearing = qiblaBearingRef.current;
+        if (bearing !== null) {
+          const aligned = Math.abs(shortestAngleDelta(heading, bearing)) <= ALIGNMENT_TOLERANCE_DEG;
+          if (aligned !== alignedRef.current) {
+            alignedRef.current = aligned;
+            setIsAligned(aligned);
+            if (aligned) {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+            }
+          }
+        }
+
         const targetRotation =
           currentRotation.current + shortestAngleDelta(currentRotation.current, -heading);
         currentRotation.current = targetRotation;
@@ -108,6 +129,10 @@ const useQiblaCompass = (): QiblaCompassState => {
 
     setIsLoading(false);
   }, [resolveLocation]);
+
+  useEffect(() => {
+    qiblaBearingRef.current = qiblaBearing;
+  }, [qiblaBearing]);
 
   useEffect(() => {
     let mounted = true;
@@ -146,6 +171,7 @@ const useQiblaCompass = (): QiblaCompassState => {
     sensorAvailable,
     requestPermission,
     bearingLabel,
+    isAligned,
   };
 };
 
