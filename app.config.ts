@@ -91,7 +91,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     typedRoutes: true,
   },
   extra: {
-    googlePlacesApiKey: process.env.GOOGLE_PLACES_API_KEY ?? '',
     commitHash,
     router: {
       origin: false,
