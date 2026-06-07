@@ -1,11 +1,21 @@
 /// <reference lib="deno.ns" />
-// Proxies Google Places "nearby search" so the API key never ships in the app.
+// Proxies Places API (New) "Nearby Search" so the API key never ships in the app.
 // The key lives only as the GOOGLE_PLACES_API_KEY secret on this function.
+//
+// Uses a field mask requesting only id, displayName, and location — no ratings —
+// to stay on the cheaper SKU tier and avoid returning data we never render.
 //
 // Deploy:  supabase functions deploy nearby-mosques
 // Secret:  supabase secrets set GOOGLE_PLACES_API_KEY=...
 
-const RADIUS_METERS = 5000;
+// 50km is the maximum the Places API (New) circle search allows. With
+// rankPreference DISTANCE the API still returns only the nearest results, so a
+// wide radius costs nothing in cities (same nearest 20) but reaches far enough
+// to find a mosque when travelling through sparse areas.
+const RADIUS_METERS = 50000;
+const MAX_RESULTS = 20;
+// Only the fields we actually use; keeps us on the cheaper Pro SKU and out of Enterprise (ratings).
+const FIELD_MASK = 'places.id,places.displayName,places.location';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,9 +31,19 @@ type RequestBody = {
 };
 
 type PlacesResult = {
-  place_id: string;
-  name: string;
-  geometry: { location: { lat: number; lng: number } };
+  /** Stable Place ID, safe to cache indefinitely. */
+  id: string;
+  /** Localised display name; `text` holds the human-readable name. */
+  displayName?: { text: string; languageCode?: string };
+  /** Geographic coordinates of the place. */
+  location: { latitude: number; longitude: number };
+};
+
+type PlacesResponse = {
+  /** Matching places; absent when there are no results. */
+  places?: PlacesResult[];
+  /** Present only on an error response. */
+  error?: { code: number; message: string; status: string };
 };
 
 const json = (body: unknown, status = 200): Response =>
@@ -54,28 +74,43 @@ Deno.serve(async (req) => {
     return json({ error: 'lat and lng must be numbers' }, 400);
   }
 
-  const url =
-    `https://maps.googleapis.com/maps/api/place/nearbysearch/json` +
-    `?location=${lat},${lng}&radius=${RADIUS_METERS}&type=mosque&key=${apiKey}`;
-
-  let data: { status: string; results?: PlacesResult[]; error_message?: string };
+  let res: Response;
+  let data: PlacesResponse;
   try {
-    const res = await fetch(url);
+    res = await fetch('https://places.googleapis.com/v1/places:searchNearby', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': apiKey,
+        'X-Goog-FieldMask': FIELD_MASK,
+      },
+      body: JSON.stringify({
+        includedTypes: ['mosque'],
+        maxResultCount: MAX_RESULTS,
+        rankPreference: 'DISTANCE',
+        locationRestriction: {
+          circle: {
+            center: { latitude: lat, longitude: lng },
+            radius: RADIUS_METERS,
+          },
+        },
+      }),
+    });
     data = await res.json();
   } catch (e) {
     return json({ error: `Failed to reach Places API: ${String(e)}` }, 502);
   }
 
-  if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
-    return json({ error: `Places API status: ${data.status}`, detail: data.error_message }, 502);
+  if (!res.ok) {
+    return json({ error: `Places API error: ${data.error?.message ?? res.status}` }, 502);
   }
 
-  const mosques = (data.results ?? []).map((place) => ({
-    placeId: place.place_id,
-    name: place.name,
+  const mosques = (data.places ?? []).map((place) => ({
+    placeId: place.id,
+    name: place.displayName?.text ?? '',
     location: {
-      lat: place.geometry.location.lat,
-      lng: place.geometry.location.lng,
+      lat: place.location.latitude,
+      lng: place.location.longitude,
     },
   }));
 
