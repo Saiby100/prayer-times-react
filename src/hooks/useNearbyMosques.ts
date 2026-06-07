@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { fetchNearbyMosques } from '@/services/places/nearbyMosques';
+import {
+  fetchNearbyMosques,
+  rankMosques,
+  shouldReuseCache,
+  REUSE_MARGIN_KM,
+  MAX_RESULTS,
+} from '@/services/places/nearbyMosques';
 import type { Mosque } from '@/services/places/types';
+import { clearMosquesCache, getMosquesCache, setMosquesCache, todayLocalKey } from '@/stores';
+import log from '@/utils/logger';
 import useLocation from './useLocation';
 
 type NearbyMosquesState = {
@@ -40,15 +48,37 @@ const useNearbyMosques = (): NearbyMosquesState => {
     }
 
     let cancelled = false;
-    setIsLoading(true);
     setError(false);
+
+    const cached = getMosquesCache();
+    if (shouldReuseCache(cached, coords.lat, coords.lng, todayLocalKey(), REUSE_MARGIN_KM)) {
+      log.info('useNearbyMosques: serving mosques from cache, skipping API call', {
+        type: 'app',
+        cachedCount: cached!.mosques.length,
+        fetchedDate: cached!.fetchedDate,
+      });
+      setMosques(rankMosques(cached!.mosques, coords.lat, coords.lng, MAX_RESULTS));
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+
+    log.info('useNearbyMosques: cache miss, fetching nearby mosques from API', {
+      type: 'app',
+      reason: cached ? 'stale (different day or moved beyond margin)' : 'no cache',
+    });
 
     fetchNearbyMosques(coords.lat, coords.lng)
       .then((results) => {
-        if (!cancelled && mountedRef.current) {
-          setMosques(results);
-          setIsLoading(false);
-        }
+        if (cancelled || !mountedRef.current) return;
+        setMosquesCache({
+          mosques: results,
+          fetchCenter: coords,
+          fetchedDate: todayLocalKey(),
+        });
+        setMosques(rankMosques(results, coords.lat, coords.lng, MAX_RESULTS));
+        setIsLoading(false);
       })
       .catch(() => {
         if (!cancelled && mountedRef.current) {
@@ -63,6 +93,7 @@ const useNearbyMosques = (): NearbyMosquesState => {
   }, [coords, locationLoading, retryCount]);
 
   const retry = useCallback(() => {
+    clearMosquesCache();
     setRetryCount((c) => c + 1);
   }, []);
 

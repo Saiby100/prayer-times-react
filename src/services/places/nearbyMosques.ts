@@ -1,10 +1,42 @@
 import Constants from 'expo-constants';
 import { calculateDistanceKm } from '@/utils/distance';
 import log from '@/utils/logger';
+import type { MosquesCacheEntry } from '@/stores/mosquesCache';
 import type { Mosque } from './types';
 
 const API_KEY = Constants.expoConfig?.extra?.googlePlacesApiKey as string;
 const RADIUS_METERS = 5000;
+
+/** Reuse a cached result if the user has moved no more than this many km. */
+const REUSE_MARGIN_KM = 2;
+/** Maximum number of mosques shown to the user. */
+const MAX_RESULTS = 10;
+
+/** Recompute each mosque's distance from (lat,lng), sort ascending, take `limit`. */
+const rankMosques = (mosques: Mosque[], lat: number, lng: number, limit?: number): Mosque[] => {
+  const ranked = mosques
+    .map((mosque) => ({
+      ...mosque,
+      distanceKm: calculateDistanceKm(lat, lng, mosque.location.lat, mosque.location.lng),
+    }))
+    .sort((a, b) => a.distanceKm - b.distanceKm);
+
+  return limit != null ? ranked.slice(0, limit) : ranked;
+};
+
+/** True if the cache is from today and within `marginKm` of the current location. */
+const shouldReuseCache = (
+  entry: MosquesCacheEntry | null,
+  lat: number,
+  lng: number,
+  today: string,
+  marginKm: number
+): boolean => {
+  if (!entry || entry.fetchedDate !== today) return false;
+
+  const moved = calculateDistanceKm(lat, lng, entry.fetchCenter.lat, entry.fetchCenter.lng);
+  return moved <= marginKm;
+};
 
 const fetchNearbyMosques = async (lat: number, lng: number): Promise<Mosque[]> => {
   const controller = new AbortController();
@@ -17,12 +49,6 @@ const fetchNearbyMosques = async (lat: number, lng: number): Promise<Mosque[]> =
     clearTimeout(timeout);
 
     if (!response.ok) {
-      log.debug('nearbyMosques: Google Places API returned non-OK status', {
-        type: 'api',
-        status: response.status,
-        apikey: API_KEY,
-        test: "testing"
-      });
       log.warn('nearbyMosques: Google Places API returned non-OK status', {
         type: 'api',
         status: response.status,
@@ -73,4 +99,4 @@ const fetchNearbyMosques = async (lat: number, lng: number): Promise<Mosque[]> =
   }
 };
 
-export { fetchNearbyMosques };
+export { fetchNearbyMosques, rankMosques, shouldReuseCache, REUSE_MARGIN_KM, MAX_RESULTS };

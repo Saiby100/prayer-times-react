@@ -1,5 +1,7 @@
 export { getArea, setArea } from './areaStore';
 export { getCachedTimes, setCachedTimes } from './prayerTimesCache';
+export { getMosquesCache, setMosquesCache, clearMosquesCache, todayLocalKey } from './mosquesCache';
+export type { MosquesCacheEntry } from './mosquesCache';
 export {
   getThemeId,
   setThemeId,
