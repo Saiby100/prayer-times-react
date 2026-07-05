@@ -18,7 +18,7 @@ Build and deploy use EAS (`eas build`, `eas update`). CI workflows live in `.git
 
 ## Architecture
 
-**Expo Router app** (file-based routing) for displaying Islamic prayer times scraped from masjids.co.za.
+**Expo Router app** (file-based routing) for displaying Islamic prayer times fetched from Supabase.
 
 ### Routes (`app/`)
 
@@ -30,10 +30,10 @@ Build and deploy use EAS (`eas build`, `eas update`). CI workflows live in `.git
 
 ### Source (`src/`)
 
-- **`utils/PTApi.tsx`** — API client class. Scrapes HTML from `masjids.co.za/salaahtimes` using `react-native-cheerio`. Returns area list and monthly prayer time tables.
+- **`services/prayerTimes.ts`** — Prayer times data client. Fetches areas and daily/monthly prayer times from Supabase (`fetchAreas`, `fetchTimes`, `areaToSlug`).
 - **`utils/localStore.ts`** — Internal MMKV instance factory. Not imported directly — use `@/stores` instead.
 - **`stores/`** — Domain-scoped storage modules. Each module owns its MMKV keys with typed getters/setters. Barrel re-export at `stores/index.ts`.
-- **`hooks/usePTApi.tsx`** — Manages prayer time fetching, date navigation, and caching logic.
+- **`hooks/usePTApi.tsx`** — Manages prayer time fetching (via `services/prayerTimes`), date navigation, and caching logic.
 - **`hooks/notifications/usePrayerReminders.ts`** — Manages notification permission, channel setup, and prayer reminder scheduling lifecycle.
 - **`services/notifications/notification.ts`** — Core notification APIs (schedule, permissions, channels).
 - **`services/notifications/scheduleReminders.ts`** — Fetches prayer times and schedules reminder notifications.
