@@ -5,6 +5,7 @@ export const lightColors = {
   background: '#F7F5F0',
   bgLight: '#FFFFFF',
   sliderTrack: '#D4CFC7',
+  aligned: '#16A34A',
 };
 
 export const darkColors = {
@@ -14,6 +15,7 @@ export const darkColors = {
   bgLight: '#151A35',
   background: '#0B1026',
   sliderTrack: '#2A2F4A',
+  aligned: '#22C55E',
 };
 
 export const warmDarkColors = {
@@ -23,4 +25,5 @@ export const warmDarkColors = {
   bgLight: '#1E1912',
   background: '#12100B',
   sliderTrack: '#3D3428',
+  aligned: '#22C55E',
 };

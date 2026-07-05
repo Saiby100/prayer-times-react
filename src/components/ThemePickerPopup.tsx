@@ -31,7 +31,12 @@ export default function ThemePickerPopup({
 }: ThemePickerPopupProps) {
   const { theme } = useTheme();
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
-  const [activeIndex, setActiveIndex] = useState(0);
+
+  const selectedIndex = Math.max(
+    0,
+    themePresets.findIndex((preset) => preset.id === selectedId)
+  );
+  const [activeIndex, setActiveIndex] = useState(selectedIndex);
   const flatListRef = useRef<FlatList>(null);
 
   const overlayWidth = screenWidth * 0.85;
@@ -48,12 +53,26 @@ export default function ThemePickerPopup({
     [contentWidth]
   );
 
+  // Jump the list to the current theme's page without animation. Rendering
+  // always starts at offset 0 (avoids the blank-list bug from initialScrollIndex)
+  // and we scroll once the content is laid out.
+  const scrollToSelected = useCallback(() => {
+    flatListRef.current?.scrollToOffset({ offset: selectedIndex * contentWidth, animated: false });
+  }, [selectedIndex, contentWidth]);
+
   const handleOpen = useCallback(() => {
-    const index = themePresets.findIndex((preset) => preset.id === selectedId);
-    const startIndex = index >= 0 ? index : 0;
-    setActiveIndex(startIndex);
-    flatListRef.current?.scrollToOffset({ offset: startIndex * contentWidth, animated: false });
-  }, [selectedId, contentWidth]);
+    setActiveIndex(selectedIndex);
+    scrollToSelected();
+  }, [selectedIndex, scrollToSelected]);
+
+  const getItemLayout = useCallback(
+    (_: unknown, index: number) => ({
+      length: contentWidth,
+      offset: contentWidth * index,
+      index,
+    }),
+    [contentWidth]
+  );
 
   const handleSelect = (id: ThemePresetId) => {
     onSelect(id);
@@ -81,8 +100,10 @@ export default function ThemePickerPopup({
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
+          onContentSizeChange={scrollToSelected}
           onMomentumScrollEnd={handleScrollEnd}
           keyExtractor={(item) => item.id}
+          getItemLayout={getItemLayout}
           renderItem={({ item }) => (
             <View style={{ width: contentWidth }}>
               <PresetCard

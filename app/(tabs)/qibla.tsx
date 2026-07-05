@@ -1,8 +1,9 @@
-import { ActivityIndicator, Share, StyleSheet, View } from 'react-native';
-import { Button, Text, useTheme } from '@rneui/themed';
+import { Share, StyleSheet, View } from 'react-native';
+import { Button, Icon, Text, useTheme } from '@rneui/themed';
 import { useRouter } from 'expo-router';
 import Page from '@/components/Page';
 import QiblaCompass from '@/components/QiblaCompass';
+import QiblaHelper from '@/components/QiblaHelper';
 import OptionsMenu from '@/components/OptionsMenu';
 import useQiblaCompass from '@/hooks/useQiblaCompass';
 
@@ -17,17 +18,11 @@ export default function QiblaScreen() {
     sensorAvailable,
     requestPermission,
     bearingLabel,
+    isAligned,
+    needsCalibration,
   } = useQiblaCompass();
 
   const renderContent = () => {
-    if (isLoading) {
-      return (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-        </View>
-      );
-    }
-
     if (permissionDenied) {
       return (
         <View style={styles.centered}>
@@ -38,7 +33,7 @@ export default function QiblaScreen() {
             title="Grant Permission"
             onPress={requestPermission}
             buttonStyle={{ backgroundColor: theme.colors.primary, borderRadius: 8 }}
-            titleStyle={{ fontFamily: 'Inter-Medium' }}
+            titleStyle={{ fontFamily: 'Inter-Medium', color: '#fff' }}
             containerStyle={styles.button}
           />
         </View>
@@ -60,11 +55,23 @@ export default function QiblaScreen() {
 
     if (qiblaBearing !== null) {
       return (
-        <QiblaCompass
-          qiblaBearing={qiblaBearing}
-          dialRotation={dialRotation}
-          bearingLabel={bearingLabel}
-        />
+        <View style={styles.compassContainer}>
+          {needsCalibration && (
+            <View style={[styles.calibrationBanner, { backgroundColor: theme.colors.bgLight }]}>
+              <Icon name="rotate-cw" type="feather" size={18} color={theme.colors.secondary} />
+              <Text style={[styles.calibrationText, { color: theme.colors.text }]}>
+                Compass needs calibration. Move your phone in a figure-8 motion.
+              </Text>
+            </View>
+          )}
+          <QiblaCompass
+            qiblaBearing={qiblaBearing}
+            dialRotation={dialRotation}
+            bearingLabel={bearingLabel}
+            isAligned={isAligned}
+          />
+          <QiblaHelper />
+        </View>
       );
     }
 
@@ -76,6 +83,7 @@ export default function QiblaScreen() {
       name="qibla"
       title="Qibla"
       showBackground
+      loading={isLoading}
       options={{
         headerRight: () => (
           <OptionsMenu
@@ -122,5 +130,24 @@ const styles = StyleSheet.create({
     fontSize: 48,
     fontFamily: 'Inter-Medium',
     marginBottom: 16,
+  },
+  compassContainer: {
+    flex: 1,
+  },
+  calibrationBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginHorizontal: 16,
+    marginTop: 12,
+  },
+  calibrationText: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: 'Inter-Medium',
+    lineHeight: 20,
   },
 });
