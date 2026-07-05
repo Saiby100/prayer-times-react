@@ -6,9 +6,12 @@ const components = {
   Button: (props: Record<string, unknown>, theme: Theme & { colors: Colors }) => {
     const icon = props.icon as Record<string, unknown> | undefined;
     return {
-      titleStyle: { ...font, color: theme.colors.text },
       color: theme.colors.bgLight,
       ...props,
+      // Merge the caller's titleStyle over the default color so a custom
+      // titleStyle (e.g. just fontSize) doesn't drop the title color and
+      // fall back to RNEUI's white default (invisible on light buttons).
+      titleStyle: { ...font, color: theme.colors.text, ...(props.titleStyle as object) },
       ...(icon ? { icon: { color: theme.colors.primary, ...icon } } : {}),
     };
   },

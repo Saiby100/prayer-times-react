@@ -33,7 +33,7 @@ export default function QiblaScreen() {
             title="Grant Permission"
             onPress={requestPermission}
             buttonStyle={{ backgroundColor: theme.colors.primary, borderRadius: 8 }}
-            titleStyle={{ fontFamily: 'Inter-Medium' }}
+            titleStyle={{ fontFamily: 'Inter-Medium', color: '#fff' }}
             containerStyle={styles.button}
           />
         </View>
