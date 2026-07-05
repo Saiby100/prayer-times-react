@@ -60,7 +60,9 @@ const Page = ({
   const headerOptions = {
     title,
     headerShown: true,
+    headerTitleAlign: 'left' as const,
     headerTitleStyle: { fontSize: 18, fontFamily: 'Inter-Medium', color: theme.colors.text },
+    headerTitleContainerStyle: { flex: 1 },
     headerStyle: { backgroundColor: theme.colors.bgLight },
     headerTintColor: theme.colors.text,
     ...options,
