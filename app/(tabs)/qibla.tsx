@@ -1,5 +1,5 @@
 import { Share, StyleSheet, View } from 'react-native';
-import { Button, Text, useTheme } from '@rneui/themed';
+import { Button, Icon, Text, useTheme } from '@rneui/themed';
 import { useRouter } from 'expo-router';
 import Page from '@/components/Page';
 import QiblaCompass from '@/components/QiblaCompass';
@@ -18,6 +18,7 @@ export default function QiblaScreen() {
     requestPermission,
     bearingLabel,
     isAligned,
+    needsCalibration,
   } = useQiblaCompass();
 
   const renderContent = () => {
@@ -53,12 +54,22 @@ export default function QiblaScreen() {
 
     if (qiblaBearing !== null) {
       return (
-        <QiblaCompass
-          qiblaBearing={qiblaBearing}
-          dialRotation={dialRotation}
-          bearingLabel={bearingLabel}
-          isAligned={isAligned}
-        />
+        <View style={styles.compassContainer}>
+          {needsCalibration && (
+            <View style={[styles.calibrationBanner, { backgroundColor: theme.colors.bgLight }]}>
+              <Icon name="rotate-cw" type="feather" size={18} color={theme.colors.secondary} />
+              <Text style={[styles.calibrationText, { color: theme.colors.text }]}>
+                Compass needs calibration. Move your phone in a figure-8 motion.
+              </Text>
+            </View>
+          )}
+          <QiblaCompass
+            qiblaBearing={qiblaBearing}
+            dialRotation={dialRotation}
+            bearingLabel={bearingLabel}
+            isAligned={isAligned}
+          />
+        </View>
       );
     }
 
@@ -117,5 +128,24 @@ const styles = StyleSheet.create({
     fontSize: 48,
     fontFamily: 'Inter-Medium',
     marginBottom: 16,
+  },
+  compassContainer: {
+    flex: 1,
+  },
+  calibrationBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginHorizontal: 16,
+    marginTop: 12,
+  },
+  calibrationText: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: 'Inter-Medium',
+    lineHeight: 20,
   },
 });
