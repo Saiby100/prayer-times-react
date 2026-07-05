@@ -3,6 +3,7 @@ import { Button, Icon, Text, useTheme } from '@rneui/themed';
 import { useRouter } from 'expo-router';
 import Page from '@/components/Page';
 import QiblaCompass from '@/components/QiblaCompass';
+import QiblaHelper from '@/components/QiblaHelper';
 import OptionsMenu from '@/components/OptionsMenu';
 import useQiblaCompass from '@/hooks/useQiblaCompass';
 
@@ -69,6 +70,7 @@ export default function QiblaScreen() {
             bearingLabel={bearingLabel}
             isAligned={isAligned}
           />
+          <QiblaHelper />
         </View>
       );
     }
