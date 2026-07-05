@@ -1,11 +1,11 @@
-import PTApi from '@/utils/PTApi';
-import { useRef, useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getCachedTimes, setCachedTimes, getDisabledPrayers } from '@/stores';
 import { getNextDay, getPrevDay, dateToString } from '@/utils/date';
+import { fetchTimes, areaToSlug } from '@/services/prayerTimes';
+import { toDisplayNames } from '@/utils/prayerNames';
 import log from '@/utils/logger';
 
 function usePTApi({ area }: { area: string }) {
-  const api = useRef(new PTApi());
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
 
@@ -20,7 +20,7 @@ function usePTApi({ area }: { area: string }) {
     setDate(newDate);
   };
 
-  const fetchTimes = async () => {
+  const fetchTimesData = async () => {
     const cached = getCachedTimes(date, area);
     if (cached) {
       log.debug('usePTApi: cache hit', {
@@ -30,23 +30,23 @@ function usePTApi({ area }: { area: string }) {
         year: date.getFullYear(),
       });
       return cached;
-    } else {
-      log.info('usePTApi: fetching times from API', {
-        type: 'api',
-        area,
-        date: date.toISOString(),
-      });
-      api.current.setArea(area);
-      return (await api.current.fetchTimes(date)) ?? [];
     }
+
+    log.info('usePTApi: fetching times from Supabase', {
+      type: 'api',
+      area,
+      date: date.toISOString(),
+    });
+    const slug = areaToSlug(area);
+    const data = await fetchTimes(slug, date);
+    return data.map(toDisplayNames);
   };
 
   const fetchAndSetTimes = async () => {
     setIsLoading(true);
     setError(false);
     try {
-      api.current.setArea(area);
-      const timesData = await fetchTimes();
+      const timesData = await fetchTimesData();
       if (!timesData || timesData.length === 0) {
         setError(true);
       } else {
@@ -61,14 +61,16 @@ function usePTApi({ area }: { area: string }) {
   };
 
   useEffect(() => {
+    fetchAndSetTimes();
+  }, [area]);
+
+  useEffect(() => {
     if (savedDate?.getMonth() !== date.getMonth()) {
-      // Fetch times data
       fetchAndSetTimes();
     }
   }, [JSON.stringify(date)]);
 
   useEffect(() => {
-    // Save times of the current month to storage
     if (!times || times.length === 0) return;
     if (
       date.getMonth() !== new Date().getMonth() ||
@@ -112,7 +114,6 @@ function usePTApi({ area }: { area: string }) {
     if (date.getDate() !== new Date().getDate()) return '';
     const now = new Date();
     const hiddenPrayers = getDisabledPrayers();
-    // Find the first visible prayer time that is after now
     const upcoming = Object.entries(todayTimes)
       .filter(([name]) => !hiddenPrayers.includes(name))
       .map(([, timeStr]) => {

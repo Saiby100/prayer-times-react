@@ -6,9 +6,14 @@ const components = {
   Button: (props: Record<string, unknown>, theme: Theme & { colors: Colors }) => {
     const icon = props.icon as Record<string, unknown> | undefined;
     return {
-      titleStyle: { ...font, color: theme.colors.text },
       color: theme.colors.bgLight,
       ...props,
+      // Default button titles to the primary color. Merge the caller's
+      // titleStyle over it so a custom titleStyle (e.g. just fontSize) keeps
+      // the color instead of falling back to RNEUI's white default (which is
+      // invisible on our light bgLight buttons). Buttons with a colored
+      // background (e.g. Qibla's primary button) override this explicitly.
+      titleStyle: { ...font, color: theme.colors.primary, ...(props.titleStyle as object) },
       ...(icon ? { icon: { color: theme.colors.primary, ...icon } } : {}),
     };
   },

@@ -1,4 +1,3 @@
-import PTApi from '@/utils/PTApi';
 import log from '@/utils/logger';
 import {
   getArea,
@@ -9,6 +8,8 @@ import {
   getDisabledPrayers,
   getNotificationType,
 } from '@/stores';
+import { fetchTimes, areaToSlug } from '@/services/prayerTimes';
+import { toDisplayNames } from '@/utils/prayerNames';
 import {
   schedulePushNotification,
   clearScheduledNotifications,
@@ -47,21 +48,19 @@ async function fetchPrayerTimesForDate(date: Date): Promise<Record<string, strin
     return null;
   }
 
-  // Try to get from cache first
   const cached = getCachedTimes(date, area);
   if (cached) {
     return cached[date.getDate() - 1];
   }
 
-  // Fetch from API if not in cache
   try {
-    const api = new PTApi();
-    api.setArea(area);
-    const times = await api.fetchTimes(date);
+    const slug = areaToSlug(area);
+    const data = await fetchTimes(slug, date);
+    const mapped = data.map(toDisplayNames);
 
-    if (times && times.length > 0) {
-      setCachedTimes(date, area, times as Record<string, string>[]);
-      return times[date.getDate() - 1] as Record<string, string>;
+    if (mapped.length > 0) {
+      setCachedTimes(date, area, mapped);
+      return mapped[date.getDate() - 1];
     }
   } catch (error) {
     log.error('scheduleReminders: error fetching times', {

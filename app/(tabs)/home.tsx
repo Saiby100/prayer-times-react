@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react';
 
 import * as SplashScreen from 'expo-splash-screen';
-import LoadingList from '@/components/LoadingList';
 import Page from '@/components/Page';
 import CalendarPopup from '@/components/CalendarPopup';
 import InfoPopup from '@/components/InfoPopup';
@@ -10,16 +9,16 @@ import Scrim from '@/components/Scrim';
 import usePTApi from '@/hooks/usePTApi';
 import useHijriDate from '@/hooks/useHijriDate';
 import useDisabledPrayers from '@/hooks/notifications/useDisabledPrayers';
+import useArea from '@/hooks/useArea';
 import OptionsMenu from '@/components/OptionsMenu';
 import ConfirmPopup from '@/components/ConfirmPopup';
 import PrayerTimeRow from '@/components/PrayerTimeRow';
-import { getArea } from '@/stores';
 import { Share, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Button, Text, useTheme } from '@rneui/themed';
 
 export default function Home() {
-  const area = getArea() ?? '';
+  const area = useArea() ?? '';
   const router = useRouter();
 
   const { theme } = useTheme();
@@ -60,6 +59,7 @@ export default function Home() {
       name="home"
       title={area}
       showBackground
+      loading={isLoading}
       error={error}
       onRetry={retry}
       options={{
@@ -75,73 +75,69 @@ export default function Home() {
       }}
     >
       <Scrim style={styles.scrimContent}>
-        {isLoading ? (
-          <LoadingList />
-        ) : (
-          <View style={styles.mainContent}>
-            <View style={styles.dateHeader}>
-              <View>
-                <Text style={styles.dayString}>{dayString}</Text>
-                {hijriDateString &&
-                  (hasHijriInfo ? (
-                    <TouchableOpacity onPress={() => setHijriInfoVisible(true)}>
-                      <Text style={styles.hijriLink}>{hijriDateString}</Text>
-                    </TouchableOpacity>
-                  ) : (
-                    <Text style={styles.hijriText}>{hijriDateString}</Text>
-                  ))}
-              </View>
-              <View style={styles.dateActions}>
-                <Button
-                  size="sm"
-                  radius="md"
-                  type="outline"
-                  titleStyle={styles.todayButtonTitle}
-                  buttonStyle={styles.todayButton}
-                  title={String(new Date().getDate())}
-                  onPress={() => navigate.today()}
-                />
-                <Button
-                  size="sm"
-                  radius="md"
-                  type="outline"
-                  buttonStyle={styles.calendarButton}
-                  icon={{ name: 'calendar', type: 'feather', size: 16 }}
-                  onPress={() => setCalendarVisible(true)}
-                />
-              </View>
-            </View>
-
-            <Card style={styles.timesCard}>
-              {Object.keys(todayTimes ?? {})
-                .filter((key) => !isPrayerDisabled(key))
-                .map((key) => (
-                  <PrayerTimeRow
-                    key={key}
-                    name={key}
-                    time={todayTimes[key]}
-                    isHighlighted={todayTimes[key] === highlighted}
-                    colors={theme.colors}
-                    onLongPress={() => setPopupPrayer(key)}
-                  />
+        <View style={styles.mainContent}>
+          <View style={styles.dateHeader}>
+            <View>
+              <Text style={styles.dayString}>{dayString}</Text>
+              {hijriDateString &&
+                (hasHijriInfo ? (
+                  <TouchableOpacity onPress={() => setHijriInfoVisible(true)}>
+                    <Text style={styles.hijriLink}>{hijriDateString}</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <Text style={styles.hijriText}>{hijriDateString}</Text>
                 ))}
-            </Card>
-
-            <View style={styles.navRow}>
+            </View>
+            <View style={styles.dateActions}>
               <Button
-                onPress={() => navigate.prev()}
-                icon={{ name: 'chevron-left', type: 'feather', size: 24 }}
-                containerStyle={[styles.navButton, { backgroundColor: theme.colors.bgLight }]}
+                size="sm"
+                radius="md"
+                type="outline"
+                titleStyle={styles.todayButtonTitle}
+                buttonStyle={styles.todayButton}
+                title={String(new Date().getDate())}
+                onPress={() => navigate.today()}
               />
-              <Text style={styles.dateString}>{dateString}</Text>
               <Button
-                onPress={() => navigate.next()}
-                icon={{ name: 'chevron-right', type: 'feather', size: 24 }}
-                containerStyle={[styles.navButton, { backgroundColor: theme.colors.bgLight }]}
+                size="sm"
+                radius="md"
+                type="outline"
+                buttonStyle={styles.calendarButton}
+                icon={{ name: 'calendar', type: 'feather', size: 16 }}
+                onPress={() => setCalendarVisible(true)}
               />
             </View>
           </View>
-        )}
+
+          <Card style={styles.timesCard}>
+            {Object.keys(todayTimes ?? {})
+              .filter((key) => !isPrayerDisabled(key))
+              .map((key) => (
+                <PrayerTimeRow
+                  key={key}
+                  name={key}
+                  time={todayTimes[key]}
+                  isHighlighted={todayTimes[key] === highlighted}
+                  colors={theme.colors}
+                  onLongPress={() => setPopupPrayer(key)}
+                />
+              ))}
+          </Card>
+
+          <View style={styles.navRow}>
+            <Button
+              onPress={() => navigate.prev()}
+              icon={{ name: 'chevron-left', type: 'feather', size: 24 }}
+              containerStyle={[styles.navButton, { backgroundColor: theme.colors.bgLight }]}
+            />
+            <Text style={styles.dateString}>{dateString}</Text>
+            <Button
+              onPress={() => navigate.next()}
+              icon={{ name: 'chevron-right', type: 'feather', size: 24 }}
+              containerStyle={[styles.navButton, { backgroundColor: theme.colors.bgLight }]}
+            />
+          </View>
+        </View>
         <ConfirmPopup
           visible={popupPrayer !== null}
           title={

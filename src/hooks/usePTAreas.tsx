@@ -1,21 +1,20 @@
-import { useEffect, useRef, useState } from 'react';
-import PTApi from '@/utils/PTApi';
+import { useEffect, useState } from 'react';
+import { fetchAreas, Area } from '@/services/prayerTimes';
 
 function usePTAreas() {
-  const api = useRef(new PTApi());
-  const [areas, setAreas] = useState<string[]>([]);
+  const [areas, setAreas] = useState<Area[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
 
-  const fetchAreas = async () => {
+  const fetch = async () => {
     setIsLoading(true);
     setError(false);
     try {
-      const fetchedAreas = await api.current.fetchAreas();
-      if (!fetchedAreas || fetchedAreas.length === 0) {
+      const fetched = await fetchAreas();
+      if (fetched.length === 0) {
         setError(true);
       } else {
-        setAreas(fetchedAreas);
+        setAreas(fetched);
       }
     } catch {
       setError(true);
@@ -25,10 +24,10 @@ function usePTAreas() {
   };
 
   useEffect(() => {
-    fetchAreas();
+    fetch();
   }, []);
 
-  return { areas, isLoading, error, retry: fetchAreas };
+  return { areas, isLoading, error, retry: fetch };
 }
 
 export default usePTAreas;

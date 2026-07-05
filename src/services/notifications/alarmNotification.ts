@@ -5,6 +5,7 @@ import notifee, {
   TriggerType,
   type TimestampTrigger,
 } from '@notifee/react-native';
+import { Platform } from 'react-native';
 import log from '@/utils/logger';
 
 const ALARM_CHANNEL_ID = 'prayer_alarm_notifee';
@@ -21,6 +22,8 @@ type AlarmNotificationParams = {
 };
 
 async function createAlarmChannel() {
+  if (Platform.OS !== 'android') return;
+
   await notifee.deleteChannel(ALARM_CHANNEL_ID);
 
   await notifee.createChannel({

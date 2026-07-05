@@ -1,7 +1,6 @@
 import { StyleSheet, FlatList } from 'react-native';
 import { useCallback, useMemo, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
-import LoadingList from '@/components/LoadingList';
 import { setArea } from '@/stores';
 import * as SplashScreen from 'expo-splash-screen';
 import Page from '@/components/Page';
@@ -16,7 +15,7 @@ export default function Areas() {
   const filteredAreas = useMemo(() => {
     if (!search.trim()) return areas;
     const query = search.toLowerCase().trim();
-    return areas.filter((area) => area.toLowerCase().includes(query));
+    return areas.filter((area) => area.name.toLowerCase().includes(query));
   }, [areas, search]);
 
   const navigateHome = (area: string) => {
@@ -32,22 +31,25 @@ export default function Areas() {
   );
 
   return (
-    <Page name="areas" title="Select Area" showBackground error={error} onRetry={retry}>
-      {isLoading ? (
-        <LoadingList />
-      ) : (
-        <FlatList
-          data={filteredAreas}
-          keyExtractor={(item, index) => index.toString()}
-          ListHeaderComponent={
-            <SearchHeader value={search} onChangeText={setSearch} placeholder="Search areas..." />
-          }
-          renderItem={({ item }) => <AreaCard area={item} onPress={navigateHome} />}
-          contentContainerStyle={styles.list}
-          stickyHeaderIndices={[0]}
-          keyboardDismissMode="on-drag"
-        />
-      )}
+    <Page
+      name="areas"
+      title="Select Area"
+      showBackground
+      loading={isLoading}
+      error={error}
+      onRetry={retry}
+    >
+      <FlatList
+        data={filteredAreas}
+        keyExtractor={(item) => item.slug}
+        ListHeaderComponent={
+          <SearchHeader value={search} onChangeText={setSearch} placeholder="Search areas..." />
+        }
+        renderItem={({ item }) => <AreaCard area={item.name} onPress={navigateHome} />}
+        contentContainerStyle={styles.list}
+        stickyHeaderIndices={[0]}
+        keyboardDismissMode="on-drag"
+      />
     </Page>
   );
 }
