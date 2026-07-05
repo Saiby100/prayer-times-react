@@ -8,10 +8,12 @@ const components = {
     return {
       color: theme.colors.bgLight,
       ...props,
-      // Merge the caller's titleStyle over the default color so a custom
-      // titleStyle (e.g. just fontSize) doesn't drop the title color and
-      // fall back to RNEUI's white default (invisible on light buttons).
-      titleStyle: { ...font, color: theme.colors.text, ...(props.titleStyle as object) },
+      // Default button titles to the primary color. Merge the caller's
+      // titleStyle over it so a custom titleStyle (e.g. just fontSize) keeps
+      // the color instead of falling back to RNEUI's white default (which is
+      // invisible on our light bgLight buttons). Buttons with a colored
+      // background (e.g. Qibla's primary button) override this explicitly.
+      titleStyle: { ...font, color: theme.colors.primary, ...(props.titleStyle as object) },
       ...(icon ? { icon: { color: theme.colors.primary, ...icon } } : {}),
     };
   },
