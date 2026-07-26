@@ -11,8 +11,6 @@ import {
   setNotificationPermissionDenied,
   getReminderOffset,
   setReminderOffset as storeSetReminderOffset,
-  getNotificationType,
-  setNotificationType as storeSetNotificationType,
 } from '@/stores';
 import log from '@/utils/logger';
 
@@ -66,15 +64,9 @@ function usePrayerReminders() {
   }
 
   const reminderOffset = getReminderOffset();
-  const notificationType = getNotificationType();
 
   function setReminderOffset(minutes: number) {
     storeSetReminderOffset(minutes);
-    schedule();
-  }
-
-  function setNotificationType(type: 'notification' | 'alarm') {
-    storeSetNotificationType(type);
     schedule();
   }
 
@@ -84,8 +76,6 @@ function usePrayerReminders() {
     clear,
     reminderOffset,
     setReminderOffset,
-    notificationType,
-    setNotificationType,
   };
 }
 

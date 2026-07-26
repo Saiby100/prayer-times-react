@@ -81,10 +81,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       {
         icon: './assets/images/notification-icon.png',
         color: '#0D7C5F',
-        sounds: ['./assets/sounds/alarm.wav'],
       },
     ],
-    './plugins/withAlarmSound',
   ],
   experiments: {
     typedRoutes: true,
@@ -101,7 +99,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   android: {
     package: getBundleId(),
     versionCode: getVersionCode(appVersion),
-    permissions: ['SCHEDULE_EXACT_ALARM'],
     adaptiveIcon: {
       foregroundImage: './assets/images/adaptive-icon.png',
       backgroundColor: '#08182f',

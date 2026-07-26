@@ -1,7 +1,5 @@
 import getStorage from '@/utils/localStore';
 
-type NotificationType = 'notification' | 'alarm';
-
 // --- Reminders enabled ---
 
 export function isRemindersEnabled(): boolean {
@@ -20,16 +18,6 @@ export function getReminderOffset(): number {
 
 export function setReminderOffset(minutes: number): void {
   getStorage().set('prayerReminderPref', minutes);
-}
-
-// --- Notification type ---
-
-export function getNotificationType(): NotificationType {
-  return (getStorage().getString('notificationType') as NotificationType) ?? 'notification';
-}
-
-export function setNotificationType(type: NotificationType): void {
-  getStorage().set('notificationType', type);
 }
 
 // --- Disabled prayers ---
