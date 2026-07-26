@@ -40,7 +40,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   version: appVersion,
   orientation: 'portrait',
   icon: './assets/images/icon.png',
-  scheme: 'myapp',
+  scheme: 'reminder',
   userInterfaceStyle: 'automatic',
   newArchEnabled: true,
   ios: {
