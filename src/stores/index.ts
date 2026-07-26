@@ -18,10 +18,4 @@ export {
   isNotificationPermissionDenied,
   setNotificationPermissionDenied,
 } from './notificationStore';
-export {
-  getLastReleaseCheck,
-  setLastReleaseCheck,
-  getDismissedReleaseVersion,
-  setDismissedReleaseVersion,
-} from './releaseStore';
 export { getDeviceId } from './deviceStore';

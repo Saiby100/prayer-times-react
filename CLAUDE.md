@@ -48,7 +48,7 @@ Build and deploy use EAS (`eas build`, `eas update`). CI workflows live in `.git
 - **UI library** — `@rneui/themed` (React Native Elements) for components and theming.
 - **Notification flow** — On app open, `registerBackgroundTask()` (from `backgroundTasks/`) sets up daily task → `scheduleTodayNotifications()` (from `services/notifications/scheduleReminders`) runs immediately → background task repeats every 24h.
 - **Background task pattern** — Each task exports `NAME`, `handler`, and `options` constants. `registerDefinedTask` object provides per-task registration methods.
-- **Storage** — All MMKV access is centralized in `src/stores/` with domain-scoped modules (`areaStore`, `prayerTimesCache`, `appearanceStore`, `notificationStore`, `releaseStore`, `deviceStore`). Barrel export at `@/stores`. No file outside `src/stores/` should import `getStorage` directly.
+- **Storage** — All MMKV access is centralized in `src/stores/` with domain-scoped modules (`areaStore`, `prayerTimesCache`, `appearanceStore`, `notificationStore`, `deviceStore`). Barrel export at `@/stores`. No file outside `src/stores/` should import `getStorage` directly.
 
 ## IMPORTANT: Always Clarify Before Acting
 
