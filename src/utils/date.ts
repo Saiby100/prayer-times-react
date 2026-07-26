@@ -38,6 +38,14 @@ function getPrevMonth(current: Date) {
   return prevMonth;
 }
 
+function isSameDay(a: Date, b: Date) {
+  return (
+    a.getDate() === b.getDate() &&
+    a.getMonth() === b.getMonth() &&
+    a.getFullYear() === b.getFullYear()
+  );
+}
+
 function dateToString(current: Date) {
   return current.toLocaleDateString('en-GB', {
     day: 'numeric',
@@ -86,6 +94,7 @@ export {
   getPrevDay,
   getNextMonth,
   getPrevMonth,
+  isSameDay,
   dateToString,
   dateToHijriString,
   parseHijriDate,

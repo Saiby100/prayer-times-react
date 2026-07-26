@@ -3,10 +3,29 @@ import {
   getPrevDay,
   getNextMonth,
   getPrevMonth,
+  isSameDay,
   dateToString,
   dateToHijriString,
   parseHijriDate,
 } from '../date';
+
+describe('isSameDay', () => {
+  it('matches the same calendar day regardless of time of day', () => {
+    expect(isSameDay(new Date(2026, 6, 3, 4, 30), new Date(2026, 6, 3, 22, 15))).toBe(true);
+  });
+
+  it('does not match the same day number in a different month', () => {
+    expect(isSameDay(new Date(2026, 6, 3), new Date(2026, 7, 3))).toBe(false);
+  });
+
+  it('does not match the same day and month in a different year', () => {
+    expect(isSameDay(new Date(2026, 6, 3), new Date(2027, 6, 3))).toBe(false);
+  });
+
+  it('does not match different days in the same month', () => {
+    expect(isSameDay(new Date(2026, 6, 3), new Date(2026, 6, 4))).toBe(false);
+  });
+});
 
 describe('getNextDay', () => {
   it('returns the next calendar day', () => {
