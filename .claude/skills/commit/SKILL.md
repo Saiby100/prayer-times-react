@@ -21,7 +21,7 @@ Create a commit containing only the changes you made, plus any related changes t
    - **Types**: `feat` (new feature), `fix` (bug fix), `chore` (maintenance), `wip` (work in progress)
    - **Body**: If the commit touches multiple concerns, add a bullet list explaining each change.
    - Keep the title under 72 characters.
-6. Commit using a HEREDOC for the message. Append `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`.
+6. Commit using a HEREDOC for the message. Append `Co-Authored-By: Claude <Model> <noreply@anthropic.com>`, where `<Model>` is the model you are actually running as (e.g. `Opus 5`) — do not copy a hardcoded version from this file.
 7. Run `git status` after committing to verify success.
 
 ## Rules
