@@ -25,11 +25,16 @@
       "channel": "production",
       "environment": "production",
       "android": {
-        "buildType": "apk"
+        "buildType": "app-bundle"
       }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "android": {
+        "track": "internal",
+        "changesNotSentForReview": false
+      }
+    }
   }
 }

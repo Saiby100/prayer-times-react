@@ -21,6 +21,7 @@ export default function useReleaseUpdate(options?: UseReleaseUpdateOptions) {
   const { autoCheck = false } = options ?? {};
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [apkDownloadUrl, setApkDownloadUrl] = useState<string | null>(null);
+  const [releaseUrl, setReleaseUrl] = useState<string | null>(null);
   const [latestVersion, setLatestVersion] = useState<string | null>(null);
   const [checkStatus, setCheckStatus] = useState<ReleaseCheckStatus>('idle');
   const isChecking = useRef(false);
@@ -58,6 +59,7 @@ export default function useReleaseUpdate(options?: UseReleaseUpdateOptions) {
       });
       setLatestVersion(version);
       setApkDownloadUrl(release.apkDownloadUrl);
+      setReleaseUrl(release.htmlUrl);
       setUpdateAvailable(true);
       setCheckStatus('update-available');
       isChecking.current = false;
@@ -72,11 +74,14 @@ export default function useReleaseUpdate(options?: UseReleaseUpdateOptions) {
     return false;
   }, []);
 
+  // Production releases ship to Play as an AAB, so there is usually no APK
+  // asset to link to. Fall back to the release page when one is absent.
   const downloadUpdate = useCallback(() => {
-    if (!apkDownloadUrl) return;
-    log.info('useReleaseUpdate: opening APK download URL', { type: 'update' });
-    Linking.openURL(apkDownloadUrl);
-  }, [apkDownloadUrl]);
+    const url = apkDownloadUrl ?? releaseUrl;
+    if (!url) return;
+    log.info('useReleaseUpdate: opening update URL', { type: 'update' });
+    Linking.openURL(url);
+  }, [apkDownloadUrl, releaseUrl]);
 
   useEffect(() => {
     if (autoCheck && shouldCheckForRelease()) {
