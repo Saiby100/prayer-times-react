@@ -1,72 +1,81 @@
-# Reminder - Prayer Times App
+# Reminder
 
-A mobile app that displays Islamic prayer (salah) times for areas in South Africa. Data is sourced from [masjids.co.za](https://masjids.co.za/salaahtimes) and presented with date navigation, Hijri calendar info, and configurable prayer reminders.
+Prayer times for South Africa, on your phone.
 
-Built with [Expo](https://expo.dev) and [React Native](https://reactnative.dev).
+Reminder shows daily salah times for your area, tells you which way the Qibla is, and lets you know before each prayer comes in — so you never have to guess or go looking.
 
-## Features
+Built with [Expo](https://expo.dev) and [React Native](https://reactnative.dev). Android and iOS.
 
-- **Prayer times by area** - Select your area and view daily prayer times scraped from masjids.co.za
-- **Date navigation** - Browse prayer times for any day with a calendar picker or swipe between dates
-- **Hijri calendar** - Displays the current Islamic date alongside the Gregorian date
-- **Prayer reminders** - Schedule notifications before each prayer, with configurable lead time
-- **Background scheduling** - A daily background task keeps reminders up to date automatically
-- **Dark mode** - Light and dark themes that follow system preference or manual selection
-- **Custom backgrounds** - Choose from a selection of background images
-- **Auto-updates** - Checks GitHub releases for new versions and prompts to update (Android)
-- **Share** - Share the app with others via the system share dialog
+## What you can do
 
-## Getting Started
+- **See today's prayer times** — Pick your area once; the app remembers it. Times are shown for the whole day at a glance.
+- **Look ahead or back** — Swipe between days or jump to any date with the calendar picker. The Islamic (Hijri) date is shown alongside the Gregorian one.
+- **Get reminded** — Turn on notifications and choose how many minutes before each prayer you want to be alerted. Pick a normal notification or a louder alarm-style alert.
+- **Choose which prayers to be reminded about** — Hide the ones you don't need; the rest stay on.
+- **Find the Qibla** — A live compass points toward the Kaaba using your location.
+- **Read the 99 Names** — The names of Allah with their meanings, built into the app.
+- **Make it yours** — Three themes with matching wallpapers: Light Mosque, Dark Mosque, and Serene Night.
+- **Stay up to date** — The app checks for new versions and offers to update (Android).
+
+Reminders keep working in the background: the app refreshes tomorrow's schedule daily, so alerts stay accurate without you opening it.
+
+## Getting the app
+
+Android builds are published on the [Releases](../../releases) page — download the APK from the latest release and install it.
+
+## Where the times come from
+
+Prayer times are sourced from [masjids.co.za](https://masjids.co.za/salaahtimes) and served through a Supabase backend. Once fetched, a month's times are cached on your device, so the app works offline for days you've already viewed.
+
+## Permissions
+
+| Permission    | Why it's needed                                  |
+| ------------- | ------------------------------------------------ |
+| Notifications | To alert you before each prayer                  |
+| Location      | To work out the Qibla direction from where you are |
+| Exact alarms  | So reminders fire at the right minute (Android)  |
+
+Your area choice, settings, and cached times stay on your device. Location is used only to calculate the Qibla and is never stored or sent anywhere.
+
+## For developers
 
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) 20+
-- [Expo CLI](https://docs.expo.dev/get-started/installation/)
-- Android Studio (for Android development) or Xcode (for iOS development)
+- Android Studio (Android) or Xcode (iOS)
+- A `.env` with Supabase credentials
 
-### Installation
+### Setup
 
 ```bash
 npm install
-```
-
-### Running the App
-
-```bash
 npx expo start          # Start the dev server
 npx expo run:android    # Run on Android
 npx expo run:ios        # Run on iOS
-npx expo start --web    # Run on web
+npm run lint            # ESLint
+npm test                # Jest (jest-expo)
 ```
 
-### Linting and Testing
-
-```bash
-npm run lint            # Run ESLint
-npm test                # Run tests with jest-expo
-```
-
-## Project Structure
+### Project layout
 
 ```
 app/                    # File-based routes (Expo Router)
-  _layout.tsx           # Root layout with theme provider
-  index.tsx             # Splash screen, redirects to /areas or /home
+  (tabs)/               # Home, Qibla, 99 Names
   areas.tsx             # Area selector
-  home.tsx              # Main prayer times view
-  settings.tsx          # Notification and theme preferences
+  settings/             # Notifications, appearance, preferences, about
 
 src/
-  components/           # Reusable UI components
-  hooks/                # Custom React hooks (data fetching, notifications, etc.)
-  services/             # Notification scheduling, GitHub API
-  backgroundTasks/      # Background task definitions
-  theme/                # Light/dark color schemes and component overrides
-  utils/                # API client, storage, date helpers
-  config/               # Hijri date configuration
+  components/           # Reusable UI
+  hooks/                # Data fetching, notifications, Qibla, theming
+  services/             # Supabase client, notification scheduling, GitHub releases
+  stores/               # MMKV-backed persistence, one module per domain
+  backgroundTasks/      # Daily reminder scheduling task
+  theme/                # Presets, colors, component overrides
 ```
 
-## Tech Stack
+See [CLAUDE.md](CLAUDE.md) for architecture notes and code conventions.
+
+### Tech stack
 
 | Category      | Library                                  |
 | ------------- | ---------------------------------------- |
@@ -75,14 +84,8 @@ src/
 | UI            | @rneui/themed (React Native Elements)    |
 | Storage       | react-native-mmkv                        |
 | Notifications | expo-notifications, expo-background-task |
-| Data source   | react-native-cheerio (HTML scraping)     |
 | Backend       | Supabase                                 |
 
-## Build and Deploy
+### Build and release
 
-Builds are managed with [EAS Build](https://docs.expo.dev/build/introduction/). CI workflows in `.github/workflows/` handle:
-
-- **Production build** - Triggers on push to `main`
-- **Preview / Dev builds** - Triggered manually
-- **OTA updates** - Published via `eas update`
-- **GitHub releases** - Downloads the APK from EAS and creates a tagged release
+Builds run on [EAS Build](https://docs.expo.dev/build/introduction/), driven by workflows in `.github/workflows/`: production Android/iOS builds, preview and dev builds, OTA updates via `eas update`, and a release job that pulls the APK from EAS and publishes a tagged GitHub release.
