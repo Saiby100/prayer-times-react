@@ -37,12 +37,6 @@ export default function TabsLayout() {
           tabBarIcon: ({ color }) => <Icon name="compass" type="feather" color={color} size={20} />,
         }}
       />
-      <Tabs.Screen
-        name="names"
-        options={{
-          href: null,
-        }}
-      />
     </Tabs>
   );
 }
