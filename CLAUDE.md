@@ -18,7 +18,7 @@ Build and deploy use EAS (`eas build`, `eas update`). CI workflows live in `.git
 
 ## Architecture
 
-**Expo Router app** (file-based routing) for displaying Islamic prayer times fetched from Supabase.
+**Expo Router app** (file-based routing) for displaying Islamic prayer times fetched from Supabase. Expo SDK 54 / React Native 0.81 / React 19, targeting Android API 36.
 
 ### Routes (`app/`)
 
@@ -45,7 +45,8 @@ Build and deploy use EAS (`eas build`, `eas update`). CI workflows live in `.git
 
 - **No Redux/Context** — state is managed via React hooks + MMKV for persistence.
 - **Path alias** — `@/*` maps to `./src/*` (configured in `tsconfig.json`).
-- **UI library** — `@rneui/themed` (React Native Elements) for components and theming.
+- **UI library** — `@rneui/themed` v5 (React Native Elements) for components and theming. Its icon sets (`feather`, `material`, `ionicon`) are registered against `@expo/vector-icons` in `app/_layout.tsx` via `registerCustomIconType`; register any new icon `type` there too, or it renders blank.
+- **Edge-to-edge** — Android always draws behind the status and navigation bars. Use `react-native-safe-area-context` insets for spacing; status/navigation bar colour props are ignored. Status bar icon style follows the in-app theme via `expo-status-bar` in `Page`.
 - **Notification flow** — On app open, `registerBackgroundTask()` (from `backgroundTasks/`) sets up daily task → `scheduleTodayNotifications()` (from `services/notifications/scheduleReminders`) runs immediately → background task repeats every 24h.
 - **Background task pattern** — Each task exports `NAME`, `handler`, and `options` constants. `registerDefinedTask` object provides per-task registration methods.
 - **Storage** — All MMKV access is centralized in `src/stores/` with domain-scoped modules (`areaStore`, `prayerTimesCache`, `appearanceStore`, `notificationStore`, `deviceStore`). Barrel export at `@/stores`. No file outside `src/stores/` should import `getStorage` directly.

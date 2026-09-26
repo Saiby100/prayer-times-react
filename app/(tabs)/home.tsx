@@ -56,7 +56,6 @@ export default function Home() {
 
   return (
     <Page
-      name="home"
       title={area}
       showBackground
       loading={isLoading}

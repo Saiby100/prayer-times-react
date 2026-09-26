@@ -80,7 +80,6 @@ export default function QiblaScreen() {
 
   return (
     <Page
-      name="qibla"
       title="Qibla"
       showBackground
       loading={isLoading}

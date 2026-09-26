@@ -23,8 +23,6 @@ const CALIBRATION_DEBOUNCE_COUNT = 2;
 type QiblaCompassState = {
   /** Qibla bearing in degrees from true north (0-360). Null if location unknown. */
   qiblaBearing: number | null;
-  /** Current device compass heading in degrees (0-360). Null if sensor unavailable. */
-  compassHeading: number | null;
   /** Animated rotation for the compass dial in degrees. */
   dialRotation: SharedValue<number>;
   /** Whether compass/location data is still loading. */
@@ -45,7 +43,6 @@ type QiblaCompassState = {
 
 const useQiblaCompass = (): QiblaCompassState => {
   const [qiblaBearing, setQiblaBearing] = useState<number | null>(null);
-  const [compassHeading, setCompassHeading] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [sensorAvailable, setSensorAvailable] = useState(true);
@@ -124,8 +121,6 @@ const useQiblaCompass = (): QiblaCompassState => {
             heading = smoothHeading(previousHeading.current, corrected, alpha);
           }
           previousHeading.current = heading;
-
-          setCompassHeading(heading);
 
           const bearing = qiblaBearingRef.current;
           if (bearing !== null) {
@@ -224,7 +219,6 @@ const useQiblaCompass = (): QiblaCompassState => {
 
   return {
     qiblaBearing,
-    compassHeading,
     dialRotation,
     isLoading,
     permissionDenied,

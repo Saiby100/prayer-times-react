@@ -1,22 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Dimensions,
   ImageBackground,
   InteractionManager,
-  StatusBar,
   StyleProp,
   StyleSheet,
   View,
   ViewStyle,
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, ScreenProps } from 'expo-router';
 import { useTheme } from '@rneui/themed';
 import useAppearance from '@/hooks/useAppearance';
 import NetworkError from '@/components/NetworkError';
 
-type PageProps = ScreenProps & {
+type PageProps = {
+  /** Screen options merged over the default header options. */
+  options?: ScreenProps['options'];
   /** Page content. */
   children?: React.ReactNode;
   /** Header title text. */
@@ -37,7 +38,6 @@ type PageProps = ScreenProps & {
 
 const Page = ({
   children,
-  name,
   options,
   title,
   contentStyle,
@@ -48,7 +48,7 @@ const Page = ({
   onRetry,
 }: PageProps) => {
   const { theme } = useTheme();
-  const { wallpaperSource } = useAppearance();
+  const { wallpaperSource, themeMode } = useAppearance();
   const [ready, setReady] = useState(!deferContent);
 
   useEffect(() => {
@@ -79,6 +79,8 @@ const Page = ({
       children
     );
   const useBackground = showBackground && wallpaperSource;
+  // Status bar is transparent with edge-to-edge; icon colour must follow the in-app theme
+  const statusBarStyle = themeMode === 'dark' ? 'light' : 'dark';
 
   if (useBackground) {
     return (
@@ -86,11 +88,11 @@ const Page = ({
         <ImageBackground
           source={wallpaperSource}
           resizeMode="cover"
-          style={[StyleSheet.absoluteFill, { height: Dimensions.get('screen').height }]}
+          style={StyleSheet.absoluteFill}
         />
         <SafeAreaView style={[styles.view, contentStyle]}>
-          <Stack.Screen name={name} options={headerOptions} />
-          <StatusBar backgroundColor={theme.colors.background} />
+          <Stack.Screen options={headerOptions} />
+          <StatusBar style={statusBarStyle} />
           <View style={styles.background}>{content}</View>
         </SafeAreaView>
       </View>
@@ -99,8 +101,8 @@ const Page = ({
 
   return (
     <SafeAreaView style={[styles.view, { backgroundColor: theme.colors.background }, contentStyle]}>
-      <Stack.Screen name={name} options={headerOptions} />
-      <StatusBar backgroundColor={theme.colors.background} />
+      <Stack.Screen options={headerOptions} />
+      <StatusBar style={statusBarStyle} />
       {content}
     </SafeAreaView>
   );

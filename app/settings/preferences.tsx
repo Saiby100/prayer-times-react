@@ -13,7 +13,6 @@ export default function PreferenceSettings() {
 
   return (
     <Page
-      name="settings/preferences"
       title="Preferences"
       options={{ headerBackVisible: true }}
       contentStyle={styles.content}

@@ -25,7 +25,6 @@ export default function NotificationSettings() {
 
   return (
     <Page
-      name="settings/notifications"
       title="Notifications"
       options={{ headerBackVisible: true }}
       contentStyle={styles.content}

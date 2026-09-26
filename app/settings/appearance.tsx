@@ -28,7 +28,6 @@ export default function AppearanceSettings() {
 
   return (
     <Page
-      name="settings/appearance"
       title="Appearance"
       options={{ headerBackVisible: true }}
       contentStyle={styles.content}

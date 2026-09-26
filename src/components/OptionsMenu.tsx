@@ -1,5 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Text, Overlay, useTheme } from '@rneui/themed';
 import { Icon } from '@rneui/themed';
 
@@ -20,6 +21,7 @@ type OptionsMenuProps = {
 export default function OptionsMenu({ items }: OptionsMenuProps) {
   const [visible, setVisible] = useState(false);
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
 
   const handleItemPress = (onPress: () => void) => {
     setVisible(false);
@@ -36,7 +38,11 @@ export default function OptionsMenu({ items }: OptionsMenuProps) {
         isVisible={visible}
         onBackdropPress={() => setVisible(false)}
         animationType="fade"
-        overlayStyle={[styles.overlay, { backgroundColor: theme.colors.background }]}
+        overlayStyle={[
+          styles.overlay,
+          // Modals draw under the status bar with edge-to-edge, so clear it explicitly
+          { top: insets.top + 60, backgroundColor: theme.colors.background },
+        ]}
       >
         <View>
           {items.map((item) => (
@@ -58,7 +64,6 @@ export default function OptionsMenu({ items }: OptionsMenuProps) {
 const styles = StyleSheet.create({
   overlay: {
     position: 'absolute',
-    top: 60,
     right: 16,
     borderRadius: 8,
     padding: 4,

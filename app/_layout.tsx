@@ -1,12 +1,19 @@
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { useTheme as useNavTheme } from '@react-navigation/native';
-import { ThemeProvider, useTheme } from '@rneui/themed';
+import { ThemeProvider, useTheme, registerCustomIconType } from '@rneui/themed';
+import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as SystemUI from 'expo-system-ui';
 import * as Notifications from 'expo-notifications';
 import createAppTheme from '@/theme';
 import { getThemeId } from '@/stores';
 import { getPresetById } from '@/theme/presets';
+
+// RNEUI v5 looks for the modular @react-native-vector-icons/* packages, which aren't installed.
+// Use @expo/vector-icons instead so no extra native modules or font linking are needed.
+registerCustomIconType('feather', Feather);
+registerCustomIconType('material', MaterialIcons);
+registerCustomIconType('ionicon', Ionicons);
 
 const savedPreset = getPresetById(getThemeId());
 const savedMode = savedPreset?.mode ?? 'light';
@@ -41,7 +48,6 @@ function InnerLayout() {
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: theme.colors.background },
-        navigationBarColor: theme.colors.background,
         presentation: 'transparentModal',
       }}
     />
