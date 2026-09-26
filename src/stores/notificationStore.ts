@@ -35,7 +35,7 @@ export function subscribeDisabledPrayers(listener: () => void) {
 export function getDisabledPrayers(): string[] {
   if (!disabledPrayersSnapshot) {
     const raw = getStorage().getString('disabledPrayerReminders');
-    disabledPrayersSnapshot = raw ? JSON.parse(raw) : [];
+    disabledPrayersSnapshot = raw ? (JSON.parse(raw) as string[]) : [];
   }
   return disabledPrayersSnapshot;
 }

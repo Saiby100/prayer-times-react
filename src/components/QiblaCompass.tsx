@@ -1,4 +1,4 @@
-import { Dimensions, StyleSheet, View } from 'react-native';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Text, useTheme } from '@rneui/themed';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { SharedValue } from 'react-native-reanimated';
@@ -15,8 +15,6 @@ type QiblaCompassProps = {
   isAligned: boolean;
 };
 
-const COMPASS_SIZE = Dimensions.get('window').width * 0.8;
-const COMPASS_RADIUS = COMPASS_SIZE / 2;
 const TICK_COUNT = 72;
 const CARDINAL_DIRECTIONS = [
   { label: 'N', angle: 0 },
@@ -32,6 +30,10 @@ const QiblaCompass = ({
   isAligned,
 }: QiblaCompassProps) => {
   const { theme } = useTheme();
+  const { width, height } = useWindowDimensions();
+  // Android 16 ignores portrait lock on large screens, so cap by height to fit landscape
+  const compassSize = Math.min(width * 0.8, height * 0.5);
+  const compassRadius = compassSize / 2;
   const arrowColor = isAligned ? theme.colors.aligned : theme.colors.secondary;
   const pointerColor = isAligned ? theme.colors.aligned : theme.colors.primary;
 
@@ -46,13 +48,14 @@ const QiblaCompass = ({
   return (
     <View style={styles.container}>
       <View style={[styles.scrim, { backgroundColor: theme.colors.background + 'CC' }]}>
-        <View style={[styles.compassWrapper, { width: COMPASS_SIZE, height: COMPASS_SIZE }]}>
+        <View style={[styles.compassWrapper, { width: compassSize, height: compassSize }]}>
           <Animated.View
             style={[
               styles.dial,
               {
-                width: COMPASS_SIZE,
-                height: COMPASS_SIZE,
+                width: compassSize,
+                height: compassSize,
+                borderRadius: compassRadius,
                 borderColor: theme.colors.text + '35',
               },
               dialStyle,
@@ -64,7 +67,7 @@ const QiblaCompass = ({
                 style={[
                   styles.cardinalContainer,
                   {
-                    transform: [{ rotate: `${angle}deg` }, { translateY: -(COMPASS_RADIUS - 24) }],
+                    transform: [{ rotate: `${angle}deg` }, { translateY: -(compassRadius - 24) }],
                   },
                 ]}
               >
@@ -97,7 +100,7 @@ const QiblaCompass = ({
                       backgroundColor: theme.colors.text + (isMinor ? '50' : '20'),
                       transform: [
                         { rotate: `${angle}deg` },
-                        { translateY: -(COMPASS_RADIUS - (isMinor ? 8 : 5)) },
+                        { translateY: -(compassRadius - (isMinor ? 8 : 5)) },
                       ],
                     },
                   ]}
@@ -106,9 +109,14 @@ const QiblaCompass = ({
             })}
           </Animated.View>
 
-          <Animated.View style={[styles.qiblaIndicator, qiblaLineStyle]}>
+          <Animated.View style={[styles.qiblaIndicator, { height: compassSize }, qiblaLineStyle]}>
             <View style={[styles.arrowTip, { borderBottomColor: arrowColor }]} />
-            <View style={[styles.arrowNeck, { backgroundColor: arrowColor }]} />
+            <View
+              style={[
+                styles.arrowNeck,
+                { height: compassRadius - 56, backgroundColor: arrowColor },
+              ]}
+            />
             <View style={[styles.arrowKaabaRing, { backgroundColor: arrowColor }]}>
               <FontAwesome6 name="kaaba" size={16} color={theme.colors.background} />
             </View>
@@ -147,7 +155,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   dial: {
-    borderRadius: COMPASS_RADIUS,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -168,7 +175,6 @@ const styles = StyleSheet.create({
   qiblaIndicator: {
     position: 'absolute',
     alignItems: 'center',
-    height: COMPASS_SIZE,
   },
   arrowTip: {
     width: 0,
@@ -181,7 +187,6 @@ const styles = StyleSheet.create({
   },
   arrowNeck: {
     width: 3,
-    height: COMPASS_RADIUS - 56,
     borderRadius: 1.5,
   },
   arrowKaabaRing: {
