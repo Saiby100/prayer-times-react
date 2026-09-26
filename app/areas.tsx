@@ -32,7 +32,6 @@ export default function Areas() {
 
   return (
     <Page
-      name="areas"
       title="Select Area"
       showBackground
       loading={isLoading}

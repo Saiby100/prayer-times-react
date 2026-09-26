@@ -8,7 +8,6 @@ import SettingsInfoRow from '@/components/SettingsInfoRow';
 export default function AboutSettings() {
   return (
     <Page
-      name="settings/about"
       title="About"
       options={{ headerBackVisible: true }}
       contentStyle={styles.content}

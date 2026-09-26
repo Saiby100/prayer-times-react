@@ -15,7 +15,9 @@ import { useTheme } from '@rneui/themed';
 import useAppearance from '@/hooks/useAppearance';
 import NetworkError from '@/components/NetworkError';
 
-type PageProps = ScreenProps & {
+type PageProps = {
+  /** Screen options merged over the default header options. */
+  options?: ScreenProps['options'];
   /** Page content. */
   children?: React.ReactNode;
   /** Header title text. */
@@ -36,7 +38,6 @@ type PageProps = ScreenProps & {
 
 const Page = ({
   children,
-  name,
   options,
   title,
   contentStyle,
@@ -90,7 +91,7 @@ const Page = ({
           style={StyleSheet.absoluteFill}
         />
         <SafeAreaView style={[styles.view, contentStyle]}>
-          <Stack.Screen name={name} options={headerOptions} />
+          <Stack.Screen options={headerOptions} />
           <StatusBar style={statusBarStyle} />
           <View style={styles.background}>{content}</View>
         </SafeAreaView>
@@ -100,7 +101,7 @@ const Page = ({
 
   return (
     <SafeAreaView style={[styles.view, { backgroundColor: theme.colors.background }, contentStyle]}>
-      <Stack.Screen name={name} options={headerOptions} />
+      <Stack.Screen options={headerOptions} />
       <StatusBar style={statusBarStyle} />
       {content}
     </SafeAreaView>

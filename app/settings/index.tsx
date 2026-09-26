@@ -10,7 +10,6 @@ export default function Settings() {
 
   return (
     <Page
-      name="settings/index"
       title="Settings"
       options={{ headerBackVisible: true }}
       contentStyle={styles.content}
