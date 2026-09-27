@@ -1,10 +1,28 @@
+<div align="center">
+
+<img src="assets/images/icon.png" alt="Reminder app icon" width="120" />
+
 # Reminder
 
-Prayer times for South Africa, on your phone.
+**Prayer times for South Africa, on your phone.**
 
 Reminder shows daily salah times for your area, tells you which way the Qibla is, and lets you know before each prayer comes in — so you never have to guess or go looking.
 
+<img src="docs/demo.gif" alt="Reminder app walkthrough" width="260" />
+
+</div>
+
 Built with [Expo](https://expo.dev) and [React Native](https://reactnative.dev). Android and iOS.
+
+## Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/home.jpg" alt="Daily prayer times with the next prayer highlighted" width="160" />
+  <img src="docs/screenshots/islamic-day-info.jpg" alt="Information about a significant Islamic day" width="160" />
+  <img src="docs/screenshots/calendar.jpg" alt="Calendar date picker" width="160" />
+  <img src="docs/screenshots/area-picker.jpg" alt="Area picker with search" width="160" />
+  <img src="docs/screenshots/qibla.jpg" alt="Qibla compass" width="160" />
+</p>
 
 ## What you can do
 
