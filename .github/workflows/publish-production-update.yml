@@ -40,10 +40,10 @@ jobs:
         run: bash scripts/ci/production-build-status.sh
 
       - name: Skip OTA update (native changed)
-        if: steps.build_status.outputs.has_finished_build != 'true'
+        if: steps.build_status.outputs.has_active_build != 'true'
         run: |
-          echo "::notice::No finished production build for runtime ${{ steps.build_status.outputs.runtime_version }}. Native layer changed, so a new build is required instead of an OTA update."
+          echo "::notice::No production build for runtime ${{ steps.build_status.outputs.runtime_version }}. Native layer changed, so a new build is required instead of an OTA update."
 
       - name: Publish OTA update
-        if: steps.build_status.outputs.has_finished_build == 'true'
+        if: steps.build_status.outputs.has_active_build == 'true'
         run: eas update --branch production --environment production --non-interactive --message "${{ github.event.head_commit.message }}"
