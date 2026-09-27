@@ -55,5 +55,7 @@ None required. The bump type is determined automatically. The user may optionall
 
 7. **Print next steps:**
    - Tell the user the release is ready and they should merge the PR on GitHub.
-   - **For `patch` and `minor` releases**: Merging will automatically publish an OTA update via the publish workflow.
-   - **For `major` releases**: Merging will automatically trigger a production build. After the build completes, trigger the release workflow: `gh workflow run release-production-android.yml`
+   - CI decides between an OTA update and a new build from the native fingerprint, not the bump type:
+     - **Native unchanged** (a finished production build exists for the fingerprint): merging publishes an OTA update and skips the build.
+     - **Native changed**: merging triggers a production build and skips the OTA update. After the build completes, trigger the release workflow: `gh workflow run release-production-android.yml`
+   - To preview which path a merge will take, compare `npx expo-updates runtimeversion:resolve --platform android` on `develop` and `main`.
