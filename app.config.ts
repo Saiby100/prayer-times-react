@@ -5,12 +5,6 @@ import packageJson from './package.json';
 
 const appVersion = packageJson.version;
 
-// Derive Android versionCode from semver: 1.2.3 → 10203
-const getVersionCode = (version: string): number => {
-  const [major, minor, patch] = version.split('.').map(Number);
-  return major * 10000 + minor * 100 + patch;
-};
-
 let commitHash = 'unknown';
 try {
   commitHash = execSync('git rev-parse --short HEAD').toString().trim();
@@ -98,7 +92,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     package: getBundleId(),
-    versionCode: getVersionCode(appVersion),
     // Permissions pulled in by the Expo template and dependencies that this app
     // never uses. Shipping unused sensitive permissions risks Play rejection.
     blockedPermissions: [
