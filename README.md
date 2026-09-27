@@ -52,7 +52,7 @@ Prayer times are sourced from [masjids.co.za](https://masjids.co.za/salaahtimes)
 | Location      | To work out the Qibla direction from where you are |
 | Exact alarms  | So reminders fire at the right minute (Android)    |
 
-Your area choice, settings, and cached times stay on your device. Location is used only to calculate the Qibla and is never stored or sent anywhere.
+Your settings and cached times are stored on your device. Location is used only to calculate the Qibla and is never stored or sent anywhere. Release builds send anonymous diagnostic logs to help fix bugs — see the [Privacy Policy](PRIVACY.md) for details.
 
 ## For developers
 
