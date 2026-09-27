@@ -40,7 +40,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   version: appVersion,
   orientation: 'portrait',
   icon: './assets/images/icon.png',
-  scheme: 'myapp',
+  scheme: 'reminder',
   userInterfaceStyle: 'automatic',
   newArchEnabled: true,
   ios: {
@@ -81,10 +81,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       {
         icon: './assets/images/notification-icon.png',
         color: '#0D7C5F',
-        sounds: ['./assets/sounds/alarm.wav'],
       },
     ],
-    './plugins/withAlarmSound',
   ],
   experiments: {
     typedRoutes: true,
@@ -101,7 +99,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   android: {
     package: getBundleId(),
     versionCode: getVersionCode(appVersion),
-    permissions: ['SCHEDULE_EXACT_ALARM'],
+    // Permissions pulled in by the Expo template and dependencies that this app
+    // never uses. Shipping unused sensitive permissions risks Play rejection.
+    blockedPermissions: [
+      'android.permission.SYSTEM_ALERT_WINDOW',
+      'android.permission.READ_EXTERNAL_STORAGE',
+      'android.permission.WRITE_EXTERNAL_STORAGE',
+      'android.permission.ACTIVITY_RECOGNITION',
+    ],
     adaptiveIcon: {
       foregroundImage: './assets/images/adaptive-icon.png',
       backgroundColor: '#08182f',

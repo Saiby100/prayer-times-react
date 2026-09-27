@@ -5,7 +5,7 @@ import Constants from 'expo-constants';
 import { supabase } from '@/utils/supabase';
 import { getDeviceId } from '@/utils/deviceId';
 
-export type LogType = 'api' | 'notification' | 'background-task' | 'storage' | 'update' | 'app';
+export type LogType = 'api' | 'notification' | 'background-task' | 'storage' | 'app';
 
 type LogData = {
   /** Category of the log entry. */

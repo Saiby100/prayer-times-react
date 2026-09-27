@@ -1,16 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { useTheme as useNavTheme } from '@react-navigation/native';
-import { ThemeProvider, useTheme } from '@rneui/themed';
+import { ThemeProvider, useTheme, registerCustomIconType } from '@rneui/themed';
+import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as SystemUI from 'expo-system-ui';
 import * as Notifications from 'expo-notifications';
-import '@/services/notifications/notifeeEventHandlers';
-import { registerForegroundHandler } from '@/services/notifications/notifeeEventHandlers';
 import createAppTheme from '@/theme';
-import { getThemeId, getDismissedReleaseVersion } from '@/stores';
+import { getThemeId } from '@/stores';
 import { getPresetById } from '@/theme/presets';
-import useReleaseUpdate from '@/hooks/useReleaseUpdate';
-import ConfirmPopup from '@/components/ConfirmPopup';
+
+// RNEUI v5 looks for the modular @react-native-vector-icons/* packages, which aren't installed.
+// Use @expo/vector-icons instead so no extra native modules or font linking are needed.
+registerCustomIconType('feather', Feather);
+registerCustomIconType('material', MaterialIcons);
+registerCustomIconType('ionicon', Ionicons);
 
 const savedPreset = getPresetById(getThemeId());
 const savedMode = savedPreset?.mode ?? 'light';
@@ -19,11 +22,6 @@ const savedColors = savedPreset?.colors;
 function InnerLayout() {
   const { theme } = useTheme();
   const { colors } = useNavTheme();
-  const { updateAvailable, latestVersion, downloadUpdate, dismiss } = useReleaseUpdate({
-    autoCheck: true,
-  });
-  const isDismissed = latestVersion ? getDismissedReleaseVersion() === latestVersion : false;
-  const [popupDismissed, setPopupDismissed] = useState(false);
 
   // Override React Navigation's card background to match app theme,
   // preventing white flash during screen transitions
@@ -40,36 +38,19 @@ function InnerLayout() {
         Notifications.dismissNotificationAsync(notification.request.identifier);
       }
     });
-    const notifeeSub = registerForegroundHandler();
     return () => {
       expoSub.remove();
-      notifeeSub();
     };
   }, []);
 
   return (
-    <>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: theme.colors.background },
-          navigationBarColor: theme.colors.background,
-          presentation: 'transparentModal',
-        }}
-      />
-      <ConfirmPopup
-        visible={updateAvailable && !!latestVersion && !isDismissed && !popupDismissed}
-        title="Update Available"
-        message={`A new version (v${latestVersion}) is available.`}
-        confirmLabel="Download"
-        dismissLabel="Remind Me Later"
-        onConfirm={downloadUpdate}
-        onDismiss={() => {
-          dismiss();
-          setPopupDismissed(true);
-        }}
-      />
-    </>
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: theme.colors.background },
+        presentation: 'transparentModal',
+      }}
+    />
   );
 }
 

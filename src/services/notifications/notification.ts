@@ -9,7 +9,7 @@ if (!handlerSet) {
       shouldPlaySound: true,
       shouldSetBadge: true,
       shouldShowBanner: true,
-      shouldShowAlert: true,
+      shouldShowList: true,
     }),
   });
   handlerSet = true;

@@ -6,7 +6,6 @@ import {
   isRemindersEnabled,
   getReminderOffset,
   getDisabledPrayers,
-  getNotificationType,
 } from '@/stores';
 import { fetchTimes, areaToSlug } from '@/services/prayerTimes';
 import { toDisplayNames } from '@/utils/prayerNames';
@@ -15,7 +14,6 @@ import {
   clearScheduledNotifications,
   getScheduledNotifications,
 } from './notification';
-import { scheduleAlarmNotification, cancelAllAlarmNotifications } from './alarmNotification';
 
 // Format prayer times for a specific date with minutes before preference
 function formatPrayerTimes(
@@ -81,8 +79,6 @@ async function clearExistingReminders(): Promise<void> {
     await clearScheduledNotifications(ids);
   }
 
-  await cancelAllAlarmNotifications();
-
   log.info('scheduleReminders: cleared existing reminders', {
     type: 'notification',
     expoCount: ids.length,
@@ -96,8 +92,6 @@ async function scheduleNotificationsForDate(
   skipPast: boolean
 ): Promise<string[]> {
   const disabledPrayers = getDisabledPrayers();
-  const notificationType = getNotificationType();
-  const isAlarm = notificationType === 'alarm';
 
   const formattedTimes = formatPrayerTimes(prayerTimes, minutesBefore, date);
   const now = new Date();
@@ -120,20 +114,13 @@ async function scheduleNotificationsForDate(
       continue;
     }
 
-    const id = isAlarm
-      ? await scheduleAlarmNotification({
-          title: `${prayerName} Reminder`,
-          body: `${prayerName} prayer at ${prayerTimes[prayerName]}.`,
-          data: { type: 'prayer_reminder', prayer: prayerName },
-          date: reminderTime,
-        })
-      : await schedulePushNotification({
-          title: `${prayerName} Reminder`,
-          body: `${prayerName} prayer at ${prayerTimes[prayerName]}.`,
-          data: { type: 'prayer_reminder', prayer: prayerName },
-          date: reminderTime,
-          channelId: 'prayer_reminder',
-        });
+    const id = await schedulePushNotification({
+      title: `${prayerName} Reminder`,
+      body: `${prayerName} prayer at ${prayerTimes[prayerName]}.`,
+      data: { type: 'prayer_reminder', prayer: prayerName },
+      date: reminderTime,
+      channelId: 'prayer_reminder',
+    });
 
     if (id) {
       scheduledIds.push(id);

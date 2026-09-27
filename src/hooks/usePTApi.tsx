@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { getCachedTimes, setCachedTimes, getDisabledPrayers } from '@/stores';
-import { getNextDay, getPrevDay, dateToString } from '@/utils/date';
+import { getNextDay, getPrevDay, dateToString, isSameDay } from '@/utils/date';
 import { fetchTimes, areaToSlug } from '@/services/prayerTimes';
 import { toDisplayNames } from '@/utils/prayerNames';
 import log from '@/utils/logger';
@@ -111,8 +111,8 @@ function usePTApi({ area }: { area: string }) {
     return days[date.getDay()];
   }, [JSON.stringify(date)]);
   const highlighted = useMemo(() => {
-    if (date.getDate() !== new Date().getDate()) return '';
     const now = new Date();
+    if (!isSameDay(date, now)) return '';
     const hiddenPrayers = getDisabledPrayers();
     const upcoming = Object.entries(todayTimes)
       .filter(([name]) => !hiddenPrayers.includes(name))
@@ -125,7 +125,7 @@ function usePTApi({ area }: { area: string }) {
       .filter(({ time }) => time >= now)
       .sort((a, b) => a.time.getTime() - b.time.getTime())[0];
     return upcoming ? upcoming.timeStr : '';
-  }, [JSON.stringify(todayTimes)]);
+  }, [JSON.stringify(todayTimes), JSON.stringify(date)]);
 
   return {
     isLoading,

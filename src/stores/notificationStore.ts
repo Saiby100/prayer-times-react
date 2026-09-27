@@ -1,7 +1,5 @@
 import getStorage from '@/utils/localStore';
 
-type NotificationType = 'notification' | 'alarm';
-
 // --- Reminders enabled ---
 
 export function isRemindersEnabled(): boolean {
@@ -22,16 +20,6 @@ export function setReminderOffset(minutes: number): void {
   getStorage().set('prayerReminderPref', minutes);
 }
 
-// --- Notification type ---
-
-export function getNotificationType(): NotificationType {
-  return (getStorage().getString('notificationType') as NotificationType) ?? 'notification';
-}
-
-export function setNotificationType(type: NotificationType): void {
-  getStorage().set('notificationType', type);
-}
-
 // --- Disabled prayers ---
 
 let disabledPrayerListeners: (() => void)[] = [];
@@ -47,7 +35,7 @@ export function subscribeDisabledPrayers(listener: () => void) {
 export function getDisabledPrayers(): string[] {
   if (!disabledPrayersSnapshot) {
     const raw = getStorage().getString('disabledPrayerReminders');
-    disabledPrayersSnapshot = raw ? JSON.parse(raw) : [];
+    disabledPrayersSnapshot = raw ? (JSON.parse(raw) as string[]) : [];
   }
   return disabledPrayersSnapshot;
 }

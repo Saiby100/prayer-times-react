@@ -1,10 +1,8 @@
 import { Tabs } from 'expo-router';
 import { Icon, useTheme } from '@rneui/themed';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabsLayout() {
   const { theme } = useTheme();
-  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
@@ -12,10 +10,9 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.text,
+        // The navigator applies the bottom inset itself with edge-to-edge
         tabBarStyle: {
           backgroundColor: theme.colors.bgLight,
-          paddingBottom: insets.bottom,
-          height: 60 + insets.bottom,
           borderTopWidth: 0,
           elevation: 0,
         },
@@ -38,12 +35,6 @@ export default function TabsLayout() {
         options={{
           title: 'Qibla',
           tabBarIcon: ({ color }) => <Icon name="compass" type="feather" color={color} size={20} />,
-        }}
-      />
-      <Tabs.Screen
-        name="names"
-        options={{
-          href: null,
         }}
       />
     </Tabs>
