@@ -5,6 +5,7 @@ import Page from '@/components/Page';
 import QiblaCompass from '@/components/QiblaCompass';
 import QiblaHelper from '@/components/QiblaHelper';
 import OptionsMenu from '@/components/OptionsMenu';
+import { SHARE_APP_MESSAGE } from '@/config/shareApp';
 import useQiblaCompass from '@/hooks/useQiblaCompass';
 
 export default function QiblaScreen() {
@@ -94,8 +95,7 @@ export default function QiblaScreen() {
                 icon: 'share-2',
                 onPress: () =>
                   Share.share({
-                    message:
-                      'Download Reminder - Prayer Times app: https://github.com/Saiby100/prayer-times-react/releases/latest/download/reminder.apk',
+                    message: SHARE_APP_MESSAGE,
                   }),
               },
             ]}
