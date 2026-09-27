@@ -11,6 +11,7 @@ import useHijriDate from '@/hooks/useHijriDate';
 import useDisabledPrayers from '@/hooks/notifications/useDisabledPrayers';
 import useArea from '@/hooks/useArea';
 import OptionsMenu from '@/components/OptionsMenu';
+import { SHARE_APP_MESSAGE } from '@/config/shareApp';
 import ConfirmPopup from '@/components/ConfirmPopup';
 import PrayerTimeRow from '@/components/PrayerTimeRow';
 import { Share, StyleSheet, TouchableOpacity, View } from 'react-native';
@@ -43,8 +44,7 @@ export default function Home() {
   const hasHijriInfo = hijriDateInfoList.length > 0;
   const handleShareApp = async () => {
     await Share.share({
-      message:
-        'Download Reminder - Prayer Times app: https://github.com/Saiby100/prayer-times-react/releases/latest/download/reminder.apk',
+      message: SHARE_APP_MESSAGE,
     });
   };
 
