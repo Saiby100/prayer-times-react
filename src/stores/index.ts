@@ -19,3 +19,4 @@ export {
   setNotificationPermissionDenied,
 } from './notificationStore';
 export { getDeviceId } from './deviceStore';
+export { hasSeenQiblaTips, setQiblaTipsSeen } from './qiblaStore';

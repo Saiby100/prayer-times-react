@@ -54,7 +54,7 @@ Build and deploy use EAS (`eas build`, `eas update`). CI workflows live in `.git
 - **Notification flow** — On app open, `registerBackgroundTask()` (from `backgroundTasks/`) sets up daily task → `scheduleTodayNotifications()` (from `services/notifications/scheduleReminders`) runs immediately → background task repeats every 24h.
 - **Exact alarms** — Reminders only fire on time when expo-notifications can schedule exact alarms (otherwise Android defers them in Doze). `plugins/withExactAlarmPermission.js` declares `USE_EXACT_ALARM` (API 33+, granted at install) and `SCHEDULE_EXACT_ALARM` capped at `maxSdkVersion` 32 (Android 12/12L, granted by default), so no user prompt is needed. Never let a dependency add an uncapped `SCHEDULE_EXACT_ALARM` — check the merged manifest when adding native deps.
 - **Background task pattern** — Each task exports `NAME`, `handler`, and `options` constants. `registerDefinedTask` object provides per-task registration methods.
-- **Storage** — All MMKV access is centralized in `src/stores/` with domain-scoped modules (`areaStore`, `prayerTimesCache`, `appearanceStore`, `notificationStore`, `deviceStore`). Barrel export at `@/stores`. No file outside `src/stores/` should import `getStorage` directly.
+- **Storage** — All MMKV access is centralized in `src/stores/` with domain-scoped modules (`areaStore`, `prayerTimesCache`, `appearanceStore`, `notificationStore`, `deviceStore`, `qiblaStore`). Barrel export at `@/stores`. No file outside `src/stores/` should import `getStorage` directly.
 
 ## IMPORTANT: Always Clarify Before Acting
 
