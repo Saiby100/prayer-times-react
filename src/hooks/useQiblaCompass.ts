@@ -48,6 +48,7 @@ const useQiblaCompass = (): QiblaCompassState => {
   const [sensorAvailable, setSensorAvailable] = useState(true);
   const [isAligned, setIsAligned] = useState(false);
   const [needsCalibration, setNeedsCalibration] = useState(false);
+  const [locationGranted, setLocationGranted] = useState(false);
 
   const dialRotation = useSharedValue(0);
   const currentRotation = useRef(0);
@@ -68,6 +69,7 @@ const useQiblaCompass = (): QiblaCompassState => {
       setPermissionDenied(true);
       return null;
     }
+    setLocationGranted(true);
 
     try {
       const position = await Location.getCurrentPositionAsync({
@@ -191,8 +193,12 @@ const useQiblaCompass = (): QiblaCompassState => {
   // Only run the compass sensor while the Qibla screen is focused. Tab screens
   // stay mounted in the background, so without this the heading subscription
   // keeps updating and firing alignment haptics even on other tabs (e.g. Home).
+  // Android's heading watcher silently does nothing if location permission isn't
+  // granted yet and never retries, so wait for the grant (first launch) to start it.
   useFocusEffect(
     useCallback(() => {
+      if (!locationGranted) return;
+
       let cancelled = false;
       let subscription: Location.LocationSubscription | null = null;
 
@@ -211,7 +217,7 @@ const useQiblaCompass = (): QiblaCompassState => {
         alignedRef.current = false;
         setIsAligned(false);
       };
-    }, [startHeadingUpdates])
+    }, [startHeadingUpdates, locationGranted])
   );
 
   const bearingLabel =
