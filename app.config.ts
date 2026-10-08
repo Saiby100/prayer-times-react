@@ -77,6 +77,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         color: '#0D7C5F',
       },
     ],
+    './plugins/withExactAlarmPermission',
   ],
   experiments: {
     typedRoutes: true,
