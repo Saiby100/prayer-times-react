@@ -109,18 +109,19 @@ export default function Home() {
           </View>
 
           <Card style={styles.timesCard}>
-            {Object.keys(todayTimes ?? {})
-              .filter((key) => !isPrayerDisabled(key))
-              .map((key) => (
-                <PrayerTimeRow
-                  key={key}
-                  name={key}
-                  time={todayTimes[key]}
-                  isHighlighted={todayTimes[key] === highlighted}
-                  colors={theme.colors}
-                  onLongPress={() => setPopupPrayer(key)}
-                />
-              ))}
+            {todayTimes &&
+              Object.keys(todayTimes)
+                .filter((key) => !isPrayerDisabled(key))
+                .map((key) => (
+                  <PrayerTimeRow
+                    key={key}
+                    name={key}
+                    time={todayTimes[key]}
+                    isHighlighted={todayTimes[key] === highlighted}
+                    colors={theme.colors}
+                    onLongPress={() => setPopupPrayer(key)}
+                  />
+                ))}
           </Card>
 
           <View style={styles.navRow}>

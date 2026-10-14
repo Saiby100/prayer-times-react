@@ -14,7 +14,8 @@ function usePTApi({ area }: { area: string }) {
   const [savedDate, setSavedDate] = useState<Date | null>(null);
 
   const [times, setTimes] = useState<MonthTimes>({});
-  const [todayTimes, setTodayTimes] = useState<Record<string, string>>({});
+  // Derived so no handler can read the wrong month: null until `date`'s month is loaded.
+  const todayTimes = useMemo(() => getTimesForDay(times, date) ?? null, [times, date]);
 
   const setDateWithSave = (newDate: Date, save: Date | null = null) => {
     setSavedDate(save || date);
@@ -60,7 +61,6 @@ function usePTApi({ area }: { area: string }) {
         setError(true);
       } else {
         setTimes(timesData);
-        setTodayTimes(getTimesForDay(timesData, date) ?? {});
       }
     } catch {
       setError(true);
@@ -79,27 +79,10 @@ function usePTApi({ area }: { area: string }) {
     }
   }, [JSON.stringify(date)]);
 
-  const nextDay = () => {
-    const newDate = getNextDay(date);
-    setDateWithSave(newDate);
-    setTodayTimes(getTimesForDay(times, newDate) ?? {});
-  };
-  const prevDay = () => {
-    const newDate = getPrevDay(date);
-    setDateWithSave(newDate);
-    setTodayTimes(getTimesForDay(times, newDate) ?? {});
-  };
-  const setToday = () => {
-    const newDate = new Date();
-    setDateWithSave(newDate);
-    setTodayTimes(getTimesForDay(times, newDate) ?? {});
-  };
-  const goToDate = (target: Date) => {
-    setDateWithSave(target);
-    if (target.getMonth() === date.getMonth() && target.getFullYear() === date.getFullYear()) {
-      setTodayTimes(getTimesForDay(times, target) ?? {});
-    }
-  };
+  const nextDay = () => setDateWithSave(getNextDay(date));
+  const prevDay = () => setDateWithSave(getPrevDay(date));
+  const setToday = () => setDateWithSave(new Date());
+  const goToDate = (target: Date) => setDateWithSave(target);
   const dateString = useMemo(() => dateToString(date), [JSON.stringify(date)]);
   const dayString = useMemo(() => {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -107,7 +90,7 @@ function usePTApi({ area }: { area: string }) {
   }, [JSON.stringify(date)]);
   const highlighted = useMemo(() => {
     const now = new Date();
-    if (!isSameDay(date, now)) return '';
+    if (!todayTimes || !isSameDay(date, now)) return '';
     const hiddenPrayers = getDisabledPrayers();
     const upcoming = Object.entries(todayTimes)
       .filter(([name]) => !hiddenPrayers.includes(name))
