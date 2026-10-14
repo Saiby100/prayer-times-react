@@ -8,6 +8,7 @@ import {
   dateToHijriString,
   parseHijriDate,
 } from '../date';
+import { getHijriDateInfo } from '../../config/hijriDateInfo';
 
 describe('isSameDay', () => {
   it('matches the same calendar day regardless of time of day', () => {
@@ -145,9 +146,26 @@ describe('parseHijriDate', () => {
     const result = parseHijriDate(date);
     expect(result).not.toBeNull();
     expect(typeof result!.day).toBe('number');
-    expect(typeof result!.month).toBe('string');
+    expect(typeof result!.month).toBe('number');
     expect(result!.day).toBeGreaterThanOrEqual(1);
     expect(result!.day).toBeLessThanOrEqual(30);
-    expect(result!.month.length).toBeGreaterThan(0);
+    expect(result!.month).toBeGreaterThanOrEqual(1);
+    expect(result!.month).toBeLessThanOrEqual(12);
+  });
+
+  it('returns 1 Muharram for the Islamic New Year', () => {
+    expect(parseHijriDate(new Date(2026, 5, 16))).toEqual({ day: 1, month: 1 });
+  });
+
+  it('returns 1 Ramadan as month 9', () => {
+    expect(parseHijriDate(new Date(2026, 1, 18))).toEqual({ day: 1, month: 9 });
+  });
+});
+
+describe('getHijriDateInfo', () => {
+  it('matches events by month number', () => {
+    const titles = getHijriDateInfo(1, 1).map((info) => info.title);
+    expect(titles).toContain('Islamic New Year');
+    expect(titles).toContain('Sacred Month of Muharram');
   });
 });
