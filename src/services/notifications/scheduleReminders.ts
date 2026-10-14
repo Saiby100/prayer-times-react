@@ -9,6 +9,7 @@ import {
 } from '@/stores';
 import { fetchTimes, areaToSlug } from '@/services/prayerTimes';
 import { toDisplayNames } from '@/utils/prayerNames';
+import { getTimesForDay, mapDays } from '@/utils/monthTimes';
 import {
   schedulePushNotification,
   clearScheduledNotifications,
@@ -48,17 +49,17 @@ async function fetchPrayerTimesForDate(date: Date): Promise<Record<string, strin
 
   const cached = getCachedTimes(date, area);
   if (cached) {
-    return cached[date.getDate() - 1];
+    return getTimesForDay(cached, date) ?? null;
   }
 
   try {
     const slug = areaToSlug(area);
     const data = await fetchTimes(slug, date);
-    const mapped = data.map(toDisplayNames);
+    const mapped = mapDays(data, toDisplayNames);
 
-    if (mapped.length > 0) {
+    if (Object.keys(mapped).length > 0) {
       setCachedTimes(date, area, mapped);
-      return mapped[date.getDate() - 1];
+      return getTimesForDay(mapped, date) ?? null;
     }
   } catch (error) {
     log.error('scheduleReminders: error fetching times', {

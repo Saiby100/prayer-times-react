@@ -3,6 +3,7 @@ import { getCachedTimes, setCachedTimes, getDisabledPrayers } from '@/stores';
 import { getNextDay, getPrevDay, dateToString, isSameDay } from '@/utils/date';
 import { fetchTimes, areaToSlug } from '@/services/prayerTimes';
 import { toDisplayNames } from '@/utils/prayerNames';
+import { getTimesForDay, mapDays, type MonthTimes } from '@/utils/monthTimes';
 import log from '@/utils/logger';
 
 function usePTApi({ area }: { area: string }) {
@@ -12,7 +13,7 @@ function usePTApi({ area }: { area: string }) {
   const [date, setDate] = useState<Date>(new Date());
   const [savedDate, setSavedDate] = useState<Date | null>(null);
 
-  const [times, setTimes] = useState<Array<Record<string, string>>>([]);
+  const [times, setTimes] = useState<MonthTimes>({});
   const [todayTimes, setTodayTimes] = useState<Record<string, string>>({});
 
   const setDateWithSave = (newDate: Date, save: Date | null = null) => {
@@ -38,8 +39,16 @@ function usePTApi({ area }: { area: string }) {
       date: date.toISOString(),
     });
     const slug = areaToSlug(area);
-    const data = await fetchTimes(slug, date);
-    return data.map(toDisplayNames);
+    const data = mapDays(await fetchTimes(slug, date), toDisplayNames);
+    if (Object.keys(data).length > 0) {
+      log.info('usePTApi: saving times to storage', {
+        type: 'storage',
+        month: date.getMonth(),
+        area,
+      });
+      setCachedTimes(date, area, data);
+    }
+    return data;
   };
 
   const fetchAndSetTimes = async () => {
@@ -47,11 +56,11 @@ function usePTApi({ area }: { area: string }) {
     setError(false);
     try {
       const timesData = await fetchTimesData();
-      if (!timesData || timesData.length === 0) {
+      if (Object.keys(timesData).length === 0) {
         setError(true);
       } else {
         setTimes(timesData);
-        setTodayTimes(timesData[date.getDate() - 1]);
+        setTodayTimes(getTimesForDay(timesData, date) ?? {});
       }
     } catch {
       setError(true);
@@ -70,39 +79,25 @@ function usePTApi({ area }: { area: string }) {
     }
   }, [JSON.stringify(date)]);
 
-  useEffect(() => {
-    if (!times || times.length === 0) return;
-    if (
-      date.getMonth() !== new Date().getMonth() ||
-      date.getFullYear() !== new Date().getFullYear()
-    )
-      return;
-    if (getCachedTimes(date, area)) return;
-    const month = new Date().getMonth();
-    const year = new Date().getFullYear();
-    log.info('usePTApi: saving times to storage', { type: 'storage', month, year, area });
-    setCachedTimes(date, area, times);
-  }, [JSON.stringify(times)]);
-
   const nextDay = () => {
     const newDate = getNextDay(date);
     setDateWithSave(newDate);
-    setTodayTimes(times[newDate.getDate() - 1]);
+    setTodayTimes(getTimesForDay(times, newDate) ?? {});
   };
   const prevDay = () => {
     const newDate = getPrevDay(date);
     setDateWithSave(newDate);
-    setTodayTimes(times[newDate.getDate() - 1]);
+    setTodayTimes(getTimesForDay(times, newDate) ?? {});
   };
   const setToday = () => {
     const newDate = new Date();
     setDateWithSave(newDate);
-    setTodayTimes(times[newDate.getDate() - 1]);
+    setTodayTimes(getTimesForDay(times, newDate) ?? {});
   };
   const goToDate = (target: Date) => {
     setDateWithSave(target);
     if (target.getMonth() === date.getMonth() && target.getFullYear() === date.getFullYear()) {
-      setTodayTimes(times[target.getDate() - 1]);
+      setTodayTimes(getTimesForDay(times, target) ?? {});
     }
   };
   const dateString = useMemo(() => dateToString(date), [JSON.stringify(date)]);

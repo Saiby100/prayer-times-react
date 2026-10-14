@@ -30,7 +30,7 @@ Build and deploy use EAS (`eas build`, `eas update`). CI workflows live in `.git
 
 ### Source (`src/`)
 
-- **`services/prayerTimes.ts`** — Prayer times data client. Fetches areas and daily/monthly prayer times from Supabase (`fetchAreas`, `fetchTimes`, `areaToSlug`).
+- **`services/prayerTimes.ts`** — Prayer times data client. Fetches areas and daily/monthly prayer times from Supabase (`fetchAreas`, `fetchTimes`, `areaToSlug`). The `prayer_times` table holds only 2026 rows (times repeat yearly), so `fetchTimes` always queries the 2026 range for the requested month and returns a `MonthTimes` map keyed by `MM-DD`. Look days up with `getTimesForDay` (`utils/monthTimes.ts`), which maps 29 Feb to 28 Feb. `prayerTimesCache` keys by month and area only (`times_<month>_<area>`).
 - **`utils/localStore.ts`** — Internal MMKV instance factory. Not imported directly — use `@/stores` instead.
 - **`stores/`** — Domain-scoped storage modules. Each module owns its MMKV keys with typed getters/setters. Barrel re-export at `stores/index.ts`.
 - **`hooks/usePTApi.tsx`** — Manages prayer time fetching (via `services/prayerTimes`), date navigation, and caching logic.

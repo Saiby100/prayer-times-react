@@ -1,5 +1,6 @@
 import { supabase } from '@/utils/supabase';
 import log from '@/utils/logger';
+import { monthRange, type MonthTimes } from '@/utils/monthTimes';
 
 export type Area = {
   /** URL-friendly identifier. */
@@ -24,20 +25,18 @@ export async function fetchAreas(): Promise<Area[]> {
   return data ?? [];
 }
 
-export async function fetchTimes(areaSlug: string, date: Date): Promise<Record<string, string>[]> {
+/** Fetch a month's times for the date's month, keyed by `MM-DD`. The year is ignored. */
+export async function fetchTimes(areaSlug: string, date: Date): Promise<MonthTimes> {
   if (!supabase) {
     log.error('prayerTimes: supabase not initialised', { type: 'api' });
-    return [];
+    return {};
   }
 
-  const year = date.getFullYear();
-  const month = date.getMonth();
-  const startDate = new Date(year, month, 1).toISOString().split('T')[0];
-  const endDate = new Date(year, month + 1, 0).toISOString().split('T')[0];
+  const [startDate, endDate] = monthRange(date.getMonth());
 
   const { data, error } = await supabase
     .from('prayer_times')
-    .select('times')
+    .select('date, times')
     .eq('area_slug', areaSlug)
     .gte('date', startDate)
     .lte('date', endDate)
@@ -49,10 +48,15 @@ export async function fetchTimes(areaSlug: string, date: Date): Promise<Record<s
       error: error.message,
       area: areaSlug,
     });
-    return [];
+    return {};
   }
 
-  return (data ?? []).map((row) => sortTimesByTime(row.times as Record<string, string>));
+  return Object.fromEntries(
+    (data ?? []).map((row) => [
+      (row.date as string).slice(5),
+      sortTimesByTime(row.times as Record<string, string>),
+    ])
+  );
 }
 
 /** Convert an "HH:MM" time string to minutes since midnight for comparison. */
