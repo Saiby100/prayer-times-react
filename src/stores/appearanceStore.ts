@@ -1,3 +1,4 @@
+import { Appearance } from 'react-native';
 import getStorage from '@/utils/localStore';
 import { type ThemePresetId, DEFAULT_PRESET_ID } from '@/theme/presets';
 
@@ -51,9 +52,20 @@ function notifyListeners(): void {
 
 // --- Theme preset ---
 
+// Resolved once per cold start so the theme stays stable within a session
+// (getThemeId is a useSyncExternalStore snapshot and is read at module load in _layout).
+let systemThemeId: ThemePresetId | null = null;
+
+function getSystemThemeId(): ThemePresetId {
+  if (!systemThemeId) {
+    systemThemeId = Appearance.getColorScheme() === 'dark' ? 'dark-mosque' : DEFAULT_PRESET_ID;
+  }
+  return systemThemeId;
+}
+
 export function getThemeId(): ThemePresetId {
   migrateLegacyKeys();
-  return (getStorage().getString(THEME_ID_KEY) as ThemePresetId) || DEFAULT_PRESET_ID;
+  return (getStorage().getString(THEME_ID_KEY) as ThemePresetId) || getSystemThemeId();
 }
 
 export function setThemeId(id: ThemePresetId): void {
