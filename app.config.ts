@@ -51,7 +51,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   plugins: [
     'expo-router',
-    'expo-font',
+    [
+      'expo-font',
+      { fonts: ['./assets/fonts/Inter-Medium.ttf', './assets/fonts/Inter-SemiBold.ttf'] },
+    ],
     [
       'expo-splash-screen',
       {

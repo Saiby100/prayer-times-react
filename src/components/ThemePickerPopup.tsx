@@ -185,7 +185,7 @@ function PresetCard({
 const styles = StyleSheet.create({
   title: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     marginBottom: 16,
     textAlign: 'center',
   },

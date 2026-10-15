@@ -38,7 +38,7 @@ Build and deploy use EAS (`eas build`, `eas update`). CI workflows live in `.git
 - **`services/notifications/notification.ts`** — Core notification APIs (schedule, permissions, channels).
 - **`services/notifications/scheduleReminders.ts`** — Fetches prayer times and schedules reminder notifications.
 - **`backgroundTasks/`** — Background task definitions. `index.ts` exports `registerAllBackgroundTasks()` to register all tasks at app startup. Each task gets its own file (e.g. `prayerReminderTask.ts`).
-- **`theme/`** — Theme system: `colors.ts` defines `lightColors`/`darkColors`, `components.ts` overrides `@rneui/themed` component styles, `types.ts` augments the `Colors` interface with custom properties. Uses `Inter-Medium` font.
+- **`theme/`** — Theme system: `colors.ts` defines `lightColors`/`darkColors`, `components.ts` overrides `@rneui/themed` component styles, `types.ts` augments the `Colors` interface with custom properties. Uses the `Inter-Medium` font (titles use `Inter-SemiBold` instead of `fontWeight`); both are embedded from `assets/fonts/` by the `expo-font` config plugin in `app.config.ts`, so adding a font needs a new store build.
 - **`components/`** — Reusable UI components (Page, LoadingList, etc.).
 
 ### Key Patterns
