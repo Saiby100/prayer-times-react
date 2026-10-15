@@ -5,6 +5,7 @@ import { Text } from '@rneui/themed';
 import Page from '@/components/Page';
 import Card from '@/components/Card';
 import ConfirmPopup from '@/components/ConfirmPopup';
+import SettingsSwitchRow from '@/components/SettingsSwitchRow';
 import SettingsToggleRow from '@/components/SettingsToggleRow';
 import ReminderOffsetPopup from '@/components/ReminderOffsetPopup';
 import usePrayerReminders from '@/hooks/notifications/usePrayerReminders';
@@ -13,13 +14,22 @@ export default function NotificationSettings() {
   const { isEnabled, enable, disable, reminderOffset, setReminderOffset } = usePrayerReminders();
   const [offsetPopupVisible, setOffsetPopupVisible] = useState(false);
   const [blockedPopupVisible, setBlockedPopupVisible] = useState(false);
+  // Holds the switch on while the permission prompt and scheduling run, so it doesn't
+  // snap back to off and flip on again once `enable()` resolves.
+  const [turningOn, setTurningOn] = useState(false);
 
   const toggleReminders = async () => {
+    if (turningOn) return;
     if (isEnabled) {
       disable();
       return;
     }
-    if ((await enable()) === 'blocked') setBlockedPopupVisible(true);
+    setTurningOn(true);
+    try {
+      if ((await enable()) === 'blocked') setBlockedPopupVisible(true);
+    } finally {
+      setTurningOn(false);
+    }
   };
 
   const openSettings = () => {
@@ -31,11 +41,10 @@ export default function NotificationSettings() {
     <Page title="Notifications" options={{ headerBackVisible: true }} contentStyle={styles.content}>
       <ScrollView contentContainerStyle={styles.container}>
         <Card gap={16}>
-          <SettingsToggleRow
+          <SettingsSwitchRow
             label="Prayer reminders"
-            iconName={isEnabled ? 'bell' : 'bell-off'}
-            title={isEnabled ? ' On' : ' Off'}
-            onPress={toggleReminders}
+            value={isEnabled || turningOn}
+            onValueChange={toggleReminders}
           />
           {isEnabled && (
             <SettingsToggleRow
