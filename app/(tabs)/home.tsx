@@ -9,6 +9,7 @@ import Scrim from '@/components/Scrim';
 import usePTApi from '@/hooks/usePTApi';
 import useHijriDate from '@/hooks/useHijriDate';
 import useDisabledPrayers from '@/hooks/notifications/useDisabledPrayers';
+import useReminderPrompt from '@/hooks/notifications/useReminderPrompt';
 import useArea from '@/hooks/useArea';
 import OptionsMenu from '@/components/OptionsMenu';
 import { SHARE_APP_MESSAGE } from '@/config/shareApp';
@@ -39,6 +40,7 @@ export default function Home() {
   });
   const { hijriDateString, hijriDateInfoList } = useHijriDate(date);
   const { togglePrayer, isPrayerDisabled } = useDisabledPrayers();
+  const reminderPrompt = useReminderPrompt();
   const [popupPrayer, setPopupPrayer] = useState<string | null>(null);
   const [hijriInfoVisible, setHijriInfoVisible] = useState(false);
   const hasHijriInfo = hijriDateInfoList.length > 0;
@@ -157,6 +159,15 @@ export default function Home() {
             setPopupPrayer(null);
           }}
           onDismiss={() => setPopupPrayer(null)}
+        />
+        <ConfirmPopup
+          visible={reminderPrompt.visible}
+          title="Get prayer reminders?"
+          message={`We'll notify you ${reminderPrompt.reminderOffset} minutes before each prayer.`}
+          confirmLabel="Turn on"
+          dismissLabel="Not now"
+          onConfirm={reminderPrompt.turnOn}
+          onDismiss={reminderPrompt.notNow}
         />
         <InfoPopup
           visible={hijriInfoVisible}

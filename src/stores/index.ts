@@ -12,6 +12,8 @@ export {
   setRemindersEnabled,
   getReminderOffset,
   setReminderOffset,
+  hasSeenReminderPrompt,
+  setReminderPromptSeen,
   subscribeDisabledPrayers,
   getDisabledPrayers,
   setDisabledPrayers,
