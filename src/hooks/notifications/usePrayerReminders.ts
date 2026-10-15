@@ -1,13 +1,15 @@
-import { useMemo, useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
-  clearScheduledNotifications,
   getNotificationPermission,
   requestNotificationPermission,
-  getScheduledNotifications,
 } from '@/services/notifications/notification';
 import { ensureChannelsExist } from '@/services/notifications/setup';
-import { scheduleTodayNotifications } from '@/services/notifications/scheduleReminders';
 import {
+  clearExistingReminders,
+  scheduleTodayNotifications,
+} from '@/services/notifications/scheduleReminders';
+import {
+  isRemindersEnabled,
   setRemindersEnabled,
   getReminderOffset,
   setReminderOffset as storeSetReminderOffset,
@@ -18,19 +20,9 @@ import log from '@/utils/logger';
 export type EnableRemindersResult = 'granted' | 'denied' | 'blocked';
 
 function usePrayerReminders() {
-  const [scheduledIds, setScheduledIds] = useState<string[]>([]);
-
-  const isScheduled = useMemo(() => scheduledIds.length > 0, [scheduledIds]);
-
-  useEffect(() => {
-    loadScheduledIds();
-  }, []);
-
-  async function loadScheduledIds() {
-    const scheduled = await getScheduledNotifications();
-    const prayerReminders = scheduled.filter((n) => n.content.data?.type === 'prayer_reminder');
-    setScheduledIds(prayerReminders.map((n) => n.identifier));
-  }
+  // Follows the saved setting, not the scheduled count: nothing may be scheduled while
+  // reminders are on (e.g. offline with no cached month).
+  const [isEnabled, setIsEnabled] = useState(isRemindersEnabled);
 
   // Checks the real permission each time, so allowing notifications in Android settings
   // takes effect on the next tap.
@@ -50,13 +42,16 @@ function usePrayerReminders() {
 
     await ensureChannelsExist();
     setRemindersEnabled(true);
+    setIsEnabled(true);
     await schedule();
     return 'granted';
   }
 
+  // Cancels every prayer reminder, including ones left over when a reschedule couldn't load times.
   async function disable() {
     setRemindersEnabled(false);
-    await clear();
+    setIsEnabled(false);
+    await clearExistingReminders();
   }
 
   async function schedule() {
@@ -65,16 +60,6 @@ function usePrayerReminders() {
       type: 'notification',
       count: ids.length,
     });
-    setScheduledIds(ids);
-  }
-
-  async function clear() {
-    log.info('usePrayerReminders: clearing reminders', {
-      type: 'notification',
-      count: scheduledIds.length,
-    });
-    await clearScheduledNotifications(scheduledIds);
-    setScheduledIds([]);
   }
 
   const reminderOffset = getReminderOffset();
@@ -85,7 +70,7 @@ function usePrayerReminders() {
   }
 
   return {
-    isScheduled,
+    isEnabled,
     enable,
     disable,
     reminderOffset,

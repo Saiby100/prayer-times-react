@@ -71,7 +71,7 @@ async function fetchPrayerTimesForDate(date: Date): Promise<Record<string, strin
   return null;
 }
 
-async function clearExistingReminders(): Promise<void> {
+export async function clearExistingReminders(): Promise<void> {
   const scheduled = await getScheduledNotifications();
   const prayerReminders = scheduled.filter((n) => n.content.data?.type === 'prayer_reminder');
   const ids = prayerReminders.map((n) => n.identifier);

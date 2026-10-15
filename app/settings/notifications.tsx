@@ -10,12 +10,12 @@ import ReminderOffsetPopup from '@/components/ReminderOffsetPopup';
 import usePrayerReminders from '@/hooks/notifications/usePrayerReminders';
 
 export default function NotificationSettings() {
-  const { isScheduled, enable, disable, reminderOffset, setReminderOffset } = usePrayerReminders();
+  const { isEnabled, enable, disable, reminderOffset, setReminderOffset } = usePrayerReminders();
   const [offsetPopupVisible, setOffsetPopupVisible] = useState(false);
   const [blockedPopupVisible, setBlockedPopupVisible] = useState(false);
 
   const toggleReminders = async () => {
-    if (isScheduled) {
+    if (isEnabled) {
       disable();
       return;
     }
@@ -33,11 +33,11 @@ export default function NotificationSettings() {
         <Card gap={16}>
           <SettingsToggleRow
             label="Prayer reminders"
-            iconName={isScheduled ? 'bell' : 'bell-off'}
-            title={isScheduled ? ' On' : ' Off'}
+            iconName={isEnabled ? 'bell' : 'bell-off'}
+            title={isEnabled ? ' On' : ' Off'}
             onPress={toggleReminders}
           />
-          {isScheduled && (
+          {isEnabled && (
             <SettingsToggleRow
               label="Reminder time"
               iconName="clock"
@@ -45,7 +45,7 @@ export default function NotificationSettings() {
               onPress={() => setOffsetPopupVisible(true)}
             />
           )}
-          {!isScheduled && (
+          {!isEnabled && (
             <Text style={styles.hint}>
               Enable reminders to get notified before each prayer time
             </Text>
