@@ -14,6 +14,14 @@ function getPrevDay(current: Date) {
   return prevDay;
 }
 
+function addDays(current: Date, days: number) {
+  const result = new Date(current);
+
+  result.setDate(current.getDate() + days);
+
+  return result;
+}
+
 function getNextMonth(current: Date) {
   const nextMonth = new Date(current);
 
@@ -92,6 +100,7 @@ function parseHijriDate(date: Date): ParsedHijriDate | null {
 export {
   getNextDay,
   getPrevDay,
+  addDays,
   getNextMonth,
   getPrevMonth,
   isSameDay,

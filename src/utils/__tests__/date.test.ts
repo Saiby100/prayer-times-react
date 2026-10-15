@@ -1,6 +1,7 @@
 import {
   getNextDay,
   getPrevDay,
+  addDays,
   getNextMonth,
   getPrevMonth,
   isSameDay,
@@ -25,6 +26,25 @@ describe('isSameDay', () => {
 
   it('does not match different days in the same month', () => {
     expect(isSameDay(new Date(2026, 6, 3), new Date(2026, 6, 4))).toBe(false);
+  });
+});
+
+describe('addDays', () => {
+  it('moves back across a month start', () => {
+    const shifted = addDays(new Date(2026, 6, 1), -1);
+    expect(shifted.getDate()).toBe(30);
+    expect(shifted.getMonth()).toBe(5);
+  });
+
+  it('returns the same day for 0 without changing the input', () => {
+    const date = new Date(2026, 6, 3);
+    const shifted = addDays(date, 0);
+    expect(isSameDay(shifted, date)).toBe(true);
+    expect(shifted).not.toBe(date);
+  });
+
+  it('shifts the Hijri date a day behind with an adjustment of 1', () => {
+    expect(parseHijriDate(addDays(new Date(2026, 5, 17), -1))).toEqual({ day: 1, month: 1 });
   });
 });
 
