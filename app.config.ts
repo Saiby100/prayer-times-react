@@ -59,9 +59,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'expo-splash-screen',
       {
         backgroundColor: '#EEE2D6',
-        image: './assets/images/splash-light.png',
+        image: './assets/images/splash-icon.png',
+        // Fills the 288dp Android 12+ icon slot; the star's tips stay inside its 192dp visible circle.
+        imageWidth: 288,
         dark: {
-          image: './assets/images/splash-dark.png',
+          image: './assets/images/splash-icon.png',
           backgroundColor: '#061837',
         },
       },
