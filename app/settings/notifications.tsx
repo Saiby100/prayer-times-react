@@ -1,43 +1,52 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import { Linking, ScrollView, StyleSheet } from 'react-native';
 import { Text } from '@rneui/themed';
 
 import Page from '@/components/Page';
 import Card from '@/components/Card';
+import ConfirmPopup from '@/components/ConfirmPopup';
+import SettingsSwitchRow from '@/components/SettingsSwitchRow';
 import SettingsToggleRow from '@/components/SettingsToggleRow';
 import ReminderOffsetPopup from '@/components/ReminderOffsetPopup';
-import { setRemindersEnabled } from '@/stores';
 import usePrayerReminders from '@/hooks/notifications/usePrayerReminders';
 
 export default function NotificationSettings() {
-  const { isScheduled, schedule, clear, reminderOffset, setReminderOffset } = usePrayerReminders();
+  const { isEnabled, enable, disable, reminderOffset, setReminderOffset } = usePrayerReminders();
   const [offsetPopupVisible, setOffsetPopupVisible] = useState(false);
+  const [blockedPopupVisible, setBlockedPopupVisible] = useState(false);
+  // Holds the switch on while the permission prompt and scheduling run, so it doesn't
+  // snap back to off and flip on again once `enable()` resolves.
+  const [turningOn, setTurningOn] = useState(false);
 
-  const toggleReminders = () => {
-    if (isScheduled) {
-      setRemindersEnabled(false);
-      clear();
+  const toggleReminders = async () => {
+    if (turningOn) return;
+    if (isEnabled) {
+      disable();
       return;
     }
-    setRemindersEnabled(true);
-    schedule();
+    setTurningOn(true);
+    try {
+      if ((await enable()) === 'blocked') setBlockedPopupVisible(true);
+    } finally {
+      setTurningOn(false);
+    }
+  };
+
+  const openSettings = () => {
+    setBlockedPopupVisible(false);
+    Linking.openSettings();
   };
 
   return (
-    <Page
-      title="Notifications"
-      options={{ headerBackVisible: true }}
-      contentStyle={styles.content}
-    >
+    <Page title="Notifications" options={{ headerBackVisible: true }} contentStyle={styles.content}>
       <ScrollView contentContainerStyle={styles.container}>
         <Card gap={16}>
-          <SettingsToggleRow
+          <SettingsSwitchRow
             label="Prayer reminders"
-            iconName={isScheduled ? 'bell' : 'bell-off'}
-            title={isScheduled ? ' On' : ' Off'}
-            onPress={toggleReminders}
+            value={isEnabled || turningOn}
+            onValueChange={toggleReminders}
           />
-          {isScheduled && (
+          {isEnabled && (
             <SettingsToggleRow
               label="Reminder time"
               iconName="clock"
@@ -45,7 +54,7 @@ export default function NotificationSettings() {
               onPress={() => setOffsetPopupVisible(true)}
             />
           )}
-          {!isScheduled && (
+          {!isEnabled && (
             <Text style={styles.hint}>
               Enable reminders to get notified before each prayer time
             </Text>
@@ -57,6 +66,15 @@ export default function NotificationSettings() {
         currentValue={reminderOffset}
         onSave={setReminderOffset}
         onClose={() => setOffsetPopupVisible(false)}
+      />
+      <ConfirmPopup
+        visible={blockedPopupVisible}
+        title="Notifications are blocked"
+        message="Allow notifications for this app in Android settings to get prayer reminders."
+        confirmLabel="Open settings"
+        dismissLabel="Cancel"
+        onConfirm={openSettings}
+        onDismiss={() => setBlockedPopupVisible(false)}
       />
     </Page>
   );

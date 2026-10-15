@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
+import { Text } from '@rneui/themed';
 
 import Page from '@/components/Page';
 import Card from '@/components/Card';
@@ -26,6 +27,9 @@ export default function PreferenceSettings() {
             disabled={disabledPrayers.length === 0}
             onPress={() => setResetPopupVisible(true)}
           />
+          <Text style={styles.hint}>
+            Long-press a prayer on the Home screen to hide it. Hidden prayers don't send reminders.
+          </Text>
         </Card>
       </ScrollView>
       <ConfirmPopup
@@ -52,5 +56,9 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 24,
     gap: 16,
+  },
+  hint: {
+    fontSize: 14,
+    opacity: 0.6,
   },
 });

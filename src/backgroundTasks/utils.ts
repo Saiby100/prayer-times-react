@@ -11,17 +11,17 @@ export async function registerTask(
 
     if (isRegistered) {
       log.debug('backgroundTask: task already registered', {
-        type: 'background-task',
+        type: 'register-task',
         task: taskName,
       });
       return;
     }
 
     await BackgroundTask.registerTaskAsync(taskName, options);
-    log.info('backgroundTask: task registered', { type: 'background-task', task: taskName });
+    log.info('backgroundTask: task registered', { type: 'register-task', task: taskName });
   } catch (error) {
     log.error('backgroundTask: failed to register task', {
-      type: 'background-task',
+      type: 'register-task',
       task: taskName,
       error: String(error),
     });
@@ -33,15 +33,15 @@ export async function unregisterTask(taskName: string): Promise<void> {
     const isRegistered = await TaskManager.isTaskRegisteredAsync(taskName);
 
     if (!isRegistered) {
-      log.debug('backgroundTask: task not registered', { type: 'background-task', task: taskName });
+      log.debug('backgroundTask: task not registered', { type: 'unregister-task', task: taskName });
       return;
     }
 
     await BackgroundTask.unregisterTaskAsync(taskName);
-    log.info('backgroundTask: task unregistered', { type: 'background-task', task: taskName });
+    log.info('backgroundTask: task unregistered', { type: 'unregister-task', task: taskName });
   } catch (error) {
     log.error('backgroundTask: failed to unregister task', {
-      type: 'background-task',
+      type: 'unregister-task',
       task: taskName,
       error: String(error),
     });

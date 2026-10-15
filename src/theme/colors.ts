@@ -1,29 +1,39 @@
-export const lightColors = {
-  primary: '#0D7C5F',
-  secondary: '#C8956C',
-  text: '#1A1A2E',
-  background: '#F7F5F0',
-  bgLight: '#FFFFFF',
-  sliderTrack: '#D4CFC7',
+export const mistyColors = {
+  primary: '#7E5226',
+  secondary: '#D9B399',
+  text: '#2E2620',
+  background: '#EEE2D6',
+  bgLight: '#F4EADF',
+  sliderTrack: '#D6C8BC',
   aligned: '#16A34A',
 };
 
-export const darkColors = {
-  primary: '#D4A055',
-  secondary: '#E8B86D',
-  text: '#E8E4DC',
-  bgLight: '#151A35',
-  background: '#0B1026',
-  sliderTrack: '#2A2F4A',
+export const sunsetColors = {
+  primary: '#9E421B',
+  secondary: '#ED8A31',
+  text: '#33211A',
+  background: '#F2DED1',
+  bgLight: '#F7E8DE',
+  sliderTrack: '#E2C6B8',
+  aligned: '#16A34A',
+};
+
+export const crescentColors = {
+  primary: '#E3B464',
+  secondary: '#CA7A39',
+  text: '#E8E6F0',
+  bgLight: '#13254A',
+  background: '#061837',
+  sliderTrack: '#25375C',
   aligned: '#22C55E',
 };
 
-export const warmDarkColors = {
-  primary: '#C9944A',
-  secondary: '#A67B4B',
-  text: '#E8DFD2',
-  bgLight: '#1E1912',
-  background: '#12100B',
-  sliderTrack: '#3D3428',
+export const twilightColors = {
+  primary: '#E07A8A',
+  secondary: '#B4566A',
+  text: '#EDE3EA',
+  bgLight: '#1B1F3A',
+  background: '#0B1328',
+  sliderTrack: '#2E3150',
   aligned: '#22C55E',
 };

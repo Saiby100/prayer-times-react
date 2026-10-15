@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+<defs><mask id="fin"><rect width="1024" height="1024" fill="#fff"/><circle cx="512" cy="492" r="8" fill="#000"/></mask><mask id="moon"><rect width="1024" height="1024" fill="#fff"/><circle cx="527" cy="452" r="22" fill="#000"/></mask></defs>
+<polyline points="426.00,426.00 426.00,280.00 512.00,194.00 598.00,280.00 598.00,426.00" fill="none" stroke="#C4A274" stroke-width="7" stroke-linejoin="miter" stroke-linecap="square"/>
+<polyline points="512.00,390.38 615.24,287.14 736.86,287.14 736.86,408.76 633.62,512.00" fill="none" stroke="#C4A274" stroke-width="7" stroke-linejoin="miter" stroke-linecap="square"/>
+<polyline points="598.00,426.00 744.00,426.00 830.00,512.00 744.00,598.00 598.00,598.00" fill="none" stroke="#C4A274" stroke-width="7" stroke-linejoin="miter" stroke-linecap="square"/>
+<polyline points="633.62,512.00 736.86,615.24 736.86,736.86 615.24,736.86 512.00,633.62" fill="none" stroke="#C4A274" stroke-width="7" stroke-linejoin="miter" stroke-linecap="square"/>
+<polyline points="598.00,598.00 598.00,744.00 512.00,830.00 426.00,744.00 426.00,598.00" fill="none" stroke="#C4A274" stroke-width="7" stroke-linejoin="miter" stroke-linecap="square"/>
+<polyline points="512.00,633.62 408.76,736.86 287.14,736.86 287.14,615.24 390.38,512.00" fill="none" stroke="#C4A274" stroke-width="7" stroke-linejoin="miter" stroke-linecap="square"/>
+<polyline points="426.00,598.00 280.00,598.00 194.00,512.00 280.00,426.00 426.00,426.00" fill="none" stroke="#C4A274" stroke-width="7" stroke-linejoin="miter" stroke-linecap="square"/>
+<polyline points="390.38,512.00 287.14,408.76 287.14,287.14 408.76,287.14 512.00,390.38" fill="none" stroke="#C4A274" stroke-width="7" stroke-linejoin="miter" stroke-linecap="square"/>
+<g transform="translate(512 512) scale(0.96) translate(-512 -518)">
+<path d="M477.44,584.00 C464.08,582.02 468.64,576.08 466.40,572.12 C464.16,568.16 463.28,564.64 464.00,560.24 C464.72,555.84 466.88,550.34 470.72,545.72 C474.56,541.10 481.76,536.15 487.04,532.52 C492.32,528.89 498.64,526.20 502.40,523.94 C506.16,521.69 508.00,519.98 509.60,518.99 C511.20,518.00 511.20,518.33 512.00,518.00 C512.80,518.33 512.80,518.00 514.40,518.99 C516.00,519.98 517.84,521.69 521.60,523.94 C525.36,526.20 531.68,528.89 536.96,532.52 C542.24,536.15 549.44,541.10 553.28,545.72 C557.12,550.34 559.28,555.84 560.00,560.24 C560.72,564.64 559.84,568.16 557.60,572.12 C555.36,576.08 559.92,582.02 546.56,584.00 C533.20,585.98 490.80,585.98 477.44,584.00 Z" fill="#C4A274"/>
+<rect x="470" y="582" width="84" height="9" rx="2" fill="#C4A274"/>
+<rect x="510.5" y="502" width="3" height="17" fill="#C4A274"/>
+<circle cx="512" cy="498" r="9" fill="#C4A274" mask="url(#fin)"/>
+<circle cx="512" cy="461" r="25" fill="#C4A274" mask="url(#moon)"/>
+<polygon points="550.00,439.00 551.39,444.61 557.00,446.00 551.39,447.39 550.00,453.00 548.61,447.39 543.00,446.00 548.61,444.61" fill="#C4A274"/>
+</g>
+</svg>

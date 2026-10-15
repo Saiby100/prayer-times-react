@@ -27,14 +27,14 @@ Built with [Expo](https://expo.dev) and [React Native](https://reactnative.dev).
 ## What you can do
 
 - **See today's prayer times** — Pick your area once; the app remembers it. Times are shown for the whole day at a glance.
-- **Look ahead or back** — Swipe between days or jump to any date with the calendar picker. The Islamic (Hijri) date is shown alongside the Gregorian one.
+- **Look ahead or back** — Swipe between days or jump to any date with the calendar picker. The Islamic (Hijri) date is shown alongside the Gregorian one, adjusted when the local month starts on a different day.
 - **Get reminded** — Turn on notifications and choose how many minutes before each prayer you want to be alerted.
 - **Choose which prayers to be reminded about** — Hide the ones you don't need; the rest stay on.
 - **Find the Qibla** — A live compass points toward the Kaaba using your location.
 - **Learn about special days** — Significant Islamic days, like the White Days, Day of Arafah and Laylatul Qadr, come with a short explanation when they come up.
-- **Make it yours** — Three themes with matching wallpapers: Light Mosque, Dark Mosque, and Serene Night.
+- **Make it yours** — Four themes with matching wallpapers: Misty Valley, Sunset Medina, Crescent Lagoon, and Twilight Terrace. Until you pick one, the app follows your phone's light or dark mode.
 
-Reminders keep working in the background: the app refreshes tomorrow's schedule daily, so alerts stay accurate without you opening it.
+Reminders keep working in the background: the app schedules a week ahead and refreshes it daily, so alerts stay accurate without you opening it.
 
 ## Getting the app
 
@@ -66,9 +66,9 @@ Your settings and cached times are stored on your device. Location is used only 
 
 ```bash
 npm install
-npx expo start          # Start the dev server
-npx expo run:android    # Run on Android
-npx expo run:ios        # Run on iOS
+npm start               # Start the dev server
+npm run android         # Build and run the dev variant on Android
+npm run ios             # Run the dev variant on iOS
 npm run lint            # ESLint
 npm test                # Jest (jest-expo)
 ```

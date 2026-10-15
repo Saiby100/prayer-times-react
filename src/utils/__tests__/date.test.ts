@@ -1,6 +1,7 @@
 import {
   getNextDay,
   getPrevDay,
+  addDays,
   getNextMonth,
   getPrevMonth,
   isSameDay,
@@ -8,6 +9,7 @@ import {
   dateToHijriString,
   parseHijriDate,
 } from '../date';
+import { getHijriDateInfo } from '../../config/hijriDateInfo';
 
 describe('isSameDay', () => {
   it('matches the same calendar day regardless of time of day', () => {
@@ -24,6 +26,25 @@ describe('isSameDay', () => {
 
   it('does not match different days in the same month', () => {
     expect(isSameDay(new Date(2026, 6, 3), new Date(2026, 6, 4))).toBe(false);
+  });
+});
+
+describe('addDays', () => {
+  it('moves back across a month start', () => {
+    const shifted = addDays(new Date(2026, 6, 1), -1);
+    expect(shifted.getDate()).toBe(30);
+    expect(shifted.getMonth()).toBe(5);
+  });
+
+  it('returns the same day for 0 without changing the input', () => {
+    const date = new Date(2026, 6, 3);
+    const shifted = addDays(date, 0);
+    expect(isSameDay(shifted, date)).toBe(true);
+    expect(shifted).not.toBe(date);
+  });
+
+  it('shifts the Hijri date a day behind with an adjustment of 1', () => {
+    expect(parseHijriDate(addDays(new Date(2026, 5, 17), -1))).toEqual({ day: 1, month: 1 });
   });
 });
 
@@ -145,9 +166,26 @@ describe('parseHijriDate', () => {
     const result = parseHijriDate(date);
     expect(result).not.toBeNull();
     expect(typeof result!.day).toBe('number');
-    expect(typeof result!.month).toBe('string');
+    expect(typeof result!.month).toBe('number');
     expect(result!.day).toBeGreaterThanOrEqual(1);
     expect(result!.day).toBeLessThanOrEqual(30);
-    expect(result!.month.length).toBeGreaterThan(0);
+    expect(result!.month).toBeGreaterThanOrEqual(1);
+    expect(result!.month).toBeLessThanOrEqual(12);
+  });
+
+  it('returns 1 Muharram for the Islamic New Year', () => {
+    expect(parseHijriDate(new Date(2026, 5, 16))).toEqual({ day: 1, month: 1 });
+  });
+
+  it('returns 1 Ramadan as month 9', () => {
+    expect(parseHijriDate(new Date(2026, 1, 18))).toEqual({ day: 1, month: 9 });
+  });
+});
+
+describe('getHijriDateInfo', () => {
+  it('matches events by month number', () => {
+    const titles = getHijriDateInfo(1, 1).map((info) => info.title);
+    expect(titles).toContain('Islamic New Year');
+    expect(titles).toContain('Sacred Month of Muharram');
   });
 });

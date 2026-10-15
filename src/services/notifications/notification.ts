@@ -58,6 +58,7 @@ async function createNotificationChannel({
 }
 
 async function schedulePushNotification({
+  identifier,
   title,
   body,
   data,
@@ -68,6 +69,8 @@ async function schedulePushNotification({
   sound,
   categoryIdentifier,
 }: {
+  /** Notification id. Scheduling again with the same id replaces the earlier notification. */
+  identifier?: string;
   /** Notification heading. */
   title: string;
   /** Notification body text. */
@@ -89,6 +92,7 @@ async function schedulePushNotification({
 }) {
   if (!(await notificationPermissionGranted())) return null;
   return await Notifications.scheduleNotificationAsync({
+    ...(identifier && { identifier }),
     content: {
       title,
       body,
@@ -111,6 +115,11 @@ async function notificationPermissionGranted() {
   return status === 'granted';
 }
 
+async function getNotificationPermission() {
+  const { status, canAskAgain } = await Notifications.getPermissionsAsync();
+  return { granted: status === 'granted', canAskAgain };
+}
+
 async function requestNotificationPermission() {
   if (await notificationPermissionGranted()) return true;
   const { status } = await Notifications.requestPermissionsAsync();
@@ -118,11 +127,7 @@ async function requestNotificationPermission() {
 }
 
 async function clearScheduledNotifications(ids: string[]) {
-  await Promise.all(
-    ids.map((id) => {
-      Notifications.cancelScheduledNotificationAsync(id);
-    })
-  );
+  await Promise.all(ids.map((id) => Notifications.cancelScheduledNotificationAsync(id)));
 }
 
 async function getScheduledNotifications() {
@@ -132,6 +137,7 @@ async function getScheduledNotifications() {
 export {
   clearScheduledNotifications,
   createNotificationChannel,
+  getNotificationPermission,
   getScheduledNotifications,
   notificationPermissionGranted,
   requestNotificationPermission,

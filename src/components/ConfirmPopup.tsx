@@ -42,7 +42,7 @@ export default function ConfirmPopup({
       }}
     >
       <View>
-        <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 8 }}>{title}</Text>
+        <Text style={{ fontSize: 18, fontFamily: 'Inter-SemiBold', marginBottom: 8 }}>{title}</Text>
         <Text style={{ fontSize: 14, opacity: 0.8, marginBottom: 24 }}>{message}</Text>
         <View style={{ flexDirection: 'row', gap: 10 }}>
           <Button

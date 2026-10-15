@@ -1,9 +1,10 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Icon, Text } from '@rneui/themed';
 import type { Colors } from '@rneui/themed';
+import { getPrayerIcon } from '@/utils/prayerNames';
 
 type PrayerTimeRowProps = {
-  /** Prayer name (e.g. "Fajr", "Zuhr"). */
+  /** Prayer name (e.g. "Fajr", "Thur"). */
   name: string;
   /** Formatted time string (e.g. "05:30"). */
   time: string;
@@ -14,17 +15,6 @@ type PrayerTimeRowProps = {
   /** Called on long-press to open settings popup. */
   onLongPress: () => void;
 };
-
-const PRAYER_ICONS: Record<string, string> = {
-  Fajr: 'sunrise',
-  Shuruq: 'sun',
-  Zuhr: 'sun',
-  Asr: 'cloud',
-  Maghrib: 'sunset',
-  Esha: 'moon',
-};
-
-const getPrayerIcon = (name: string) => PRAYER_ICONS[name] ?? 'clock';
 
 const PrayerTimeRow = ({ name, time, isHighlighted, colors, onLongPress }: PrayerTimeRowProps) => (
   <Pressable

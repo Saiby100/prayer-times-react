@@ -9,60 +9,40 @@ import {
 } from '@/stores';
 import { fetchTimes, areaToSlug } from '@/services/prayerTimes';
 import { toDisplayNames } from '@/utils/prayerNames';
+import { mapDays, type MonthTimes } from '@/utils/monthTimes';
+import {
+  REMINDER_DAYS,
+  REMINDER_TYPE,
+  buildReminders,
+  diffReminders,
+  upcomingDays,
+  type ReminderPlan,
+  type ScheduledReminder,
+} from '@/utils/reminderPlan';
+import { createSerialRunner } from '@/utils/serialRunner';
 import {
   schedulePushNotification,
   clearScheduledNotifications,
   getScheduledNotifications,
+  notificationPermissionGranted,
 } from './notification';
 
-// Format prayer times for a specific date with minutes before preference
-function formatPrayerTimes(
-  prayerTimes: Record<string, string>,
-  minutesBefore: number,
-  date: Date
-): Record<string, Date> {
-  const result: Record<string, Date> = {};
-
-  for (const [prayerName, timeString] of Object.entries(prayerTimes)) {
-    if (!timeString) {
-      continue;
-    }
-
-    const dateTime = new Date(date);
-    const [hours, minutes] = timeString.split(':').map(Number);
-    dateTime.setHours(hours, minutes - minutesBefore, 0, 0);
-    result[prayerName] = dateTime;
-  }
-
-  return result;
-}
-
-// Fetch prayer times for a given date
-async function fetchPrayerTimesForDate(date: Date): Promise<Record<string, string> | null> {
-  const area = getArea();
-
-  if (!area) {
-    log.warn('scheduleReminders: no area configured', { type: 'notification' });
-    return null;
-  }
-
+// Load a date's month for an area: from the cache, else fetched and cached.
+async function loadMonth(date: Date, area: string): Promise<MonthTimes | null> {
   const cached = getCachedTimes(date, area);
-  if (cached) {
-    return cached[date.getDate() - 1];
-  }
+  if (cached) return cached;
 
   try {
-    const slug = areaToSlug(area);
-    const data = await fetchTimes(slug, date);
-    const mapped = data.map(toDisplayNames);
+    const data = await fetchTimes(areaToSlug(area), date);
+    const mapped = mapDays(data, toDisplayNames);
 
-    if (mapped.length > 0) {
+    if (Object.keys(mapped).length > 0) {
       setCachedTimes(date, area, mapped);
-      return mapped[date.getDate() - 1];
+      return mapped;
     }
   } catch (error) {
     log.error('scheduleReminders: error fetching times', {
-      type: 'notification',
+      type: 'sync-reminders',
       error: String(error),
     });
   }
@@ -70,114 +50,134 @@ async function fetchPrayerTimesForDate(date: Date): Promise<Record<string, strin
   return null;
 }
 
-async function clearExistingReminders(): Promise<void> {
-  const scheduled = await getScheduledNotifications();
-  const prayerReminders = scheduled.filter((n) => n.content.data?.type === 'prayer_reminder');
-  const ids = prayerReminders.map((n) => n.identifier);
+// Load each month the reminder window touches once, keyed by 0-based month.
+async function loadMonths(days: Date[], area: string): Promise<Map<number, MonthTimes>> {
+  const firstDayOfEachMonth = days.filter(
+    (day, i) => i === 0 || day.getMonth() !== days[i - 1].getMonth()
+  );
+  const loaded = await Promise.all(firstDayOfEachMonth.map((day) => loadMonth(day, area)));
 
-  if (ids.length > 0) {
-    await clearScheduledNotifications(ids);
+  const months = new Map<number, MonthTimes>();
+  loaded.forEach((month, i) => {
+    if (month) months.set(firstDayOfEachMonth[i].getMonth(), month);
+  });
+  return months;
+}
+
+async function getScheduledReminders(): Promise<ScheduledReminder[]> {
+  const scheduled = await getScheduledNotifications();
+  return scheduled
+    .filter((n) => n.content.data?.type === REMINDER_TYPE)
+    .map((n) => {
+      const fireAt = n.content.data?.fireAt;
+      return {
+        id: n.identifier,
+        fireAt: typeof fireAt === 'number' ? fireAt : undefined,
+        body: n.content.body ?? '',
+      };
+    });
+}
+
+// The reminders that should be scheduled, or null when they can't be worked out and the
+// scheduled ones should be left as they are. Reminders off → none, so all are cancelled.
+async function planReminders(now: Date): Promise<ReminderPlan | null> {
+  if (!isRemindersEnabled()) {
+    return { reminders: [], missingDays: [] };
   }
 
-  log.info('scheduleReminders: cleared existing reminders', {
-    type: 'notification',
-    expoCount: ids.length,
+  if (!(await notificationPermissionGranted())) {
+    log.debug('scheduleReminders: notification permission not granted', {
+      type: 'sync-reminders',
+    });
+    return null;
+  }
+
+  const area = getArea();
+  if (!area) {
+    log.warn('scheduleReminders: no area configured', { type: 'sync-reminders' });
+    return null;
+  }
+
+  const months = await loadMonths(upcomingDays(now), area);
+  if (months.size === 0) {
+    log.warn('scheduleReminders: could not fetch prayer times', { type: 'sync-reminders' });
+    return null;
+  }
+
+  return buildReminders({
+    now,
+    months,
+    minutesBefore: getReminderOffset(),
+    hidden: getDisabledPrayers(),
   });
 }
 
-async function scheduleNotificationsForDate(
-  prayerTimes: Record<string, string>,
-  minutesBefore: number,
-  date: Date,
-  skipPast: boolean
-): Promise<string[]> {
-  const disabledPrayers = getDisabledPrayers();
+async function sync(): Promise<void> {
+  const startedAt = Date.now();
 
-  const formattedTimes = formatPrayerTimes(prayerTimes, minutesBefore, date);
-  const now = new Date();
-  const scheduledIds: string[] = [];
+  try {
+    const plan = await planReminders(new Date());
+    if (!plan) return;
 
-  for (const [prayerName, reminderTime] of Object.entries(formattedTimes)) {
-    if (disabledPrayers.includes(prayerName)) {
-      log.debug('scheduleReminders: skipping disabled prayer', {
-        type: 'notification',
-        prayer: prayerName,
-      });
-      continue;
-    }
+    const { toSchedule, toCancel } = diffReminders(plan, await getScheduledReminders());
 
-    if (skipPast && reminderTime <= now) {
-      log.debug('scheduleReminders: skipping prayer, time passed', {
-        type: 'notification',
-        prayer: prayerName,
-      });
-      continue;
-    }
-
-    const id = await schedulePushNotification({
-      title: `${prayerName} Reminder`,
-      body: `${prayerName} prayer at ${prayerTimes[prayerName]}.`,
-      data: { type: 'prayer_reminder', prayer: prayerName },
-      date: reminderTime,
-      channelId: 'prayer_reminder',
+    // Soonest first, so a run cut off partway has already covered the nearest prayers.
+    const ids = await Promise.all(
+      toSchedule.map((reminder) =>
+        schedulePushNotification({
+          identifier: reminder.id,
+          title: reminder.title,
+          body: reminder.body,
+          data: {
+            type: REMINDER_TYPE,
+            prayer: reminder.prayer,
+            fireAt: reminder.fireAt.getTime(),
+          },
+          date: reminder.fireAt,
+          channelId: 'prayer_reminder',
+        })
+      )
+    );
+    toSchedule.forEach((reminder, i) => {
+      if (ids[i]) {
+        log.debug('scheduleReminders: scheduled reminder', {
+          type: 'sync-reminders',
+          prayer: reminder.prayer,
+          time: reminder.fireAt.toLocaleString(),
+        });
+      }
     });
 
-    if (id) {
-      scheduledIds.push(id);
-      log.info('scheduleReminders: scheduled reminder', {
-        type: 'notification',
-        prayer: prayerName,
-        time: reminderTime.toLocaleTimeString(),
+    if (toCancel.length > 0) {
+      await clearScheduledNotifications(toCancel);
+    }
+
+    // Warn so this reaches Supabase: with reminders on, none wanted is likely a fault.
+    if (plan.reminders.length === 0 && isRemindersEnabled()) {
+      log.warn('scheduleReminders: 0 reminders scheduled while reminders are enabled', {
+        type: 'sync-reminders',
+        hidden: getDisabledPrayers(),
+        missingDays: plan.missingDays,
       });
     }
-  }
 
-  return scheduledIds;
+    log.info('scheduleReminders: sync complete', {
+      type: 'sync-reminders',
+      wanted: plan.reminders.length,
+      scheduled: ids.filter(Boolean).length,
+      cancelled: toCancel.length,
+      days: REMINDER_DAYS - plan.missingDays.length,
+      missingDays: plan.missingDays.length,
+      durationMs: Date.now() - startedAt,
+    });
+  } catch (error) {
+    log.error('scheduleReminders: sync failed', { type: 'sync-reminders', error: String(error) });
+  }
 }
 
-// Schedule notifications for today's remaining prayers and all of tomorrow's prayers.
-// Scheduling tomorrow ensures early morning prayers (e.g. Fajr) are covered even if
-// the background task fires after they would have passed.
-export async function scheduleTodayNotifications(): Promise<string[]> {
-  if (!isRemindersEnabled()) {
-    log.debug('scheduleReminders: reminders are disabled', { type: 'notification' });
-    return [];
-  }
-
-  const today = new Date();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-
-  const [todayTimes, tomorrowTimes] = await Promise.all([
-    fetchPrayerTimesForDate(today),
-    fetchPrayerTimesForDate(tomorrow),
-  ]);
-
-  if (!todayTimes && !tomorrowTimes) {
-    log.warn('scheduleReminders: could not fetch prayer times', { type: 'notification' });
-    return [];
-  }
-
-  const minutesBefore = getReminderOffset();
-
-  // Clear existing reminders before rescheduling
-  await clearExistingReminders();
-
-  const scheduledIds: string[] = [];
-
-  if (todayTimes) {
-    const ids = await scheduleNotificationsForDate(todayTimes, minutesBefore, today, true);
-    scheduledIds.push(...ids);
-  }
-
-  if (tomorrowTimes) {
-    const ids = await scheduleNotificationsForDate(tomorrowTimes, minutesBefore, tomorrow, false);
-    scheduledIds.push(...ids);
-  }
-
-  log.info('scheduleReminders: scheduling complete', {
-    type: 'notification',
-    count: scheduledIds.length,
-  });
-  return scheduledIds;
-}
+// Make the scheduled prayer reminders match the current settings: today's remaining prayers
+// plus the next 6 days when reminders are on, none when off. Each reminder's id is its day and
+// prayer, so only missing or changed reminders are scheduled (replacing any old one) and
+// unwanted ones are cancelled; a run cut off partway loses nothing. Runs one at a time, and
+// calls made during a run share one rerun.
+export const syncPrayerReminders = createSerialRunner(sync);

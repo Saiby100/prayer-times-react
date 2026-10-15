@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Platform } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import * as Location from 'expo-location';
 import * as Haptics from 'expo-haptics';
@@ -20,6 +20,14 @@ const ALIGNMENT_TOLERANCE_DEG = 8;
 /** Consecutive poor/good accuracy readings required before flipping the calibration flag. */
 const CALIBRATION_DEBOUNCE_COUNT = 2;
 
+/**
+ * Why the Qibla can't be shown:
+ * - `can-ask` — permission denied, but the system prompt can still be shown
+ * - `blocked` — permission denied and the system won't prompt again (settings only)
+ * - `unavailable` — permission granted, but no position (location services off / no fix)
+ */
+export type LocationError = 'can-ask' | 'blocked' | 'unavailable';
+
 type QiblaCompassState = {
   /** Qibla bearing in degrees from true north (0-360). Null if location unknown. */
   qiblaBearing: number | null;
@@ -27,12 +35,12 @@ type QiblaCompassState = {
   dialRotation: SharedValue<number>;
   /** Whether compass/location data is still loading. */
   isLoading: boolean;
-  /** Whether location is unavailable (permission denied or position lookup failed). */
-  permissionDenied: boolean;
+  /** Why the location couldn't be found, or null when there is no problem. */
+  locationError: LocationError | null;
   /** Whether heading sensor is available. */
   sensorAvailable: boolean;
-  /** Request location permission again. */
-  requestPermission: () => Promise<void>;
+  /** Ask for location permission (if still allowed) and look up the position again. */
+  retry: () => Promise<void>;
   /** Readable bearing string like "24° NE". */
   bearingLabel: string;
   /** Whether the device is currently pointing at the Qibla within tolerance. */
@@ -44,10 +52,11 @@ type QiblaCompassState = {
 const useQiblaCompass = (): QiblaCompassState => {
   const [qiblaBearing, setQiblaBearing] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [permissionDenied, setPermissionDenied] = useState(false);
+  const [locationError, setLocationError] = useState<LocationError | null>(null);
   const [sensorAvailable, setSensorAvailable] = useState(true);
   const [isAligned, setIsAligned] = useState(false);
   const [needsCalibration, setNeedsCalibration] = useState(false);
+  const [locationGranted, setLocationGranted] = useState(false);
 
   const dialRotation = useSharedValue(0);
   const currentRotation = useRef(0);
@@ -61,21 +70,23 @@ const useQiblaCompass = (): QiblaCompassState => {
   const needsCalibrationRef = useRef(false);
 
   const resolveLocation = useCallback(async (): Promise<{ lat: number; lng: number } | null> => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-
-    // The compass requires the user's live location — there is no fallback.
-    if (status !== 'granted') {
-      setPermissionDenied(true);
-      return null;
-    }
-
     try {
+      const { status, canAskAgain } = await Location.requestForegroundPermissionsAsync();
+
+      // The compass requires the user's live location — there is no fallback.
+      if (status !== 'granted') {
+        setLocationError(canAskAgain ? 'can-ask' : 'blocked');
+        return null;
+      }
+      setLocationGranted(true);
+
       const position = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
       });
+      setLocationError(null);
       return { lat: position.coords.latitude, lng: position.coords.longitude };
     } catch {
-      setPermissionDenied(true);
+      setLocationError('unavailable');
       return null;
     }
   }, []);
@@ -150,18 +161,27 @@ const useQiblaCompass = (): QiblaCompassState => {
       }
     }, [dialRotation]);
 
-  const requestPermission = useCallback(async () => {
-    setPermissionDenied(false);
+  const retry = useCallback(async () => {
     setIsLoading(true);
 
     const coords = await resolveLocation();
     if (coords) {
       setQiblaBearing(calculateQiblaBearing(coords.lat, coords.lng));
-      setPermissionDenied(false);
     }
 
     setIsLoading(false);
   }, [resolveLocation]);
+
+  // While blocked, the user can only fix it in system settings. Check again when
+  // they come back to the app so the compass loads without another tap.
+  useEffect(() => {
+    if (locationError !== 'blocked') return;
+
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') retry();
+    });
+    return () => subscription.remove();
+  }, [locationError, retry]);
 
   useEffect(() => {
     qiblaBearingRef.current = qiblaBearing;
@@ -191,8 +211,12 @@ const useQiblaCompass = (): QiblaCompassState => {
   // Only run the compass sensor while the Qibla screen is focused. Tab screens
   // stay mounted in the background, so without this the heading subscription
   // keeps updating and firing alignment haptics even on other tabs (e.g. Home).
+  // Android's heading watcher silently does nothing if location permission isn't
+  // granted yet and never retries, so wait for the grant (first launch) to start it.
   useFocusEffect(
     useCallback(() => {
+      if (!locationGranted) return;
+
       let cancelled = false;
       let subscription: Location.LocationSubscription | null = null;
 
@@ -211,7 +235,7 @@ const useQiblaCompass = (): QiblaCompassState => {
         alignedRef.current = false;
         setIsAligned(false);
       };
-    }, [startHeadingUpdates])
+    }, [startHeadingUpdates, locationGranted])
   );
 
   const bearingLabel =
@@ -221,9 +245,9 @@ const useQiblaCompass = (): QiblaCompassState => {
     qiblaBearing,
     dialRotation,
     isLoading,
-    permissionDenied,
+    locationError,
     sensorAvailable,
-    requestPermission,
+    retry,
     bearingLabel,
     isAligned,
     needsCalibration,

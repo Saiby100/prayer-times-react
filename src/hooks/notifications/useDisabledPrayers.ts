@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { subscribeDisabledPrayers, getDisabledPrayers, setDisabledPrayers } from '@/stores';
-import { scheduleTodayNotifications } from '@/services/notifications/scheduleReminders';
+import { syncPrayerReminders } from '@/services/notifications/scheduleReminders';
 
 function useDisabledPrayers() {
   const disabledPrayers = useSyncExternalStore(subscribeDisabledPrayers, getDisabledPrayers);
@@ -13,12 +13,12 @@ function useDisabledPrayers() {
       : [...disabledPrayers, name];
 
     setDisabledPrayers(updated);
-    scheduleTodayNotifications();
+    syncPrayerReminders();
   };
 
   const resetAll = () => {
     setDisabledPrayers([]);
-    scheduleTodayNotifications();
+    syncPrayerReminders();
   };
 
   return { disabledPrayers, togglePrayer, isPrayerDisabled, resetAll };

@@ -20,6 +20,16 @@ export function setReminderOffset(minutes: number): void {
   getStorage().set('prayerReminderPref', minutes);
 }
 
+// --- Reminder prompt (one-time "Get prayer reminders?" popup on Home) ---
+
+export function hasSeenReminderPrompt(): boolean {
+  return getStorage().getBoolean('reminderPromptSeen') ?? false;
+}
+
+export function setReminderPromptSeen(): void {
+  getStorage().set('reminderPromptSeen', true);
+}
+
 // --- Disabled prayers ---
 
 let disabledPrayerListeners: (() => void)[] = [];
@@ -46,14 +56,4 @@ export function setDisabledPrayers(prayers: string[]): void {
   for (const listener of disabledPrayerListeners) {
     listener();
   }
-}
-
-// --- Notification permission ---
-
-export function isNotificationPermissionDenied(): boolean {
-  return getStorage().getBoolean('notificationPermissionDenied') || false;
-}
-
-export function setNotificationPermissionDenied(denied: boolean): void {
-  getStorage().set('notificationPermissionDenied', denied);
 }

@@ -8,16 +8,23 @@ type SettingsMenuRowProps = {
   iconName: string;
   /** Called when the row is pressed. */
   onPress: () => void;
+  /** Feather icon name shown on the right. Defaults to a chevron. */
+  trailingIconName?: string;
 };
 
-export default function SettingsMenuRow({ label, iconName, onPress }: SettingsMenuRowProps) {
+export default function SettingsMenuRow({
+  label,
+  iconName,
+  onPress,
+  trailingIconName = 'chevron-right',
+}: SettingsMenuRowProps) {
   const { theme } = useTheme();
 
   return (
     <TouchableOpacity style={styles.row} onPress={onPress} activeOpacity={0.6}>
       <Icon name={iconName} type="feather" size={20} color={theme.colors.text} />
       <Text style={styles.label}>{label}</Text>
-      <Icon name="chevron-right" type="feather" size={22} color={theme.colors.text} />
+      <Icon name={trailingIconName} type="feather" size={22} color={theme.colors.text} />
     </TouchableOpacity>
   );
 }

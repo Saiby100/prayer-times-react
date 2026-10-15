@@ -51,15 +51,20 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   plugins: [
     'expo-router',
-    'expo-font',
+    [
+      'expo-font',
+      { fonts: ['./assets/fonts/Inter-Medium.ttf', './assets/fonts/Inter-SemiBold.ttf'] },
+    ],
     [
       'expo-splash-screen',
       {
-        backgroundColor: '#F7F5F0',
-        image: './assets/images/splash-light.png',
+        backgroundColor: '#EEE2D6',
+        image: './assets/images/splash-icon.png',
+        // Fills the 288dp Android 12+ icon slot; the star's tips stay inside its 192dp visible circle.
+        imageWidth: 288,
         dark: {
-          image: './assets/images/splash-dark.png',
-          backgroundColor: '#0B1026',
+          image: './assets/images/splash-icon.png',
+          backgroundColor: '#061837',
         },
       },
     ],
@@ -77,6 +82,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         color: '#0D7C5F',
       },
     ],
+    './plugins/withExactAlarmPermission',
   ],
   experiments: {
     typedRoutes: true,
