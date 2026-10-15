@@ -1,6 +1,6 @@
 import { Appearance } from 'react-native';
 import getStorage from '@/utils/localStore';
-import { type ThemePresetId, DEFAULT_PRESET_ID } from '@/theme/presets';
+import { type ThemePresetId, DEFAULT_PRESET_ID, getPresetById } from '@/theme/presets';
 
 const THEME_ID_KEY = 'themeId';
 const WALLPAPER_ENABLED_KEY = 'wallpaperEnabled';
@@ -23,7 +23,7 @@ function migrateLegacyKeys(): void {
   const legacyBg = storage.getString(LEGACY_BACKGROUND_KEY);
 
   if (legacyMode || legacyBg) {
-    const themeId: ThemePresetId = legacyMode === 'dark' ? 'dark-mosque' : 'light-mosque';
+    const themeId: ThemePresetId = legacyMode === 'dark' ? 'crescent-lagoon' : DEFAULT_PRESET_ID;
     const wallpaperEnabled = legacyBg !== 'none';
 
     storage.set(THEME_ID_KEY, themeId);
@@ -58,14 +58,19 @@ let systemThemeId: ThemePresetId | null = null;
 
 function getSystemThemeId(): ThemePresetId {
   if (!systemThemeId) {
-    systemThemeId = Appearance.getColorScheme() === 'dark' ? 'dark-mosque' : DEFAULT_PRESET_ID;
+    systemThemeId = Appearance.getColorScheme() === 'dark' ? 'crescent-lagoon' : DEFAULT_PRESET_ID;
   }
   return systemThemeId;
 }
 
 export function getThemeId(): ThemePresetId {
   migrateLegacyKeys();
-  return (getStorage().getString(THEME_ID_KEY) as ThemePresetId) || getSystemThemeId();
+  const storage = getStorage();
+  const savedId = storage.getString(THEME_ID_KEY);
+  if (savedId && getPresetById(savedId)) return savedId as ThemePresetId;
+  // Drop ids of removed themes so the system default applies until the user picks again.
+  if (savedId) storage.delete(THEME_ID_KEY);
+  return getSystemThemeId();
 }
 
 export function setThemeId(id: ThemePresetId): void {

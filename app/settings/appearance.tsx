@@ -8,7 +8,7 @@ import SettingsSwitchRow from '@/components/SettingsSwitchRow';
 import SettingsToggleRow from '@/components/SettingsToggleRow';
 import ThemePickerPopup from '@/components/ThemePickerPopup';
 import useAppearance from '@/hooks/useAppearance';
-import { getPresetById, type ThemePresetId } from '@/theme/presets';
+import { DEFAULT_PRESET_ID, getPresetById, type ThemePresetId } from '@/theme/presets';
 
 export default function AppearanceSettings() {
   const { updateTheme } = useTheme();
@@ -16,7 +16,7 @@ export default function AppearanceSettings() {
   const { themeId, setThemeId, wallpaperEnabled, setWallpaperEnabled } = useAppearance();
   const [themePickerVisible, setThemePickerVisible] = useState(false);
 
-  const themeLabel = getPresetById(themeId)?.label ?? 'Light Mosque';
+  const themeLabel = (getPresetById(themeId) ?? getPresetById(DEFAULT_PRESET_ID))?.label;
 
   const handleThemeSelect = (id: ThemePresetId) => {
     setThemeId(id);
