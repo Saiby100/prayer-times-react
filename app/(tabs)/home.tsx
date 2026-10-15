@@ -117,7 +117,7 @@ export default function Home() {
                     key={key}
                     name={key}
                     time={todayTimes[key]}
-                    isHighlighted={todayTimes[key] === highlighted}
+                    isHighlighted={key === highlighted}
                     colors={theme.colors}
                     onLongPress={() => setPopupPrayer(key)}
                   />
