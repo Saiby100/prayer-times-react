@@ -13,10 +13,19 @@ export async function fetchHijriAdjustment(): Promise<number | null> {
     return null;
   }
 
-  const { data, error } = await supabase
+  const { data, error, status } = await supabase
     .from('app_settings')
     .select('hijri_adjustment')
     .maybeSingle();
+
+  // Status 0 means the request never reached Supabase (e.g. offline), which isn't a fault.
+  if (error && status === 0) {
+    log.info('hijriAdjustment: network unavailable', {
+      type: 'fetch-hijri-adjustment',
+      error: error.message,
+    });
+    return null;
+  }
 
   if (error) {
     log.error('hijriAdjustment: error fetching adjustment', {
