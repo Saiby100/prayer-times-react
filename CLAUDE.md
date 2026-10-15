@@ -5,9 +5,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-expo start          # Start dev server
-expo run:android    # Run on Android
-expo run:ios        # Run on iOS
+npm start                # Start dev server (APP_VARIANT=development)
+npm run android          # Prebuild + run the dev build (com.salasaiet.reminder.dev)
+npm run android:release  # Prebuild + run a production-ID release build (com.salasaiet.reminder)
+npm run ios              # Run on iOS (dev variant)
 expo start --web    # Run on web
 expo lint           # Lint (ESLint with expo config)
 jest --watchAll     # Run tests (jest-expo)
