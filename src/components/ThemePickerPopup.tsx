@@ -12,6 +12,9 @@ import {
 import { Overlay, Text, useTheme } from '@rneui/themed';
 import { themePresets, type ThemePreset, type ThemePresetId } from '@/theme/presets';
 
+/** Width / height of the preview images in `assets/images/previews/`. */
+const PREVIEW_ASPECT = 700 / 1466;
+
 type ThemePickerPopupProps = {
   /** Whether the picker popup is shown. */
   visible: boolean;
@@ -42,8 +45,8 @@ export default function ThemePickerPopup({
   const overlayWidth = screenWidth * 0.85;
   const contentWidth = overlayWidth - 48;
   const maxPreviewHeight = screenHeight * 0.6;
-  const naturalHeight = contentWidth * (3 / 2);
-  const previewHeight = Math.min(naturalHeight, maxPreviewHeight);
+  const previewHeight = Math.min(contentWidth / PREVIEW_ASPECT, maxPreviewHeight);
+  const previewWidth = previewHeight * PREVIEW_ASPECT;
 
   const handleScrollEnd = useCallback(
     (e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -110,6 +113,7 @@ export default function ThemePickerPopup({
                 preset={item}
                 isSelected={item.id === selectedId}
                 onSelect={handleSelect}
+                previewWidth={previewWidth}
                 previewHeight={previewHeight}
                 primaryColor={theme.colors.primary}
                 sliderTrackColor={theme.colors.sliderTrack}
@@ -143,6 +147,8 @@ type PresetCardProps = {
   isSelected: boolean;
   /** Called when this preset is chosen. */
   onSelect: (id: ThemePresetId) => void;
+  /** Width of the image preview area. */
+  previewWidth: number;
   /** Height of the image preview area. */
   previewHeight: number;
   /** Theme primary color for the selection indicator. */
@@ -155,16 +161,18 @@ function PresetCard({
   preset,
   isSelected,
   onSelect,
+  previewWidth,
   previewHeight,
   primaryColor,
   sliderTrackColor,
 }: PresetCardProps) {
   return (
-    <TouchableOpacity onPress={() => onSelect(preset.id)} activeOpacity={0.7}>
+    <TouchableOpacity onPress={() => onSelect(preset.id)} activeOpacity={1}>
       <View
         style={[
           styles.card,
           {
+            width: previewWidth,
             height: previewHeight,
             borderColor: isSelected ? primaryColor : sliderTrackColor,
             borderWidth: isSelected ? 2.5 : 1,
@@ -173,8 +181,8 @@ function PresetCard({
       >
         <Image
           source={preset.previewSource}
-          style={[styles.preview, { height: previewHeight }]}
-          resizeMode="contain"
+          style={styles.preview}
+          resizeMode="cover"
         />
       </View>
       <Text style={styles.label}>{preset.label}</Text>
@@ -190,12 +198,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   card: {
+    alignSelf: 'center',
     borderRadius: 12,
     overflow: 'hidden',
   },
   preview: {
     width: '100%',
-    borderRadius: 12,
+    height: '100%',
   },
   label: {
     fontSize: 14,
