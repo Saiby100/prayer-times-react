@@ -8,5 +8,5 @@ module.exports = {
     SourceSkips.ExpoConfigVersions | // version / versionCode bumps
     SourceSkips.ExpoConfigRuntimeVersionIfString |
     SourceSkips.ExpoConfigExtraSection | // extra.commitHash changes on every commit
-    SourceSkips.PackageJsonAndroidAndIosScriptsIfNotContainRun, // expo default
+    SourceSkips.PackageJsonScriptsAll, // npm scripts only run locally
 };
