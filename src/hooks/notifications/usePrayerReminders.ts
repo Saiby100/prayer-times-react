@@ -4,10 +4,7 @@ import {
   requestNotificationPermission,
 } from '@/services/notifications/notification';
 import { ensureChannelsExist } from '@/services/notifications/setup';
-import {
-  clearExistingReminders,
-  scheduleTodayNotifications,
-} from '@/services/notifications/scheduleReminders';
+import { syncPrayerReminders } from '@/services/notifications/scheduleReminders';
 import {
   isRemindersEnabled,
   setRemindersEnabled,
@@ -43,30 +40,24 @@ function usePrayerReminders() {
     await ensureChannelsExist();
     setRemindersEnabled(true);
     setIsEnabled(true);
-    await schedule();
+    // Not awaited: the switch turns on now and reminders are scheduled in the background.
+    syncPrayerReminders();
     return 'granted';
   }
 
-  // Cancels every prayer reminder, including ones left over when a reschedule couldn't load times.
+  // With reminders saved as off, the sync cancels every prayer reminder. It runs after any
+  // scheduling already in progress, so nothing is scheduled after this.
   async function disable() {
     setRemindersEnabled(false);
     setIsEnabled(false);
-    await clearExistingReminders();
-  }
-
-  async function schedule() {
-    const ids = await scheduleTodayNotifications();
-    log.info('usePrayerReminders: scheduled reminders', {
-      type: 'notification',
-      count: ids.length,
-    });
+    await syncPrayerReminders();
   }
 
   const reminderOffset = getReminderOffset();
 
   function setReminderOffset(minutes: number) {
     storeSetReminderOffset(minutes);
-    schedule();
+    syncPrayerReminders();
   }
 
   return {

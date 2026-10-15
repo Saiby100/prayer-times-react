@@ -1,6 +1,6 @@
 import * as BackgroundTask from 'expo-background-task';
 import * as TaskManager from 'expo-task-manager';
-import { scheduleTodayNotifications } from '@/services/notifications/scheduleReminders';
+import { syncPrayerReminders } from '@/services/notifications/scheduleReminders';
 import { ensureChannelsExist } from '@/services/notifications/setup';
 import log from '@/utils/logger';
 
@@ -11,7 +11,7 @@ export const handler: TaskManager.TaskManagerTaskExecutor = async () => {
 
   try {
     await ensureChannelsExist();
-    await scheduleTodayNotifications();
+    await syncPrayerReminders();
     log.info('prayerReminderTask: task completed successfully', { type: 'background-task' });
     return BackgroundTask.BackgroundTaskResult.Success;
   } catch (error) {
