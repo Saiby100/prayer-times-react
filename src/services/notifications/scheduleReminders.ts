@@ -11,6 +11,7 @@ import { fetchTimes, areaToSlug } from '@/services/prayerTimes';
 import { toDisplayNames } from '@/utils/prayerNames';
 import { mapDays, type MonthTimes } from '@/utils/monthTimes';
 import {
+  REMINDER_DAYS,
   REMINDER_TYPE,
   buildReminders,
   diffReminders,
@@ -41,7 +42,7 @@ async function loadMonth(date: Date, area: string): Promise<MonthTimes | null> {
     }
   } catch (error) {
     log.error('scheduleReminders: error fetching times', {
-      type: 'notification',
+      type: 'sync-reminders',
       error: String(error),
     });
   }
@@ -85,19 +86,21 @@ async function planReminders(now: Date): Promise<ReminderPlan | null> {
   }
 
   if (!(await notificationPermissionGranted())) {
-    log.debug('scheduleReminders: notification permission not granted', { type: 'notification' });
+    log.debug('scheduleReminders: notification permission not granted', {
+      type: 'sync-reminders',
+    });
     return null;
   }
 
   const area = getArea();
   if (!area) {
-    log.warn('scheduleReminders: no area configured', { type: 'notification' });
+    log.warn('scheduleReminders: no area configured', { type: 'sync-reminders' });
     return null;
   }
 
   const months = await loadMonths(upcomingDays(now), area);
   if (months.size === 0) {
-    log.warn('scheduleReminders: could not fetch prayer times', { type: 'notification' });
+    log.warn('scheduleReminders: could not fetch prayer times', { type: 'sync-reminders' });
     return null;
   }
 
@@ -137,8 +140,8 @@ async function sync(): Promise<void> {
     );
     toSchedule.forEach((reminder, i) => {
       if (ids[i]) {
-        log.info('scheduleReminders: scheduled reminder', {
-          type: 'notification',
+        log.debug('scheduleReminders: scheduled reminder', {
+          type: 'sync-reminders',
           prayer: reminder.prayer,
           time: reminder.fireAt.toLocaleString(),
         });
@@ -149,16 +152,26 @@ async function sync(): Promise<void> {
       await clearScheduledNotifications(toCancel);
     }
 
+    // Warn so this reaches Supabase: with reminders on, none wanted is likely a fault.
+    if (plan.reminders.length === 0 && isRemindersEnabled()) {
+      log.warn('scheduleReminders: 0 reminders scheduled while reminders are enabled', {
+        type: 'sync-reminders',
+        hidden: getDisabledPrayers(),
+        missingDays: plan.missingDays,
+      });
+    }
+
     log.info('scheduleReminders: sync complete', {
-      type: 'notification',
+      type: 'sync-reminders',
       wanted: plan.reminders.length,
       scheduled: ids.filter(Boolean).length,
       cancelled: toCancel.length,
+      days: REMINDER_DAYS - plan.missingDays.length,
       missingDays: plan.missingDays.length,
       durationMs: Date.now() - startedAt,
     });
   } catch (error) {
-    log.error('scheduleReminders: sync failed', { type: 'notification', error: String(error) });
+    log.error('scheduleReminders: sync failed', { type: 'sync-reminders', error: String(error) });
   }
 }
 

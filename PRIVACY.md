@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Effective date:** 27 September 2026
+**Effective date:** 15 October 2026
 
 This policy explains what information the Reminder app ("the app") uses, what leaves your device, and why. Reminder is developed by Salahuddin Saiet.
 
@@ -33,16 +33,16 @@ To show prayer times, the app requests the list of areas and the times for your 
 
 ### Diagnostic logs
 
-Release versions of the app send diagnostic logs to the same backend to help find and fix bugs, for example when prayer times fail to load or reminders fail to schedule. A log entry may include:
+Release versions of the app send diagnostic logs to the same backend to help find and fix bugs, for example when prayer times fail to load or reminders fail to schedule. Only warnings and errors are sent; routine activity is not. A log entry may include:
 
 - A random device ID created by the app. It is not linked to your name, phone number, advertising ID or any hardware identifier.
 - Your device's operating system and OS version
 - The app version
 - Your selected area and the month being loaded
-- Reminder scheduling details, such as how many reminders were set
+- Reminder scheduling details, such as how many reminders were set and which prayers you hid
 - Error messages
 
-Logs do not include your location. They are used only for debugging and improving the app, and are kept only as long as they are useful for that.
+Logs do not include your location. They are used only for debugging and improving the app, and are automatically deleted after 30 days.
 
 ### App updates
 

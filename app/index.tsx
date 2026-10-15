@@ -13,7 +13,7 @@ export default function Index() {
   const router = useRouter();
   useEffect(() => {
     async function init() {
-      log.info('index: app init started', { type: 'app' });
+      log.info('index: app init started', { type: 'init-app' });
       registerDefinedTask.prayerReminderTask();
       await ensureChannelsExist();
       syncPrayerReminders();

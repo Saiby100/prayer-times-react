@@ -36,7 +36,7 @@ function usePTApi({ area }: { area: string }) {
     const cached = getCachedTimes(date, area);
     if (cached) {
       log.debug('usePTApi: cache hit', {
-        type: 'api',
+        type: 'load-prayer-times',
         area,
         month: date.getMonth(),
         year: date.getFullYear(),
@@ -45,7 +45,7 @@ function usePTApi({ area }: { area: string }) {
     }
 
     log.info('usePTApi: fetching times from Supabase', {
-      type: 'api',
+      type: 'load-prayer-times',
       area,
       date: date.toISOString(),
     });
@@ -53,7 +53,7 @@ function usePTApi({ area }: { area: string }) {
     const data = mapDays(await fetchTimes(slug, date), toDisplayNames);
     if (Object.keys(data).length > 0) {
       log.info('usePTApi: saving times to storage', {
-        type: 'storage',
+        type: 'load-prayer-times',
         month: date.getMonth(),
         area,
       });

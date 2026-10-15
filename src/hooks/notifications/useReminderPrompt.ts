@@ -17,7 +17,9 @@ function useReminderPrompt() {
       const { granted, canAskAgain } = await getNotificationPermission();
       // Blocked means the user already refused notifications, so don't ask again.
       if (!granted && !canAskAgain) {
-        log.info('useReminderPrompt: skipped, permission blocked', { type: 'notification' });
+        log.info('useReminderPrompt: skipped, permission blocked', {
+          type: 'show-reminder-prompt',
+        });
         setReminderPromptSeen();
         return;
       }

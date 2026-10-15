@@ -9,7 +9,7 @@ const MAX_ADJUSTMENT = 2;
  */
 export async function fetchHijriAdjustment(): Promise<number | null> {
   if (!supabase) {
-    log.error('hijriAdjustment: supabase not initialised', { type: 'api' });
+    log.error('hijriAdjustment: supabase not initialised', { type: 'fetch-hijri-adjustment' });
     return null;
   }
 
@@ -19,13 +19,16 @@ export async function fetchHijriAdjustment(): Promise<number | null> {
     .maybeSingle();
 
   if (error) {
-    log.error('hijriAdjustment: error fetching adjustment', { type: 'api', error: error.message });
+    log.error('hijriAdjustment: error fetching adjustment', {
+      type: 'fetch-hijri-adjustment',
+      error: error.message,
+    });
     return null;
   }
 
   const value = data?.hijri_adjustment;
   if (!Number.isInteger(value) || Math.abs(value) > MAX_ADJUSTMENT) {
-    log.error('hijriAdjustment: invalid adjustment', { type: 'api', value });
+    log.error('hijriAdjustment: invalid adjustment', { type: 'fetch-hijri-adjustment', value });
     return null;
   }
 

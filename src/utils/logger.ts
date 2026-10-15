@@ -5,10 +5,23 @@ import Constants from 'expo-constants';
 import { supabase } from '@/utils/supabase';
 import { getDeviceId } from '@/utils/deviceId';
 
-export type LogType = 'api' | 'notification' | 'background-task' | 'storage' | 'app';
+/** The action being carried out when the log was written, as a kebab-case slug. */
+export type LogType =
+  | 'init-app'
+  | 'create-storage'
+  | 'load-prayer-times'
+  | 'fetch-areas'
+  | 'fetch-prayer-times'
+  | 'fetch-hijri-adjustment'
+  | 'request-notification-permission'
+  | 'show-reminder-prompt'
+  | 'sync-reminders'
+  | 'run-reminder-task'
+  | 'register-task'
+  | 'unregister-task';
 
 type LogData = {
-  /** Category of the log entry. */
+  /** Action being carried out when the log was written. */
   type: LogType;
   /** Arbitrary additional data attached to the log. */
   [key: string]: unknown;
@@ -30,7 +43,8 @@ function parseTransportProps(props: Parameters<transportFunctionType<object>>[0]
 const supabaseTransport: transportFunctionType<object> = (props) => {
   const { message, levelName, type, data } = parseTransportProps(props);
 
-  if (levelName === 'debug' || !supabase) return;
+  // Only warnings and errors are sent, to keep the logs table small.
+  if ((levelName !== 'warn' && levelName !== 'error') || !supabase) return;
 
   supabase
     .from('logs')

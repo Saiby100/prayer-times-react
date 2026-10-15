@@ -28,11 +28,15 @@ function usePrayerReminders() {
 
     if (!granted) {
       if (!canAskAgain) {
-        log.info('usePrayerReminders: permission blocked', { type: 'notification' });
+        log.info('usePrayerReminders: permission blocked', {
+          type: 'request-notification-permission',
+        });
         return 'blocked';
       }
       if (!(await requestNotificationPermission())) {
-        log.info('usePrayerReminders: permission denied', { type: 'notification' });
+        log.info('usePrayerReminders: permission denied', {
+          type: 'request-notification-permission',
+        });
         return 'denied';
       }
     }
