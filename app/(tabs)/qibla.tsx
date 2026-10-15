@@ -42,7 +42,7 @@ export default function QiblaScreen() {
             title={copy.button}
             onPress={locationError === 'blocked' ? () => Linking.openSettings() : retry}
             buttonStyle={{ backgroundColor: theme.colors.primary, borderRadius: 8 }}
-            titleStyle={{ fontFamily: 'Inter-Medium', color: '#fff' }}
+            titleStyle={{ fontFamily: 'Inter-Medium', color: theme.colors.background }}
             containerStyle={styles.button}
           />
         </View>
