@@ -111,6 +111,11 @@ async function notificationPermissionGranted() {
   return status === 'granted';
 }
 
+async function getNotificationPermission() {
+  const { status, canAskAgain } = await Notifications.getPermissionsAsync();
+  return { granted: status === 'granted', canAskAgain };
+}
+
 async function requestNotificationPermission() {
   if (await notificationPermissionGranted()) return true;
   const { status } = await Notifications.requestPermissionsAsync();
@@ -132,6 +137,7 @@ async function getScheduledNotifications() {
 export {
   clearScheduledNotifications,
   createNotificationChannel,
+  getNotificationPermission,
   getScheduledNotifications,
   notificationPermissionGranted,
   requestNotificationPermission,

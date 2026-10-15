@@ -1,51 +1,65 @@
 import { useMemo, useEffect, useState } from 'react';
 import {
   clearScheduledNotifications,
+  getNotificationPermission,
   requestNotificationPermission,
   getScheduledNotifications,
 } from '@/services/notifications/notification';
 import { ensureChannelsExist } from '@/services/notifications/setup';
 import { scheduleTodayNotifications } from '@/services/notifications/scheduleReminders';
 import {
-  isNotificationPermissionDenied,
-  setNotificationPermissionDenied,
+  setRemindersEnabled,
   getReminderOffset,
   setReminderOffset as storeSetReminderOffset,
 } from '@/stores';
 import log from '@/utils/logger';
 
+/** Outcome of turning reminders on: `blocked` means only Android settings can allow them. */
+export type EnableRemindersResult = 'granted' | 'denied' | 'blocked';
+
 function usePrayerReminders() {
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [scheduledIds, setScheduledIds] = useState<string[]>([]);
 
   const isScheduled = useMemo(() => scheduledIds.length > 0, [scheduledIds]);
 
   useEffect(() => {
-    setupNotifications();
+    loadScheduledIds();
   }, []);
 
-  async function setupNotifications() {
-    if (isNotificationPermissionDenied()) return;
-
-    const result = await requestNotificationPermission();
-    setNotificationPermissionDenied(!result);
-
-    if (!result) {
-      setNotificationsEnabled(false);
-      return;
-    }
-
-    await ensureChannelsExist();
-    log.info('usePrayerReminders: notification channels created', { type: 'notification' });
-    setNotificationsEnabled(true);
-
+  async function loadScheduledIds() {
     const scheduled = await getScheduledNotifications();
     const prayerReminders = scheduled.filter((n) => n.content.data?.type === 'prayer_reminder');
     setScheduledIds(prayerReminders.map((n) => n.identifier));
   }
 
+  // Checks the real permission each time, so allowing notifications in Android settings
+  // takes effect on the next tap.
+  async function enable(): Promise<EnableRemindersResult> {
+    const { granted, canAskAgain } = await getNotificationPermission();
+
+    if (!granted) {
+      if (!canAskAgain) {
+        log.info('usePrayerReminders: permission blocked', { type: 'notification' });
+        return 'blocked';
+      }
+      if (!(await requestNotificationPermission())) {
+        log.info('usePrayerReminders: permission denied', { type: 'notification' });
+        return 'denied';
+      }
+    }
+
+    await ensureChannelsExist();
+    setRemindersEnabled(true);
+    await schedule();
+    return 'granted';
+  }
+
+  async function disable() {
+    setRemindersEnabled(false);
+    await clear();
+  }
+
   async function schedule() {
-    if (!notificationsEnabled) return;
     const ids = await scheduleTodayNotifications();
     log.info('usePrayerReminders: scheduled reminders', {
       type: 'notification',
@@ -72,8 +86,8 @@ function usePrayerReminders() {
 
   return {
     isScheduled,
-    schedule,
-    clear,
+    enable,
+    disable,
     reminderOffset,
     setReminderOffset,
   };

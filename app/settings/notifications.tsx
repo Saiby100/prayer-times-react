@@ -1,34 +1,34 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import { Linking, ScrollView, StyleSheet } from 'react-native';
 import { Text } from '@rneui/themed';
 
 import Page from '@/components/Page';
 import Card from '@/components/Card';
+import ConfirmPopup from '@/components/ConfirmPopup';
 import SettingsToggleRow from '@/components/SettingsToggleRow';
 import ReminderOffsetPopup from '@/components/ReminderOffsetPopup';
-import { setRemindersEnabled } from '@/stores';
 import usePrayerReminders from '@/hooks/notifications/usePrayerReminders';
 
 export default function NotificationSettings() {
-  const { isScheduled, schedule, clear, reminderOffset, setReminderOffset } = usePrayerReminders();
+  const { isScheduled, enable, disable, reminderOffset, setReminderOffset } = usePrayerReminders();
   const [offsetPopupVisible, setOffsetPopupVisible] = useState(false);
+  const [blockedPopupVisible, setBlockedPopupVisible] = useState(false);
 
-  const toggleReminders = () => {
+  const toggleReminders = async () => {
     if (isScheduled) {
-      setRemindersEnabled(false);
-      clear();
+      disable();
       return;
     }
-    setRemindersEnabled(true);
-    schedule();
+    if ((await enable()) === 'blocked') setBlockedPopupVisible(true);
+  };
+
+  const openSettings = () => {
+    setBlockedPopupVisible(false);
+    Linking.openSettings();
   };
 
   return (
-    <Page
-      title="Notifications"
-      options={{ headerBackVisible: true }}
-      contentStyle={styles.content}
-    >
+    <Page title="Notifications" options={{ headerBackVisible: true }} contentStyle={styles.content}>
       <ScrollView contentContainerStyle={styles.container}>
         <Card gap={16}>
           <SettingsToggleRow
@@ -57,6 +57,15 @@ export default function NotificationSettings() {
         currentValue={reminderOffset}
         onSave={setReminderOffset}
         onClose={() => setOffsetPopupVisible(false)}
+      />
+      <ConfirmPopup
+        visible={blockedPopupVisible}
+        title="Notifications are blocked"
+        message="Allow notifications for this app in Android settings to get prayer reminders."
+        confirmLabel="Open settings"
+        dismissLabel="Cancel"
+        onConfirm={openSettings}
+        onDismiss={() => setBlockedPopupVisible(false)}
       />
     </Page>
   );

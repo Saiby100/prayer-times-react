@@ -47,13 +47,3 @@ export function setDisabledPrayers(prayers: string[]): void {
     listener();
   }
 }
-
-// --- Notification permission ---
-
-export function isNotificationPermissionDenied(): boolean {
-  return getStorage().getBoolean('notificationPermissionDenied') || false;
-}
-
-export function setNotificationPermissionDenied(denied: boolean): void {
-  getStorage().set('notificationPermissionDenied', denied);
-}

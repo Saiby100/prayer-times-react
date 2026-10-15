@@ -15,8 +15,6 @@ export {
   subscribeDisabledPrayers,
   getDisabledPrayers,
   setDisabledPrayers,
-  isNotificationPermissionDenied,
-  setNotificationPermissionDenied,
 } from './notificationStore';
 export { getDeviceId } from './deviceStore';
 export { hasSeenQiblaTips, setQiblaTipsSeen } from './qiblaStore';
