@@ -34,7 +34,7 @@
     "production": {
       "android": {
         "track": "alpha",
-        "changesNotSentForReview": false
+        "releaseStatus": "draft"
       }
     }
   }
