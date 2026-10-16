@@ -33,7 +33,7 @@
   "submit": {
     "production": {
       "android": {
-        "track": "internal",
+        "track": "alpha",
         "changesNotSentForReview": false
       }
     }
