@@ -111,7 +111,9 @@ export default function InfoPopup({ visible, onClose, items }: InfoPopupProps) {
 function InfoPage({ item }: { item: InfoItem }) {
   return (
     <View>
-      <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 12 }}>{item.title}</Text>
+      <Text style={{ fontSize: 18, fontFamily: 'Inter-SemiBold', marginBottom: 12 }}>
+        {item.title}
+      </Text>
       <Text style={{ fontSize: 14, lineHeight: 22, opacity: 0.8 }}>{item.description}</Text>
     </View>
   );

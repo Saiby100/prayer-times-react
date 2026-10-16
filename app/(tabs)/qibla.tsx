@@ -1,12 +1,20 @@
-import { Share, StyleSheet, View } from 'react-native';
+import { Linking, Share, StyleSheet, View } from 'react-native';
 import { Button, Icon, Text, useTheme } from '@rneui/themed';
 import { useRouter } from 'expo-router';
 import Page from '@/components/Page';
 import QiblaCompass from '@/components/QiblaCompass';
-import QiblaHelper from '@/components/QiblaHelper';
+import QiblaTipsPopup from '@/components/QiblaTipsPopup';
 import OptionsMenu from '@/components/OptionsMenu';
 import { SHARE_APP_MESSAGE } from '@/config/shareApp';
-import useQiblaCompass from '@/hooks/useQiblaCompass';
+import useQiblaCompass, { LocationError } from '@/hooks/useQiblaCompass';
+import useQiblaTips from '@/hooks/useQiblaTips';
+
+/** Message and button title shown for each reason the Qibla can't be found. */
+const LOCATION_ERROR_COPY: Record<LocationError, { message: string; button: string }> = {
+  'can-ask': { message: 'Location is needed to find the Qibla', button: 'Grant permission' },
+  blocked: { message: 'Location is blocked for this app', button: 'Open settings' },
+  unavailable: { message: "Couldn't get your location", button: 'Try again' },
+};
 
 export default function QiblaScreen() {
   const { theme } = useTheme();
@@ -15,26 +23,26 @@ export default function QiblaScreen() {
     qiblaBearing,
     dialRotation,
     isLoading,
-    permissionDenied,
+    locationError,
     sensorAvailable,
-    requestPermission,
+    retry,
     bearingLabel,
     isAligned,
     needsCalibration,
   } = useQiblaCompass();
+  const tips = useQiblaTips();
 
   const renderContent = () => {
-    if (permissionDenied) {
+    if (locationError) {
+      const copy = LOCATION_ERROR_COPY[locationError];
       return (
         <View style={styles.centered}>
-          <Text style={[styles.message, { color: theme.colors.text }]}>
-            Location access is needed to determine the Qibla direction.
-          </Text>
+          <Text style={[styles.message, { color: theme.colors.text }]}>{copy.message}</Text>
           <Button
-            title="Grant Permission"
-            onPress={requestPermission}
+            title={copy.button}
+            onPress={locationError === 'blocked' ? () => Linking.openSettings() : retry}
             buttonStyle={{ backgroundColor: theme.colors.primary, borderRadius: 8 }}
-            titleStyle={{ fontFamily: 'Inter-Medium', color: '#fff' }}
+            titleStyle={{ fontFamily: 'Inter-Medium', color: theme.colors.background }}
             containerStyle={styles.button}
           />
         </View>
@@ -70,8 +78,9 @@ export default function QiblaScreen() {
             dialRotation={dialRotation}
             bearingLabel={bearingLabel}
             isAligned={isAligned}
+            onHelpPress={tips.open}
           />
-          <QiblaHelper />
+          <QiblaTipsPopup visible={tips.visible} onClose={tips.close} />
         </View>
       );
     }

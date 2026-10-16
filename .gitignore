@@ -10,6 +10,7 @@ web-build/
 expo-env.d.ts
 
 # Native
+/android
 *.orig.*
 *.jks
 *.p8
@@ -38,3 +39,6 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+# Obsidian
+.obsidian/

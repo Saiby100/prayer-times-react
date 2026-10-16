@@ -1,8 +1,8 @@
 import { ImageSourcePropType } from 'react-native';
 import { ThemeMode } from '@rneui/themed';
-import { lightColors, darkColors, warmDarkColors } from './colors';
+import { mistyColors, sunsetColors, crescentColors, twilightColors } from './colors';
 
-export type ThemePresetId = 'light-mosque' | 'dark-mosque' | 'serene-night';
+export type ThemePresetId = 'misty-valley' | 'sunset-medina' | 'crescent-lagoon' | 'twilight-terrace';
 
 export type ThemeColors = {
   /** Primary accent color used for highlights and interactive elements. */
@@ -34,32 +34,40 @@ export type ThemePreset = {
   previewSource: ImageSourcePropType;
 };
 
-export const DEFAULT_PRESET_ID: ThemePresetId = 'light-mosque';
+export const DEFAULT_PRESET_ID: ThemePresetId = 'misty-valley';
 
 export const themePresets: ThemePreset[] = [
   {
-    id: 'light-mosque',
-    label: 'Light Mosque',
+    id: 'misty-valley',
+    label: 'Misty Valley',
     mode: 'light',
-    colors: lightColors,
-    wallpaperSource: require('../../assets/images/backgrounds/light-mosque.png'),
-    previewSource: require('../../assets/images/previews/light-mosque.jpg'),
+    colors: mistyColors,
+    wallpaperSource: require('../../assets/images/backgrounds/misty-valley.png'),
+    previewSource: require('../../assets/images/previews/misty-valley.jpg'),
   },
   {
-    id: 'dark-mosque',
-    label: 'Dark Mosque',
-    mode: 'dark',
-    colors: darkColors,
-    wallpaperSource: require('../../assets/images/backgrounds/dark-mosque.png'),
-    previewSource: require('../../assets/images/previews/dark-mosque.jpg'),
+    id: 'sunset-medina',
+    label: 'Sunset Medina',
+    mode: 'light',
+    colors: sunsetColors,
+    wallpaperSource: require('../../assets/images/backgrounds/sunset-medina.png'),
+    previewSource: require('../../assets/images/previews/sunset-medina.jpg'),
   },
   {
-    id: 'serene-night',
-    label: 'Serene Night',
+    id: 'crescent-lagoon',
+    label: 'Crescent Lagoon',
     mode: 'dark',
-    colors: warmDarkColors,
-    wallpaperSource: require('../../assets/images/backgrounds/serene-night.png'),
-    previewSource: require('../../assets/images/previews/serene-night.jpg'),
+    colors: crescentColors,
+    wallpaperSource: require('../../assets/images/backgrounds/crescent-lagoon.png'),
+    previewSource: require('../../assets/images/previews/crescent-lagoon.jpg'),
+  },
+  {
+    id: 'twilight-terrace',
+    label: 'Twilight Terrace',
+    mode: 'dark',
+    colors: twilightColors,
+    wallpaperSource: require('../../assets/images/backgrounds/twilight-terrace.png'),
+    previewSource: require('../../assets/images/previews/twilight-terrace.jpg'),
   },
 ];
 

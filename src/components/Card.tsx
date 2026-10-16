@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     marginBottom: 20,
   },
 });

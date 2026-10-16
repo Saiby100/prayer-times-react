@@ -2,6 +2,7 @@ import { StyleSheet, FlatList } from 'react-native';
 import { useCallback, useMemo, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
 import { setArea } from '@/stores';
+import { syncPrayerReminders } from '@/services/notifications/scheduleReminders';
 import * as SplashScreen from 'expo-splash-screen';
 import Page from '@/components/Page';
 import usePTAreas from '@/hooks/usePTAreas';
@@ -20,6 +21,8 @@ export default function Areas() {
 
   const navigateHome = (area: string) => {
     setArea(area);
+    // Move scheduled reminders to the new area's times.
+    syncPrayerReminders();
     router.dismissAll();
     router.replace('/home');
   };
@@ -31,13 +34,7 @@ export default function Areas() {
   );
 
   return (
-    <Page
-      title="Select Area"
-      showBackground
-      loading={isLoading}
-      error={error}
-      onRetry={retry}
-    >
+    <Page title="Select Area" showBackground loading={isLoading} error={error} onRetry={retry}>
       <FlatList
         data={filteredAreas}
         keyExtractor={(item) => item.slug}

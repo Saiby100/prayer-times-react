@@ -4,10 +4,11 @@ import { useTheme, useThemeMode } from '@rneui/themed';
 
 import Page from '@/components/Page';
 import Card from '@/components/Card';
+import SettingsSwitchRow from '@/components/SettingsSwitchRow';
 import SettingsToggleRow from '@/components/SettingsToggleRow';
 import ThemePickerPopup from '@/components/ThemePickerPopup';
 import useAppearance from '@/hooks/useAppearance';
-import { getPresetById, type ThemePresetId } from '@/theme/presets';
+import { DEFAULT_PRESET_ID, getPresetById, type ThemePresetId } from '@/theme/presets';
 
 export default function AppearanceSettings() {
   const { updateTheme } = useTheme();
@@ -15,7 +16,7 @@ export default function AppearanceSettings() {
   const { themeId, setThemeId, wallpaperEnabled, setWallpaperEnabled } = useAppearance();
   const [themePickerVisible, setThemePickerVisible] = useState(false);
 
-  const themeLabel = getPresetById(themeId)?.label ?? 'Light Mosque';
+  const themeLabel = (getPresetById(themeId) ?? getPresetById(DEFAULT_PRESET_ID))?.label;
 
   const handleThemeSelect = (id: ThemePresetId) => {
     setThemeId(id);
@@ -27,11 +28,7 @@ export default function AppearanceSettings() {
   };
 
   return (
-    <Page
-      title="Appearance"
-      options={{ headerBackVisible: true }}
-      contentStyle={styles.content}
-    >
+    <Page title="Appearance" options={{ headerBackVisible: true }} contentStyle={styles.content}>
       <ScrollView contentContainerStyle={styles.container}>
         <Card gap={16}>
           <SettingsToggleRow
@@ -40,11 +37,10 @@ export default function AppearanceSettings() {
             title={` ${themeLabel}`}
             onPress={() => setThemePickerVisible(true)}
           />
-          <SettingsToggleRow
+          <SettingsSwitchRow
             label="Wallpaper"
-            iconName={wallpaperEnabled ? 'eye' : 'eye-off'}
-            title={wallpaperEnabled ? ' On' : ' Off'}
-            onPress={() => setWallpaperEnabled(!wallpaperEnabled)}
+            value={wallpaperEnabled}
+            onValueChange={setWallpaperEnabled}
           />
         </Card>
       </ScrollView>

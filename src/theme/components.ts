@@ -1,4 +1,5 @@
 import { Colors, Theme } from '@rneui/themed';
+import { StyleProp, TextStyle } from 'react-native';
 
 const font = { fontSize: 18, fontFamily: 'Inter-Medium' };
 
@@ -24,8 +25,10 @@ const components = {
   }),
 
   Text: (props: Record<string, unknown>, theme: Theme & { colors: Colors }) => ({
-    style: { ...font, color: theme.colors.text },
     ...props,
+    // Layer the caller's style over the theme font and colour instead of
+    // replacing them, so a <Text style={...}> still renders in Inter.
+    style: [{ ...font, color: theme.colors.text }, props.style as StyleProp<TextStyle>],
   }),
 
   Skeleton: (props: Record<string, unknown>, theme: Theme & { colors: Colors }) => ({

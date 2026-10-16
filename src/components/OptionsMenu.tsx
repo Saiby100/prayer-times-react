@@ -30,10 +30,7 @@ export default function OptionsMenu({ items }: OptionsMenuProps) {
 
   return (
     <View>
-      <Button
-        icon={{ name: 'more-vertical', type: 'feather' }}
-        onPressIn={() => setVisible(true)}
-      />
+      <Button icon={{ name: 'more-vertical', type: 'feather' }} onPress={() => setVisible(true)} />
       <Overlay
         isVisible={visible}
         onBackdropPress={() => setVisible(false)}

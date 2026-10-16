@@ -12,10 +12,12 @@ export {
   setRemindersEnabled,
   getReminderOffset,
   setReminderOffset,
+  hasSeenReminderPrompt,
+  setReminderPromptSeen,
   subscribeDisabledPrayers,
   getDisabledPrayers,
   setDisabledPrayers,
-  isNotificationPermissionDenied,
-  setNotificationPermissionDenied,
 } from './notificationStore';
 export { getDeviceId } from './deviceStore';
+export { hasSeenQiblaTips, setQiblaTipsSeen } from './qiblaStore';
+export { getHijriAdjustment, setHijriAdjustment } from './hijriStore';

@@ -9,7 +9,7 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: theme.colors.text,
+        tabBarInactiveTintColor: theme.colors.text + '80',
         // The navigator applies the bottom inset itself with edge-to-edge
         tabBarStyle: {
           backgroundColor: theme.colors.bgLight,

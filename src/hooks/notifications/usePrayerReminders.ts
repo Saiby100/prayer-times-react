@@ -1,79 +1,73 @@
-import { useMemo, useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
-  clearScheduledNotifications,
+  getNotificationPermission,
   requestNotificationPermission,
-  getScheduledNotifications,
 } from '@/services/notifications/notification';
 import { ensureChannelsExist } from '@/services/notifications/setup';
-import { scheduleTodayNotifications } from '@/services/notifications/scheduleReminders';
+import { syncPrayerReminders } from '@/services/notifications/scheduleReminders';
 import {
-  isNotificationPermissionDenied,
-  setNotificationPermissionDenied,
+  isRemindersEnabled,
+  setRemindersEnabled,
   getReminderOffset,
   setReminderOffset as storeSetReminderOffset,
 } from '@/stores';
 import log from '@/utils/logger';
 
+/** Outcome of turning reminders on: `blocked` means only Android settings can allow them. */
+export type EnableRemindersResult = 'granted' | 'denied' | 'blocked';
+
 function usePrayerReminders() {
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [scheduledIds, setScheduledIds] = useState<string[]>([]);
+  // Follows the saved setting, not the scheduled count: nothing may be scheduled while
+  // reminders are on (e.g. offline with no cached month).
+  const [isEnabled, setIsEnabled] = useState(isRemindersEnabled);
 
-  const isScheduled = useMemo(() => scheduledIds.length > 0, [scheduledIds]);
+  // Checks the real permission each time, so allowing notifications in Android settings
+  // takes effect on the next tap.
+  async function enable(): Promise<EnableRemindersResult> {
+    const { granted, canAskAgain } = await getNotificationPermission();
 
-  useEffect(() => {
-    setupNotifications();
-  }, []);
-
-  async function setupNotifications() {
-    if (isNotificationPermissionDenied()) return;
-
-    const result = await requestNotificationPermission();
-    setNotificationPermissionDenied(!result);
-
-    if (!result) {
-      setNotificationsEnabled(false);
-      return;
+    if (!granted) {
+      if (!canAskAgain) {
+        log.info('usePrayerReminders: permission blocked', {
+          type: 'request-notification-permission',
+        });
+        return 'blocked';
+      }
+      if (!(await requestNotificationPermission())) {
+        log.info('usePrayerReminders: permission denied', {
+          type: 'request-notification-permission',
+        });
+        return 'denied';
+      }
     }
 
     await ensureChannelsExist();
-    log.info('usePrayerReminders: notification channels created', { type: 'notification' });
-    setNotificationsEnabled(true);
-
-    const scheduled = await getScheduledNotifications();
-    const prayerReminders = scheduled.filter((n) => n.content.data?.type === 'prayer_reminder');
-    setScheduledIds(prayerReminders.map((n) => n.identifier));
+    setRemindersEnabled(true);
+    setIsEnabled(true);
+    // Not awaited: the switch turns on now and reminders are scheduled in the background.
+    syncPrayerReminders();
+    return 'granted';
   }
 
-  async function schedule() {
-    if (!notificationsEnabled) return;
-    const ids = await scheduleTodayNotifications();
-    log.info('usePrayerReminders: scheduled reminders', {
-      type: 'notification',
-      count: ids.length,
-    });
-    setScheduledIds(ids);
-  }
-
-  async function clear() {
-    log.info('usePrayerReminders: clearing reminders', {
-      type: 'notification',
-      count: scheduledIds.length,
-    });
-    await clearScheduledNotifications(scheduledIds);
-    setScheduledIds([]);
+  // With reminders saved as off, the sync cancels every prayer reminder. It runs after any
+  // scheduling already in progress, so nothing is scheduled after this.
+  async function disable() {
+    setRemindersEnabled(false);
+    setIsEnabled(false);
+    await syncPrayerReminders();
   }
 
   const reminderOffset = getReminderOffset();
 
   function setReminderOffset(minutes: number) {
     storeSetReminderOffset(minutes);
-    schedule();
+    syncPrayerReminders();
   }
 
   return {
-    isScheduled,
-    schedule,
-    clear,
+    isEnabled,
+    enable,
+    disable,
     reminderOffset,
     setReminderOffset,
   };

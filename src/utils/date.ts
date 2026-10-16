@@ -14,6 +14,14 @@ function getPrevDay(current: Date) {
   return prevDay;
 }
 
+function addDays(current: Date, days: number) {
+  const result = new Date(current);
+
+  result.setDate(current.getDate() + days);
+
+  return result;
+}
+
 function getNextMonth(current: Date) {
   const nextMonth = new Date(current);
 
@@ -69,21 +77,21 @@ function dateToHijriString(current: Date): string | null {
 type ParsedHijriDate = {
   /** Day of the Hijri month. */
   day: number;
-  /** Hijri month name. */
-  month: string;
+  /** Hijri month number (1 = Muharram … 12 = Dhuʻl-Hijjah). */
+  month: number;
 };
 
 function parseHijriDate(date: Date): ParsedHijriDate | null {
   try {
     const formatter = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
       day: 'numeric',
-      month: 'long',
+      month: 'numeric',
     });
     const parts = formatter.formatToParts(date);
-    const dayStr = parts.find((p) => p.type === 'day')?.value ?? null;
-    const month = parts.find((p) => p.type === 'month')?.value ?? null;
-    if (!dayStr || !month) return null;
-    return { day: parseInt(dayStr, 10), month };
+    const day = parseInt(parts.find((p) => p.type === 'day')?.value ?? '', 10);
+    const month = parseInt(parts.find((p) => p.type === 'month')?.value ?? '', 10);
+    if (Number.isNaN(day) || Number.isNaN(month)) return null;
+    return { day, month };
   } catch {
     return null;
   }
@@ -92,6 +100,7 @@ function parseHijriDate(date: Date): ParsedHijriDate | null {
 export {
   getNextDay,
   getPrevDay,
+  addDays,
   getNextMonth,
   getPrevMonth,
   isSameDay,

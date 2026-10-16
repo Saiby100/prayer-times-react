@@ -1,4 +1,4 @@
-import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { Text, useTheme } from '@rneui/themed';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { SharedValue } from 'react-native-reanimated';
@@ -13,6 +13,8 @@ type QiblaCompassProps = {
   bearingLabel: string;
   /** Whether the Qibla is currently aligned with the pointer arrow. */
   isAligned: boolean;
+  /** Called when the user taps the help link. */
+  onHelpPress: () => void;
 };
 
 const TICK_COUNT = 72;
@@ -28,6 +30,7 @@ const QiblaCompass = ({
   dialRotation,
   bearingLabel,
   isAligned,
+  onHelpPress,
 }: QiblaCompassProps) => {
   const { theme } = useTheme();
   const { width, height } = useWindowDimensions();
@@ -129,6 +132,9 @@ const QiblaCompass = ({
         <Text style={[styles.subText, { color: theme.colors.text + '80' }]}>
           Direction to Qibla
         </Text>
+        <TouchableOpacity onPress={onHelpPress} hitSlop={8} style={styles.helpLink}>
+          <Text style={[styles.helpText, { color: theme.colors.primary }]}>Need help?</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -217,5 +223,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Inter-Medium',
     marginTop: 4,
+  },
+  helpLink: {
+    marginTop: 16,
+  },
+  helpText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Medium',
+    textDecorationLine: 'underline',
   },
 });
