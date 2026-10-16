@@ -28,7 +28,7 @@ export default function Home() {
   const {
     isLoading,
     error,
-    retry,
+    goToToday,
     navigate,
     date,
     highlighted,
@@ -62,7 +62,8 @@ export default function Home() {
       showBackground
       loading={isLoading}
       error={error}
-      onRetry={retry}
+      onRetry={goToToday}
+      retryTitle="Go to today"
       options={{
         headerRight: () => (
           <OptionsMenu

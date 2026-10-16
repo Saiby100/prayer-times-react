@@ -1,7 +1,8 @@
 import { Linking, Share, StyleSheet, View } from 'react-native';
-import { Button, Icon, Text, useTheme } from '@rneui/themed';
+import { Icon, Text, useTheme } from '@rneui/themed';
 import { useRouter } from 'expo-router';
 import Page from '@/components/Page';
+import ErrorMessage from '@/components/ErrorMessage';
 import QiblaCompass from '@/components/QiblaCompass';
 import QiblaTipsPopup from '@/components/QiblaTipsPopup';
 import OptionsMenu from '@/components/OptionsMenu';
@@ -36,16 +37,11 @@ export default function QiblaScreen() {
     if (locationError) {
       const copy = LOCATION_ERROR_COPY[locationError];
       return (
-        <View style={styles.centered}>
-          <Text style={[styles.message, { color: theme.colors.text }]}>{copy.message}</Text>
-          <Button
-            title={copy.button}
-            onPress={locationError === 'blocked' ? () => Linking.openSettings() : retry}
-            buttonStyle={{ backgroundColor: theme.colors.primary, borderRadius: 8 }}
-            titleStyle={{ fontFamily: 'Inter-Medium', color: theme.colors.background }}
-            containerStyle={styles.button}
-          />
-        </View>
+        <ErrorMessage
+          message={copy.message}
+          buttonTitle={copy.button}
+          onPress={locationError === 'blocked' ? () => Linking.openSettings() : retry}
+        />
       );
     }
 
@@ -129,10 +125,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Medium',
     textAlign: 'center',
     lineHeight: 24,
-  },
-  button: {
-    marginTop: 20,
-    minWidth: 180,
   },
   staticBearing: {
     fontSize: 48,
