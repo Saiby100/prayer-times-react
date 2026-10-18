@@ -23,7 +23,7 @@ export default function Areas() {
     setArea(area);
     // Move scheduled reminders to the new area's times.
     syncPrayerReminders();
-    router.dismissAll();
+    if (router.canDismiss()) router.dismissAll();
     router.replace('/home');
   };
 

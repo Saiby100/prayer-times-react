@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, ScreenProps } from 'expo-router';
 import { useTheme } from '@rneui/themed';
 import useAppearance from '@/hooks/useAppearance';
-import NetworkError from '@/components/NetworkError';
+import ErrorMessage from '@/components/ErrorMessage';
 
 type PageProps = {
   /** Screen options merged over the default header options. */
@@ -34,6 +34,8 @@ type PageProps = {
   error?: boolean;
   /** Callback to retry after an error. */
   onRetry?: () => void;
+  /** Title of the error button. Defaults to 'Try again'. */
+  retryTitle?: string;
 };
 
 const Page = ({
@@ -46,6 +48,7 @@ const Page = ({
   deferContent,
   error,
   onRetry,
+  retryTitle = 'Try again',
 }: PageProps) => {
   const { theme } = useTheme();
   const { wallpaperSource, themeMode } = useAppearance();
@@ -74,7 +77,11 @@ const Page = ({
         <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     ) : error && onRetry ? (
-      <NetworkError error={error} onRetry={onRetry} />
+      <ErrorMessage
+        message="Couldn't load data. Check your connection."
+        buttonTitle={retryTitle}
+        onPress={onRetry}
+      />
     ) : (
       children
     );
