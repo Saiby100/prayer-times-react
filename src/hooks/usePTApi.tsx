@@ -107,6 +107,12 @@ function usePTApi({ area }: { area: string }) {
   const prevDay = () => setDateWithSave(getPrevDay(date));
   const setToday = () => setDateWithSave(new Date());
   const goToDate = (target: Date) => setDateWithSave(target);
+  // Leave a month that failed to load. Same month: the month effect won't refetch, so retry here.
+  const goToToday = () => {
+    const today = new Date();
+    setDateWithSave(today);
+    if (today.getMonth() === date.getMonth()) fetchAndSetTimes();
+  };
   const dateString = useMemo(() => dateToString(date), [JSON.stringify(date)]);
   const dayString = useMemo(() => {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -130,6 +136,7 @@ function usePTApi({ area }: { area: string }) {
     isLoading,
     error,
     retry: fetchAndSetTimes,
+    goToToday,
     navigate: { next: nextDay, prev: prevDay, today: setToday, goToDate },
     date,
     dateString,

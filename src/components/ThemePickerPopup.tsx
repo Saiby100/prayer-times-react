@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   FlatList,
   Image,
@@ -40,7 +40,6 @@ export default function ThemePickerPopup({
     themePresets.findIndex((preset) => preset.id === selectedId)
   );
   const [activeIndex, setActiveIndex] = useState(selectedIndex);
-  const flatListRef = useRef<FlatList>(null);
 
   const overlayWidth = screenWidth * 0.85;
   const contentWidth = overlayWidth - 48;
@@ -56,17 +55,19 @@ export default function ThemePickerPopup({
     [contentWidth]
   );
 
-  // Jump the list to the current theme's page without animation. Rendering
-  // always starts at offset 0 (avoids the blank-list bug from initialScrollIndex)
-  // and we scroll once the content is laid out.
-  const scrollToSelected = useCallback(() => {
-    flatListRef.current?.scrollToOffset({ offset: selectedIndex * contentWidth, animated: false });
-  }, [selectedIndex, contentWidth]);
+  // Start the list on the current theme's page. The Overlay unmounts its content
+  // while hidden, so the list is created fresh on each open and starts here.
+  // Unlike initialScrollIndex, this doesn't change which items render first
+  // (that caused a blank list), and unlike scrolling on layout it can't snap
+  // the list back mid-swipe.
+  const initialOffset = useMemo(
+    () => ({ x: selectedIndex * contentWidth, y: 0 }),
+    [selectedIndex, contentWidth]
+  );
 
   const handleOpen = useCallback(() => {
     setActiveIndex(selectedIndex);
-    scrollToSelected();
-  }, [selectedIndex, scrollToSelected]);
+  }, [selectedIndex]);
 
   const getItemLayout = useCallback(
     (_: unknown, index: number) => ({
@@ -98,12 +99,11 @@ export default function ThemePickerPopup({
       <View>
         <Text style={styles.title}>Choose Theme</Text>
         <FlatList
-          ref={flatListRef}
           data={themePresets}
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
-          onContentSizeChange={scrollToSelected}
+          contentOffset={initialOffset}
           onMomentumScrollEnd={handleScrollEnd}
           keyExtractor={(item) => item.id}
           getItemLayout={getItemLayout}
