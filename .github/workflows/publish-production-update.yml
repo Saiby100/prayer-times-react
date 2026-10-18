@@ -46,4 +46,10 @@ jobs:
 
       - name: Publish OTA update
         if: steps.build_status.outputs.has_active_build == 'true'
-        run: eas update --branch production --environment production --non-interactive --message "${{ github.event.head_commit.message }}"
+        env:
+          MESSAGE: ${{ github.event.head_commit.message }}
+        # One platform per run: --platform all also exports web, which fails static rendering.
+        run: |
+          eas update --branch production --environment production --platform android --non-interactive --message "$MESSAGE"
+          # Enable once an iOS build ships (production-build-status.sh only checks Android builds).
+          # eas update --branch production --environment production --platform ios --non-interactive --message "$MESSAGE"
