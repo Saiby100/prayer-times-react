@@ -79,7 +79,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'expo-notifications',
       {
         icon: './assets/images/notification-icon.png',
-        color: '#0D7C5F',
+        color: '#E3B464',
       },
     ],
     './plugins/withExactAlarmPermission',
