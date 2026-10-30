@@ -4,6 +4,7 @@ import {
   adaptiveSmoothingAlpha,
   calculateQiblaBearing,
   getBearingCardinal,
+  headingFromRotationAlpha,
   isHeadingAccuracyPoor,
   normalizeDegrees,
   shortestAngleDelta,
@@ -146,5 +147,15 @@ describe('isHeadingAccuracyPoor', () => {
     expect(isHeadingAccuracyPoor(30, 'ios')).toBe(true);
     expect(isHeadingAccuracyPoor(15, 'ios')).toBe(false);
     expect(isHeadingAccuracyPoor(0, 'ios')).toBe(false);
+  });
+});
+
+describe('headingFromRotationAlpha', () => {
+  it('maps the negated azimuth in radians to a heading in degrees', () => {
+    expect(headingFromRotationAlpha(0)).toBeCloseTo(0, 6);
+    expect(headingFromRotationAlpha(-Math.PI / 2)).toBeCloseTo(90, 6);
+    expect(headingFromRotationAlpha(Math.PI / 2)).toBeCloseTo(270, 6);
+    expect(headingFromRotationAlpha(Math.PI)).toBeCloseTo(180, 6);
+    expect(headingFromRotationAlpha(-Math.PI)).toBeCloseTo(180, 6);
   });
 });

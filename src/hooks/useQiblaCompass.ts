@@ -3,11 +3,13 @@ import { AppState, Platform } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import * as Location from 'expo-location';
 import * as Haptics from 'expo-haptics';
+import { DeviceMotion } from 'expo-sensors';
 import { useSharedValue, withTiming, Easing, SharedValue } from 'react-native-reanimated';
 import {
   adaptiveSmoothingAlpha,
   calculateQiblaBearing,
   getBearingCardinal,
+  headingFromRotationAlpha,
   isHeadingAccuracyPoor,
   normalizeDegrees,
   shortestAngleDelta,
@@ -19,6 +21,9 @@ const ALIGNMENT_TOLERANCE_DEG = 8;
 
 /** Consecutive poor/good accuracy readings required before flipping the calibration flag. */
 const CALIBRATION_DEBOUNCE_COUNT = 2;
+
+/** Milliseconds between Android DeviceMotion (rotation vector) heading updates (~30 Hz). */
+const DEVICE_MOTION_INTERVAL_MS = 33;
 
 /**
  * Why the Qibla can't be shown:
@@ -91,75 +96,102 @@ const useQiblaCompass = (): QiblaCompassState => {
     }
   }, []);
 
-  const startHeadingUpdates =
-    useCallback(async (): Promise<Location.LocationSubscription | null> => {
-      try {
-        return await Location.watchHeadingAsync((headingData) => {
-          // Both the Qibla bearing and the compass must share the true-north frame.
-          // When trueHeading is available, cache the device's true-vs-magnetic offset
-          // so we can correct magHeading during moments trueHeading is unavailable.
-          let corrected: number;
-          if (headingData.trueHeading >= 0) {
-            declination.current = shortestAngleDelta(
-              headingData.magHeading,
-              headingData.trueHeading
-            );
-            corrected = headingData.trueHeading;
-          } else {
-            corrected = normalizeDegrees(headingData.magHeading + declination.current);
-          }
-
-          // Surface magnetometer calibration state (debounced to avoid flicker).
-          const poor = isHeadingAccuracyPoor(headingData.accuracy, Platform.OS);
-          if (poor === needsCalibrationRef.current) {
-            calibrationStreak.current = 0;
-          } else if (++calibrationStreak.current >= CALIBRATION_DEBOUNCE_COUNT) {
-            calibrationStreak.current = 0;
-            needsCalibrationRef.current = poor;
-            setNeedsCalibration(poor);
-          }
-
-          // Adaptive low-pass filter: hold the needle steady against jitter, but
-          // follow real turns responsively. Tiny changes fall inside the dead-zone
-          // (alpha 0) and are dropped entirely so the compass stops bouncing.
-          let heading: number;
-          if (previousHeading.current === null) {
-            heading = corrected;
-          } else {
-            const delta = shortestAngleDelta(previousHeading.current, corrected);
-            const alpha = adaptiveSmoothingAlpha(delta);
-            if (alpha === 0) return;
-            heading = smoothHeading(previousHeading.current, corrected, alpha);
-          }
-          previousHeading.current = heading;
-
-          const bearing = qiblaBearingRef.current;
-          if (bearing !== null) {
-            const aligned =
-              Math.abs(shortestAngleDelta(heading, bearing)) <= ALIGNMENT_TOLERANCE_DEG;
-            if (aligned !== alignedRef.current) {
-              alignedRef.current = aligned;
-              setIsAligned(aligned);
-              if (aligned) {
-                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-              }
-            }
-          }
-
-          const targetRotation =
-            currentRotation.current + shortestAngleDelta(currentRotation.current, -heading);
-          currentRotation.current = targetRotation;
-
-          dialRotation.value = withTiming(targetRotation, {
-            duration: 120,
-            easing: Easing.out(Easing.quad),
-          });
-        });
-      } catch {
-        setSensorAvailable(false);
-        return null;
+  // Smooths a true-north heading and drives the dial and alignment state from it.
+  const applyHeading = useCallback(
+    (corrected: number) => {
+      // Adaptive low-pass filter: hold the needle steady against jitter, but
+      // follow real turns responsively. Tiny changes fall inside the dead-zone
+      // (alpha 0) and are dropped entirely so the compass stops bouncing.
+      let heading: number;
+      if (previousHeading.current === null) {
+        heading = corrected;
+      } else {
+        const delta = shortestAngleDelta(previousHeading.current, corrected);
+        const alpha = adaptiveSmoothingAlpha(delta);
+        if (alpha === 0) return;
+        heading = smoothHeading(previousHeading.current, corrected, alpha);
       }
-    }, [dialRotation]);
+      previousHeading.current = heading;
+
+      const bearing = qiblaBearingRef.current;
+      if (bearing !== null) {
+        const aligned = Math.abs(shortestAngleDelta(heading, bearing)) <= ALIGNMENT_TOLERANCE_DEG;
+        if (aligned !== alignedRef.current) {
+          alignedRef.current = aligned;
+          setIsAligned(aligned);
+          if (aligned) {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+          }
+        }
+      }
+
+      const targetRotation =
+        currentRotation.current + shortestAngleDelta(currentRotation.current, -heading);
+      currentRotation.current = targetRotation;
+
+      dialRotation.value = withTiming(targetRotation, {
+        duration: 120,
+        easing: Easing.out(Easing.quad),
+      });
+    },
+    [dialRotation]
+  );
+
+  /** Starts the heading sensors and returns a function that stops them, or null if unavailable. */
+  const startHeadingUpdates = useCallback(async (): Promise<(() => void) | null> => {
+    // expo-location's Android heading comes from the raw accelerometer and magnetometer
+    // and jitters. Android's rotation vector sensor (gyro-fused) is much steadier, so use
+    // it when the device has one. iOS's CoreLocation heading is already gyro-fused.
+    const useDeviceMotion =
+      Platform.OS === 'android' && (await DeviceMotion.isAvailableAsync().catch(() => false));
+
+    let headingSubscription: Location.LocationSubscription;
+    try {
+      headingSubscription = await Location.watchHeadingAsync((headingData) => {
+        // Both the Qibla bearing and the compass must share the true-north frame.
+        // When trueHeading is available, cache the device's true-vs-magnetic offset
+        // so we can correct magnetic headings (magHeading fallbacks, DeviceMotion).
+        let corrected: number;
+        if (headingData.trueHeading >= 0) {
+          declination.current = shortestAngleDelta(headingData.magHeading, headingData.trueHeading);
+          corrected = headingData.trueHeading;
+        } else {
+          corrected = normalizeDegrees(headingData.magHeading + declination.current);
+        }
+
+        // Surface magnetometer calibration state (debounced to avoid flicker).
+        const poor = isHeadingAccuracyPoor(headingData.accuracy, Platform.OS);
+        if (poor === needsCalibrationRef.current) {
+          calibrationStreak.current = 0;
+        } else if (++calibrationStreak.current >= CALIBRATION_DEBOUNCE_COUNT) {
+          calibrationStreak.current = 0;
+          needsCalibrationRef.current = poor;
+          setNeedsCalibration(poor);
+        }
+
+        if (!useDeviceMotion) applyHeading(corrected);
+      });
+    } catch {
+      setSensorAvailable(false);
+      return null;
+    }
+
+    if (!useDeviceMotion) return () => headingSubscription.remove();
+
+    DeviceMotion.setUpdateInterval(DEVICE_MOTION_INTERVAL_MS);
+    const motionSubscription = DeviceMotion.addListener(({ rotation }) => {
+      // Android leaves rotation out until the first rotation vector reading arrives.
+      if (!rotation) return;
+      applyHeading(
+        normalizeDegrees(headingFromRotationAlpha(rotation.alpha) + declination.current)
+      );
+    });
+
+    return () => {
+      headingSubscription.remove();
+      motionSubscription.remove();
+    };
+  }, [applyHeading]);
 
   const retry = useCallback(async () => {
     setIsLoading(true);
@@ -218,19 +250,19 @@ const useQiblaCompass = (): QiblaCompassState => {
       if (!locationGranted) return;
 
       let cancelled = false;
-      let subscription: Location.LocationSubscription | null = null;
+      let stopHeadingUpdates: (() => void) | null = null;
 
-      startHeadingUpdates().then((sub) => {
+      startHeadingUpdates().then((stop) => {
         if (cancelled) {
-          sub?.remove();
+          stop?.();
           return;
         }
-        subscription = sub;
+        stopHeadingUpdates = stop;
       });
 
       return () => {
         cancelled = true;
-        subscription?.remove();
+        stopHeadingUpdates?.();
         previousHeading.current = null;
         alignedRef.current = false;
         setIsAligned(false);
