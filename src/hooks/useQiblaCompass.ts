@@ -27,6 +27,13 @@ const CALIBRATION_DEBOUNCE_COUNT = 2;
 const DEVICE_MOTION_INTERVAL_MS = 33;
 
 /**
+ * How long the Android rotation vector keeps running after the Qibla tab loses focus.
+ * Restarting it makes the heading settle over a second or two, so quick tab switches
+ * reuse the running sensor instead.
+ */
+const DEVICE_MOTION_GRACE_MS = 30_000;
+
+/**
  * Why the Qibla can't be shown:
  * - `can-ask` — permission denied, but the system prompt can still be shown
  * - `blocked` — permission denied and the system won't prompt again (settings only)
@@ -76,6 +83,10 @@ const useQiblaCompass = (): QiblaCompassState => {
   /** Running count of consecutive readings agreeing with the pending calibration state. */
   const calibrationStreak = useRef(0);
   const needsCalibrationRef = useRef(false);
+  /** Whether the Qibla tab is focused; DeviceMotion readings are ignored while it isn't. */
+  const focusedRef = useRef(false);
+  const motionSubscription = useRef<{ remove: () => void } | null>(null);
+  const motionStopTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showPosition = useCallback(({ lat, lng }: QiblaPosition) => {
     setQiblaBearing(calculateQiblaBearing(lat, lng));
@@ -178,6 +189,30 @@ const useQiblaCompass = (): QiblaCompassState => {
     [dialRotation, isAligned]
   );
 
+  const stopDeviceMotion = useCallback(() => {
+    if (motionStopTimer.current) clearTimeout(motionStopTimer.current);
+    motionStopTimer.current = null;
+    motionSubscription.current?.remove();
+    motionSubscription.current = null;
+    previousHeading.current = null;
+  }, []);
+
+  /** Starts the DeviceMotion heading, or keeps the one still running from the last focus. */
+  const startDeviceMotion = useCallback(() => {
+    if (motionStopTimer.current) clearTimeout(motionStopTimer.current);
+    motionStopTimer.current = null;
+    if (motionSubscription.current) return;
+
+    DeviceMotion.setUpdateInterval(DEVICE_MOTION_INTERVAL_MS);
+    motionSubscription.current = DeviceMotion.addListener(({ rotation }) => {
+      // Android leaves rotation out until the first rotation vector reading arrives.
+      if (!focusedRef.current || !rotation) return;
+      applyHeading(
+        normalizeDegrees(headingFromRotationAlpha(rotation.alpha) + declination.current)
+      );
+    });
+  }, [applyHeading]);
+
   /** Starts the heading sensors and returns a function that stops them, or null if unavailable. */
   const startHeadingUpdates = useCallback(async (): Promise<(() => void) | null> => {
     // expo-location's Android heading comes from the raw accelerometer and magnetometer
@@ -217,22 +252,20 @@ const useQiblaCompass = (): QiblaCompassState => {
       return null;
     }
 
-    if (!useDeviceMotion) return () => headingSubscription.remove();
+    if (!useDeviceMotion) {
+      return () => {
+        headingSubscription.remove();
+        previousHeading.current = null;
+      };
+    }
 
-    DeviceMotion.setUpdateInterval(DEVICE_MOTION_INTERVAL_MS);
-    const motionSubscription = DeviceMotion.addListener(({ rotation }) => {
-      // Android leaves rotation out until the first rotation vector reading arrives.
-      if (!rotation) return;
-      applyHeading(
-        normalizeDegrees(headingFromRotationAlpha(rotation.alpha) + declination.current)
-      );
-    });
-
+    // Keep the rotation vector running for a while after blur so it doesn't restart and settle.
+    startDeviceMotion();
     return () => {
       headingSubscription.remove();
-      motionSubscription.remove();
+      motionStopTimer.current = setTimeout(stopDeviceMotion, DEVICE_MOTION_GRACE_MS);
     };
-  }, [applyHeading]);
+  }, [applyHeading, startDeviceMotion, stopDeviceMotion]);
 
   const retry = useCallback(async () => {
     setIsLoading(true);
@@ -271,6 +304,7 @@ const useQiblaCompass = (): QiblaCompassState => {
   useFocusEffect(
     useCallback(() => {
       if (!locationGranted) return;
+      focusedRef.current = true;
 
       let cancelled = false;
       let stopHeadingUpdates: (() => void) | null = null;
@@ -285,13 +319,15 @@ const useQiblaCompass = (): QiblaCompassState => {
 
       return () => {
         cancelled = true;
+        focusedRef.current = false;
         stopHeadingUpdates?.();
-        previousHeading.current = null;
         alignedRef.current = false;
         isAligned.value = false;
       };
     }, [startHeadingUpdates, locationGranted, isAligned])
   );
+
+  useEffect(() => stopDeviceMotion, [stopDeviceMotion]);
 
   const bearingLabel =
     qiblaBearing !== null ? `${Math.round(qiblaBearing)}° ${getBearingCardinal(qiblaBearing)}` : '';
