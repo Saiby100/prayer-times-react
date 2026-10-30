@@ -49,7 +49,7 @@ type QiblaCompassState = {
   /** Readable bearing string like "24° NE". */
   bearingLabel: string;
   /** Whether the device is currently pointing at the Qibla within tolerance. */
-  isAligned: boolean;
+  isAligned: SharedValue<boolean>;
   /** Whether the magnetometer accuracy is poor and the user should recalibrate. */
   needsCalibration: boolean;
 };
@@ -59,11 +59,13 @@ const useQiblaCompass = (): QiblaCompassState => {
   const [isLoading, setIsLoading] = useState(true);
   const [locationError, setLocationError] = useState<LocationError | null>(null);
   const [sensorAvailable, setSensorAvailable] = useState(true);
-  const [isAligned, setIsAligned] = useState(false);
   const [needsCalibration, setNeedsCalibration] = useState(false);
   const [locationGranted, setLocationGranted] = useState(false);
 
   const dialRotation = useSharedValue(0);
+  // A shared value, not state, so the arrow turns green on the UI thread without
+  // re-rendering the screen, which made the dial stutter.
+  const isAligned = useSharedValue(false);
   const currentRotation = useRef(0);
   const previousHeading = useRef<number | null>(null);
   const qiblaBearingRef = useRef<number | null>(null);
@@ -118,7 +120,7 @@ const useQiblaCompass = (): QiblaCompassState => {
         const aligned = Math.abs(shortestAngleDelta(heading, bearing)) <= ALIGNMENT_TOLERANCE_DEG;
         if (aligned !== alignedRef.current) {
           alignedRef.current = aligned;
-          setIsAligned(aligned);
+          isAligned.value = aligned;
           if (aligned) {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
           }
@@ -134,7 +136,7 @@ const useQiblaCompass = (): QiblaCompassState => {
         easing: Easing.out(Easing.quad),
       });
     },
-    [dialRotation]
+    [dialRotation, isAligned]
   );
 
   /** Starts the heading sensors and returns a function that stops them, or null if unavailable. */
@@ -265,9 +267,9 @@ const useQiblaCompass = (): QiblaCompassState => {
         stopHeadingUpdates?.();
         previousHeading.current = null;
         alignedRef.current = false;
-        setIsAligned(false);
+        isAligned.value = false;
       };
-    }, [startHeadingUpdates, locationGranted])
+    }, [startHeadingUpdates, locationGranted, isAligned])
   );
 
   const bearingLabel =
