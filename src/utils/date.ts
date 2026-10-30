@@ -62,13 +62,31 @@ function dateToString(current: Date) {
   });
 }
 
+/** English Hijri month names, indexed by month number − 1 (CLDR uses "Jumada I" etc.). */
+const HIJRI_MONTH_NAMES = [
+  'Muharram',
+  'Safar',
+  'Rabiʻ al-Awwal',
+  'Rabiʻ al-Thani',
+  'Jumada al-Ula',
+  'Jumada al-Akhirah',
+  'Rajab',
+  'Shaʻban',
+  'Ramadan',
+  'Shawwal',
+  'Dhuʻl-Qiʻdah',
+  'Dhuʻl-Hijjah',
+];
+
 function dateToHijriString(current: Date): string | null {
   try {
-    return new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
+    const parts = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
-    }).format(current);
+    }).formatToParts(current);
+    const monthName = HIJRI_MONTH_NAMES[(parseHijriDate(current)?.month ?? 0) - 1];
+    return parts.map((p) => (p.type === 'month' && monthName ? monthName : p.value)).join('');
   } catch {
     return null;
   }

@@ -158,6 +158,11 @@ describe('dateToHijriString', () => {
     const result = dateToHijriString(date);
     expect(result).toContain('AH');
   });
+
+  it('uses full names for the numbered months', () => {
+    expect(dateToHijriString(new Date(2026, 7, 20))).toBe('Rabiʻ al-Awwal 7, 1448 AH');
+    expect(dateToHijriString(new Date(2026, 9, 30))).toBe('Jumada al-Ula 19, 1448 AH');
+  });
 });
 
 describe('parseHijriDate', () => {
