@@ -19,5 +19,11 @@ export {
   setDisabledPrayers,
 } from './notificationStore';
 export { getDeviceId } from './deviceStore';
-export { hasSeenQiblaTips, setQiblaTipsSeen } from './qiblaStore';
+export {
+  hasSeenQiblaTips,
+  setQiblaTipsSeen,
+  getLastQiblaPosition,
+  setLastQiblaPosition,
+  type QiblaPosition,
+} from './qiblaStore';
 export { getHijriAdjustment, setHijriAdjustment } from './hijriStore';

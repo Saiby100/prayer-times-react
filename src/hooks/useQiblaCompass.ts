@@ -15,6 +15,7 @@ import {
   shortestAngleDelta,
   smoothHeading,
 } from '@/utils/qibla';
+import { getLastQiblaPosition, setLastQiblaPosition, type QiblaPosition } from '@/stores';
 
 /** Degrees of tolerance within which the Qibla is considered aligned with the pointer. */
 const ALIGNMENT_TOLERANCE_DEG = 8;
@@ -76,27 +77,65 @@ const useQiblaCompass = (): QiblaCompassState => {
   const calibrationStreak = useRef(0);
   const needsCalibrationRef = useRef(false);
 
-  const resolveLocation = useCallback(async (): Promise<{ lat: number; lng: number } | null> => {
-    try {
-      const { status, canAskAgain } = await Location.requestForegroundPermissionsAsync();
-
-      // The compass requires the user's live location — there is no fallback.
-      if (status !== 'granted') {
-        setLocationError(canAskAgain ? 'can-ask' : 'blocked');
-        return null;
-      }
-      setLocationGranted(true);
-
-      const position = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
-      setLocationError(null);
-      return { lat: position.coords.latitude, lng: position.coords.longitude };
-    } catch {
-      setLocationError('unavailable');
-      return null;
-    }
+  const showPosition = useCallback(({ lat, lng }: QiblaPosition) => {
+    setQiblaBearing(calculateQiblaBearing(lat, lng));
   }, []);
+
+  /**
+   * Finds the Qibla bearing. Shows it straight away from the system's last known position
+   * (or the one saved last time), then refines it quietly with a fresh fix, which can take
+   * seconds on Android. `isCurrent` returns false once the result is no longer wanted.
+   */
+  const loadBearing = useCallback(
+    async (isCurrent: () => boolean) => {
+      try {
+        const { status, canAskAgain } = await Location.requestForegroundPermissionsAsync();
+        if (!isCurrent()) return;
+
+        // The compass needs location permission; a saved position isn't used without it.
+        if (status !== 'granted') {
+          setLocationError(canAskAgain ? 'can-ask' : 'blocked');
+          setIsLoading(false);
+          return;
+        }
+        setLocationGranted(true);
+      } catch {
+        if (isCurrent()) {
+          setLocationError('unavailable');
+          setIsLoading(false);
+        }
+        return;
+      }
+
+      // The bearing barely changes with position (50 km is under 1°), so an old one is fine.
+      const lastKnown = await Location.getLastKnownPositionAsync().catch(() => null);
+      if (!isCurrent()) return;
+      const quick = lastKnown
+        ? { lat: lastKnown.coords.latitude, lng: lastKnown.coords.longitude }
+        : getLastQiblaPosition();
+      if (quick) {
+        showPosition(quick);
+        setLocationError(null);
+        setIsLoading(false);
+      }
+
+      try {
+        const position = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+        if (!isCurrent()) return;
+        const fresh = { lat: position.coords.latitude, lng: position.coords.longitude };
+        setLastQiblaPosition(fresh);
+        showPosition(fresh);
+        setLocationError(null);
+      } catch {
+        // Keep showing the quick position if there was one.
+        if (isCurrent() && !quick) setLocationError('unavailable');
+      }
+      if (isCurrent()) setIsLoading(false);
+    },
+    [showPosition]
+  );
 
   // Smooths a true-north heading and drives the dial and alignment state from it.
   const applyHeading = useCallback(
@@ -197,14 +236,8 @@ const useQiblaCompass = (): QiblaCompassState => {
 
   const retry = useCallback(async () => {
     setIsLoading(true);
-
-    const coords = await resolveLocation();
-    if (coords) {
-      setQiblaBearing(calculateQiblaBearing(coords.lat, coords.lng));
-    }
-
-    setIsLoading(false);
-  }, [resolveLocation]);
+    await loadBearing(() => true);
+  }, [loadBearing]);
 
   // While blocked, the user can only fix it in system settings. Check again when
   // they come back to the app so the compass loads without another tap.
@@ -223,24 +256,12 @@ const useQiblaCompass = (): QiblaCompassState => {
 
   useEffect(() => {
     let mounted = true;
-
-    const init = async () => {
-      const coords = await resolveLocation();
-      if (!mounted) return;
-
-      if (coords) {
-        setQiblaBearing(calculateQiblaBearing(coords.lat, coords.lng));
-      }
-
-      if (mounted) setIsLoading(false);
-    };
-
-    init();
+    loadBearing(() => mounted);
 
     return () => {
       mounted = false;
     };
-  }, [resolveLocation]);
+  }, [loadBearing]);
 
   // Only run the compass sensor while the Qibla screen is focused. Tab screens
   // stay mounted in the background, so without this the heading subscription
