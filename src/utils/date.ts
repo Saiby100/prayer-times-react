@@ -62,39 +62,70 @@ function dateToString(current: Date) {
   });
 }
 
-function dateToHijriString(current: Date): string | null {
+/** English Hijri month names, indexed by month number − 1 (CLDR uses "Jumada I" etc.). */
+const HIJRI_MONTH_NAMES = [
+  'Muharram',
+  'Safar',
+  'Rabiʻ al-Awwal',
+  'Rabiʻ al-Thani',
+  'Jumada al-Ula',
+  'Jumada al-Akhirah',
+  'Rajab',
+  'Shaʻban',
+  'Ramadan',
+  'Shawwal',
+  'Dhuʻl-Qiʻdah',
+  'Dhuʻl-Hijjah',
+];
+
+/** Umm al-Qura formatter, built once; null if this Intl build lacks the calendar. */
+const hijriFormatter = (() => {
   try {
-    return new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
+    const formatter = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
       day: 'numeric',
-      month: 'long',
+      month: 'numeric',
       year: 'numeric',
-    }).format(current);
+      // UTC so the device's time zone (fixed when the formatter is built) can't shift the day.
+      timeZone: 'UTC',
+    });
+    // Some Intl builds accept the calendar but quietly use Gregorian instead.
+    return formatter.resolvedOptions().calendar === 'islamic-umalqura' ? formatter : null;
   } catch {
     return null;
   }
-}
+})();
 
 type ParsedHijriDate = {
   /** Day of the Hijri month. */
   day: number;
   /** Hijri month number (1 = Muharram … 12 = Dhuʻl-Hijjah). */
   month: number;
+  /** Hijri year (AH). */
+  year: number;
 };
 
 function parseHijriDate(date: Date): ParsedHijriDate | null {
   try {
-    const formatter = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
-      day: 'numeric',
-      month: 'numeric',
-    });
-    const parts = formatter.formatToParts(date);
-    const day = parseInt(parts.find((p) => p.type === 'day')?.value ?? '', 10);
-    const month = parseInt(parts.find((p) => p.type === 'month')?.value ?? '', 10);
-    if (Number.isNaN(day) || Number.isNaN(month)) return null;
-    return { day, month };
+    // The local calendar day at noon UTC, so formatting in UTC gives the same day.
+    const utcDay = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 12));
+    const parts = hijriFormatter?.formatToParts(utcDay);
+    if (!parts) return null;
+    const read = (type: Intl.DateTimeFormatPartTypes) =>
+      parseInt(parts.find((p) => p.type === type)?.value ?? '', 10);
+    const day = read('day');
+    const month = read('month');
+    const year = read('year');
+    if (Number.isNaN(day) || Number.isNaN(month) || Number.isNaN(year)) return null;
+    return { day, month, year };
   } catch {
     return null;
   }
+}
+
+function dateToHijriString(current: Date): string | null {
+  const parsed = parseHijriDate(current);
+  if (!parsed) return null;
+  return `${HIJRI_MONTH_NAMES[parsed.month - 1]} ${parsed.day}, ${parsed.year} AH`;
 }
 
 export {

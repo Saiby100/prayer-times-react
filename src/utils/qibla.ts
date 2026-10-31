@@ -32,6 +32,13 @@ const normalizeDegrees = (degrees: number): number => ((degrees % 360) + 360) % 
 const shortestAngleDelta = (from: number, to: number): number => ((to - from + 540) % 360) - 180;
 
 /**
+ * Magnetic heading in [0, 360) from expo-sensors' Android `DeviceMotion` `rotation.alpha`,
+ * which is the negated rotation-vector azimuth in radians.
+ */
+const headingFromRotationAlpha = (alphaRad: number): number =>
+  normalizeDegrees(-toDegrees(alphaRad));
+
+/**
  * Exponential low-pass filter for a compass heading, handling the 0/360 wrap.
  * Returns the smoothed heading in [0, 360). `alpha` in (0, 1] — higher is more
  * responsive, lower is smoother.
@@ -80,6 +87,7 @@ export {
   normalizeDegrees,
   shortestAngleDelta,
   smoothHeading,
+  headingFromRotationAlpha,
   adaptiveSmoothingAlpha,
   isHeadingAccuracyPoor,
 };

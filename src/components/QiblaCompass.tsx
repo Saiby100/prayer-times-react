@@ -11,8 +11,8 @@ type QiblaCompassProps = {
   dialRotation: SharedValue<number>;
   /** Formatted bearing label (e.g., "24° NE"). */
   bearingLabel: string;
-  /** Whether the Qibla is currently aligned with the pointer arrow. */
-  isAligned: boolean;
+  /** Whether the Qibla is currently aligned with the pointer arrow (drives the arrow colours). */
+  isAligned: SharedValue<boolean>;
   /** Called when the user taps the help link. */
   onHelpPress: () => void;
 };
@@ -37,8 +37,7 @@ const QiblaCompass = ({
   // Android 16 ignores portrait lock on large screens, so cap by height to fit landscape
   const compassSize = Math.min(width * 0.8, height * 0.5);
   const compassRadius = compassSize / 2;
-  const arrowColor = isAligned ? theme.colors.aligned : theme.colors.secondary;
-  const pointerColor = isAligned ? theme.colors.aligned : theme.colors.primary;
+  const { aligned, secondary, primary } = theme.colors;
 
   const dialStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${dialRotation.value}deg` }],
@@ -46,6 +45,19 @@ const QiblaCompass = ({
 
   const qiblaLineStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${dialRotation.value + qiblaBearing}deg` }],
+  }));
+
+  // Alignment colours are picked on the UI thread so turning green doesn't re-render the dial.
+  const arrowTipStyle = useAnimatedStyle(() => ({
+    borderBottomColor: isAligned.value ? aligned : secondary,
+  }));
+
+  const arrowFillStyle = useAnimatedStyle(() => ({
+    backgroundColor: isAligned.value ? aligned : secondary,
+  }));
+
+  const pointerStyle = useAnimatedStyle(() => ({
+    borderBottomColor: isAligned.value ? aligned : primary,
   }));
 
   return (
@@ -113,19 +125,16 @@ const QiblaCompass = ({
           </Animated.View>
 
           <Animated.View style={[styles.qiblaIndicator, { height: compassSize }, qiblaLineStyle]}>
-            <View style={[styles.arrowTip, { borderBottomColor: arrowColor }]} />
-            <View
-              style={[
-                styles.arrowNeck,
-                { height: compassRadius - 56, backgroundColor: arrowColor },
-              ]}
+            <Animated.View style={[styles.arrowTip, arrowTipStyle]} />
+            <Animated.View
+              style={[styles.arrowNeck, { height: compassRadius - 56 }, arrowFillStyle]}
             />
-            <View style={[styles.arrowKaabaRing, { backgroundColor: arrowColor }]}>
+            <Animated.View style={[styles.arrowKaabaRing, arrowFillStyle]}>
               <FontAwesome6 name="kaaba" size={16} color={theme.colors.background} />
-            </View>
+            </Animated.View>
           </Animated.View>
 
-          <View style={[styles.directionArrow, { borderBottomColor: pointerColor }]} />
+          <Animated.View style={[styles.directionArrow, pointerStyle]} />
         </View>
 
         <Text style={[styles.bearingText, { color: theme.colors.text }]}>{bearingLabel}</Text>
