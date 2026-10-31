@@ -26,6 +26,14 @@ const CALIBRATION_DEBOUNCE_COUNT = 2;
 const DEVICE_MOTION_INTERVAL_MS = 33;
 
 /**
+ * How long the dial takes to turn to a new heading. Android's rotation vector only gives
+ * a new reading about every 200 ms (expo-sensors uses the normal sensor rate without the
+ * HIGH_SAMPLING_RATE_SENSORS permission), so a shorter turn leaves the dial pausing
+ * between readings.
+ */
+const DIAL_ANIMATION_MS = 200;
+
+/**
  * Why the Qibla can't be shown:
  * - `can-ask` — permission denied, but the system prompt can still be shown
  * - `blocked` — permission denied and the system won't prompt again (settings only)
@@ -176,8 +184,9 @@ const useQiblaCompass = (): QiblaCompassState => {
       currentRotation.current = targetRotation;
 
       dialRotation.value = withTiming(targetRotation, {
-        duration: 120,
-        easing: Easing.out(Easing.quad),
+        duration: DIAL_ANIMATION_MS,
+        // Linear, so the dial doesn't slow down at the end of each turn and look like it stops.
+        easing: Easing.linear,
       });
     },
     [dialRotation, isAligned]
