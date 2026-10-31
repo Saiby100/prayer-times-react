@@ -96,9 +96,8 @@ const useQiblaCompass = (): QiblaCompassState => {
   }, []);
 
   /**
-   * Finds the Qibla bearing. Shows it straight away from the system's last known position
-   * (or the one saved last time), then refines it quietly with a fresh fix, which can take
-   * seconds on Android. `isCurrent` returns false once the result is no longer wanted.
+   * Finds the Qibla bearing. Shows it straight away from the system's last known position,
+   * then refines it quietly with a fresh fix, which can take seconds on Android. `isCurrent` returns false once the result is no longer wanted.
    */
   const loadBearing = useCallback(
     async (isCurrent: () => boolean) => {
@@ -106,7 +105,7 @@ const useQiblaCompass = (): QiblaCompassState => {
         const { status, canAskAgain } = await Location.requestForegroundPermissionsAsync();
         if (!isCurrent()) return;
 
-        // The compass needs location permission; a saved position isn't used without it.
+        // The compass needs location permission.
         if (status !== 'granted') {
           setLocationError(canAskAgain ? 'can-ask' : 'blocked');
           setIsLoading(false);
