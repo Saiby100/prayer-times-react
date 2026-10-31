@@ -85,6 +85,8 @@ const hijriFormatter = (() => {
       day: 'numeric',
       month: 'numeric',
       year: 'numeric',
+      // UTC so the device's time zone (fixed when the formatter is built) can't shift the day.
+      timeZone: 'UTC',
     });
   } catch {
     return null;
@@ -102,7 +104,9 @@ type ParsedHijriDate = {
 
 function parseHijriDate(date: Date): ParsedHijriDate | null {
   try {
-    const parts = hijriFormatter?.formatToParts(date);
+    // The local calendar day at noon UTC, so formatting in UTC gives the same day.
+    const utcDay = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 12));
+    const parts = hijriFormatter?.formatToParts(utcDay);
     if (!parts) return null;
     const read = (type: Intl.DateTimeFormatPartTypes) =>
       parseInt(parts.find((p) => p.type === type)?.value ?? '', 10);
