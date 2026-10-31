@@ -44,7 +44,11 @@ describe('addDays', () => {
   });
 
   it('shifts the Hijri date a day behind with an adjustment of 1', () => {
-    expect(parseHijriDate(addDays(new Date(2026, 5, 17), -1))).toEqual({ day: 1, month: 1 });
+    expect(parseHijriDate(addDays(new Date(2026, 5, 17), -1))).toEqual({
+      day: 1,
+      month: 1,
+      year: 1448,
+    });
   });
 });
 
@@ -179,11 +183,11 @@ describe('parseHijriDate', () => {
   });
 
   it('returns 1 Muharram for the Islamic New Year', () => {
-    expect(parseHijriDate(new Date(2026, 5, 16))).toEqual({ day: 1, month: 1 });
+    expect(parseHijriDate(new Date(2026, 5, 16))).toEqual({ day: 1, month: 1, year: 1448 });
   });
 
   it('returns 1 Ramadan as month 9', () => {
-    expect(parseHijriDate(new Date(2026, 1, 18))).toEqual({ day: 1, month: 9 });
+    expect(parseHijriDate(new Date(2026, 1, 18))).toEqual({ day: 1, month: 9, year: 1447 });
   });
 });
 

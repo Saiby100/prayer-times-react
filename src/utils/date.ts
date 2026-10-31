@@ -78,41 +78,48 @@ const HIJRI_MONTH_NAMES = [
   'Dhuʻl-Hijjah',
 ];
 
-function dateToHijriString(current: Date): string | null {
+/** Umm al-Qura formatter, built once; null if this Intl build lacks the calendar. */
+const hijriFormatter = (() => {
   try {
-    const parts = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
+    return new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
       day: 'numeric',
-      month: 'long',
+      month: 'numeric',
       year: 'numeric',
-    }).formatToParts(current);
-    const monthName = HIJRI_MONTH_NAMES[(parseHijriDate(current)?.month ?? 0) - 1];
-    return parts.map((p) => (p.type === 'month' && monthName ? monthName : p.value)).join('');
+    });
   } catch {
     return null;
   }
-}
+})();
 
 type ParsedHijriDate = {
   /** Day of the Hijri month. */
   day: number;
   /** Hijri month number (1 = Muharram … 12 = Dhuʻl-Hijjah). */
   month: number;
+  /** Hijri year (AH). */
+  year: number;
 };
 
 function parseHijriDate(date: Date): ParsedHijriDate | null {
   try {
-    const formatter = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
-      day: 'numeric',
-      month: 'numeric',
-    });
-    const parts = formatter.formatToParts(date);
-    const day = parseInt(parts.find((p) => p.type === 'day')?.value ?? '', 10);
-    const month = parseInt(parts.find((p) => p.type === 'month')?.value ?? '', 10);
-    if (Number.isNaN(day) || Number.isNaN(month)) return null;
-    return { day, month };
+    const parts = hijriFormatter?.formatToParts(date);
+    if (!parts) return null;
+    const read = (type: Intl.DateTimeFormatPartTypes) =>
+      parseInt(parts.find((p) => p.type === type)?.value ?? '', 10);
+    const day = read('day');
+    const month = read('month');
+    const year = read('year');
+    if (Number.isNaN(day) || Number.isNaN(month) || Number.isNaN(year)) return null;
+    return { day, month, year };
   } catch {
     return null;
   }
+}
+
+function dateToHijriString(current: Date): string | null {
+  const parsed = parseHijriDate(current);
+  if (!parsed) return null;
+  return `${HIJRI_MONTH_NAMES[parsed.month - 1]} ${parsed.day}, ${parsed.year} AH`;
 }
 
 export {
