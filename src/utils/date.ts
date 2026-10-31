@@ -81,13 +81,15 @@ const HIJRI_MONTH_NAMES = [
 /** Umm al-Qura formatter, built once; null if this Intl build lacks the calendar. */
 const hijriFormatter = (() => {
   try {
-    return new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
+    const formatter = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
       day: 'numeric',
       month: 'numeric',
       year: 'numeric',
       // UTC so the device's time zone (fixed when the formatter is built) can't shift the day.
       timeZone: 'UTC',
     });
+    // Some Intl builds accept the calendar but quietly use Gregorian instead.
+    return formatter.resolvedOptions().calendar === 'islamic-umalqura' ? formatter : null;
   } catch {
     return null;
   }
