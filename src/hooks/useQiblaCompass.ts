@@ -15,7 +15,6 @@ import {
   shortestAngleDelta,
   smoothHeading,
 } from '@/utils/qibla';
-import { getLastQiblaPosition, setLastQiblaPosition, type QiblaPosition } from '@/stores';
 
 /** Degrees of tolerance within which the Qibla is considered aligned with the pointer. */
 const ALIGNMENT_TOLERANCE_DEG = 8;
@@ -33,6 +32,13 @@ const DEVICE_MOTION_INTERVAL_MS = 33;
  * - `unavailable` — permission granted, but no position (location services off / no fix)
  */
 export type LocationError = 'can-ask' | 'blocked' | 'unavailable';
+
+type QiblaPosition = {
+  /** Latitude in degrees. */
+  lat: number;
+  /** Longitude in degrees. */
+  lng: number;
+};
 
 type QiblaCompassState = {
   /** Qibla bearing in degrees from true north (0-360). Null if location unknown. */
@@ -112,7 +118,7 @@ const useQiblaCompass = (): QiblaCompassState => {
       if (!isCurrent()) return;
       const quick = lastKnown
         ? { lat: lastKnown.coords.latitude, lng: lastKnown.coords.longitude }
-        : getLastQiblaPosition();
+        : null;
       if (quick) {
         showPosition(quick);
         setLocationError(null);
@@ -125,7 +131,6 @@ const useQiblaCompass = (): QiblaCompassState => {
         });
         if (!isCurrent()) return;
         const fresh = { lat: position.coords.latitude, lng: position.coords.longitude };
-        setLastQiblaPosition(fresh);
         showPosition(fresh);
         setLocationError(null);
       } catch {
