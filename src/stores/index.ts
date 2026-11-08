@@ -2,6 +2,7 @@ export { getArea, setArea } from './areaStore';
 export { getCachedTimes, setCachedTimes } from './prayerTimesCache';
 export {
   getThemeId,
+  getPickedThemeId,
   setThemeId,
   getWallpaperEnabled,
   setWallpaperEnabled,
