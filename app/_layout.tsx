@@ -8,6 +8,17 @@ import * as Notifications from 'expo-notifications';
 import createAppTheme from '@/theme';
 import { getThemeId } from '@/stores';
 import { getPresetById } from '@/theme/presets';
+import { cancelAlarms, getScheduledAlarms, scheduleAlarm } from '@/services/alarms/alarm';
+
+// Dev-only: lets the native alarm module be tried from the React Native DevTools console
+// (`__prayerAlarms.schedule(...)`) until the reminder sync uses it. Remove with task 04.
+if (__DEV__) {
+  (globalThis as Record<string, unknown>).__prayerAlarms = {
+    schedule: scheduleAlarm,
+    cancel: cancelAlarms,
+    list: getScheduledAlarms,
+  };
+}
 
 // RNEUI v5 looks for the modular @react-native-vector-icons/* packages, which aren't installed.
 // Use @expo/vector-icons instead so no extra native modules or font linking are needed.
