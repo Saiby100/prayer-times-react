@@ -19,7 +19,9 @@ export type LogType =
   | 'run-reminder-task'
   | 'register-task'
   | 'unregister-task'
-  | 'save-alarm-theme';
+  | 'save-alarm-theme'
+  | 'test-alarm'
+  | 'open-full-screen-settings';
 
 type LogData = {
   /** Action being carried out when the log was written. */

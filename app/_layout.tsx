@@ -6,20 +6,10 @@ import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as SystemUI from 'expo-system-ui';
 import * as Notifications from 'expo-notifications';
 import createAppTheme from '@/theme';
-import { getThemeId, setReminderType, type ReminderType } from '@/stores';
+import { getThemeId } from '@/stores';
 import { getPresetById } from '@/theme/presets';
 import { setAlarmTheme } from '@/services/alarms/alarm';
-import { syncPrayerReminders } from '@/services/notifications/scheduleReminders';
 import log from '@/utils/logger';
-
-// Dev-only: switch the reminder type from the React Native DevTools console
-// (`__setReminderType('alarm')`) until Settings has the Reminder type row. Remove with task 05.
-if (__DEV__) {
-  (globalThis as Record<string, unknown>).__setReminderType = (type: ReminderType) => {
-    setReminderType(type);
-    return syncPrayerReminders();
-  };
-}
 
 // RNEUI v5 looks for the modular @react-native-vector-icons/* packages, which aren't installed.
 // Use @expo/vector-icons instead so no extra native modules or font linking are needed.

@@ -4,8 +4,10 @@ import { Button, Text } from '@rneui/themed';
 type SettingsToggleRowProps = {
   /** Descriptive text shown below the title. */
   label: string;
-  /** Feather icon name displayed next to the title. */
+  /** Icon name displayed next to the title. */
   iconName: string;
+  /** Icon set `iconName` belongs to (registered in `app/_layout.tsx`); feather by default. */
+  iconType?: 'feather' | 'ionicon' | 'material';
   /** Heading text for the row. */
   title: string;
   /** Called when the toggle button is pressed. */
@@ -19,6 +21,7 @@ type SettingsToggleRowProps = {
 export default function SettingsToggleRow({
   label,
   iconName,
+  iconType = 'feather',
   title,
   onPress,
   loading,
@@ -33,7 +36,7 @@ export default function SettingsToggleRow({
         radius="md"
         icon={{
           name: iconName,
-          type: 'feather',
+          type: iconType,
           size: 18,
         }}
         title={title}
