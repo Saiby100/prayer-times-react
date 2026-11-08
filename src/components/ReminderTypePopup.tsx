@@ -84,23 +84,18 @@ const ReminderTypePopup = ({
               }}
               activeOpacity={0.7}
             >
-              <View style={styles.optionLeft}>
-                <Icon
-                  name={option.icon}
-                  type={option.iconType}
-                  size={20}
-                  color={isSelected ? theme.colors.primary : theme.colors.text + '80'}
-                />
-                <View style={styles.optionText}>
-                  <Text style={[styles.optionLabel, isSelected && { color: theme.colors.primary }]}>
-                    {option.label}
-                  </Text>
-                  <Text style={styles.optionDescription}>{option.description}</Text>
-                </View>
+              <Icon
+                name={option.icon}
+                type={option.iconType}
+                size={20}
+                color={isSelected ? theme.colors.primary : theme.colors.text + '80'}
+              />
+              <View style={styles.optionText}>
+                <Text style={[styles.optionLabel, isSelected && { color: theme.colors.primary }]}>
+                  {option.label}
+                </Text>
+                <Text style={styles.optionDescription}>{option.description}</Text>
               </View>
-              {isSelected && (
-                <Icon name="check" type="feather" size={18} color={theme.colors.primary} />
-              )}
             </TouchableOpacity>
           );
         })}
@@ -138,23 +133,18 @@ const styles = StyleSheet.create({
   },
   optionRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 12,
     padding: 14,
     borderRadius: 10,
     borderWidth: 1,
-  },
-  optionLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flex: 1,
   },
   optionText: {
     flex: 1,
   },
   optionLabel: {
     fontSize: 16,
+    lineHeight: 20,
     fontFamily: 'Inter-Medium',
   },
   optionDescription: {
