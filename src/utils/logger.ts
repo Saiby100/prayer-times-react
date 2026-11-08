@@ -20,7 +20,7 @@ export type LogType =
   | 'register-task'
   | 'unregister-task'
   | 'save-alarm-theme'
-  | 'test-alarm'
+  | 'preview-reminder'
   | 'open-full-screen-settings';
 
 type LogData = {

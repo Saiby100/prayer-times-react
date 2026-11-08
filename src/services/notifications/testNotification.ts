@@ -1,17 +1,21 @@
 import { schedulePushNotification } from './notification';
 import { ensureChannelsExist } from './setup';
 
-async function sendTestNotification() {
+/**
+ * Sends a preview of a prayer reminder notification 5 seconds from now, on the reminders'
+ * channel. Its `data.type` isn't `prayer_reminder`, so a reminder sync never lists or cancels it.
+ */
+async function sendPreviewNotification() {
   await ensureChannelsExist();
   const date = new Date(Date.now() + 5000);
 
   await schedulePushNotification({
-    title: 'Test Notification',
-    body: 'This is a test notification.',
-    data: { type: 'prayer_reminder', prayer: 'Test' },
+    title: 'Preview reminder',
+    body: 'Prayer reminders will look like this.',
+    data: { type: 'reminder_preview' },
     date,
     channelId: 'prayer_reminder',
   });
 }
 
-export { sendTestNotification };
+export { sendPreviewNotification };

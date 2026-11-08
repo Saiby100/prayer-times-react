@@ -25,7 +25,7 @@ export default function NotificationSettings() {
     setReminderType,
     canUseAlarms,
   } = usePrayerReminders();
-  const { canFullScreen, notificationsAllowed, testAlarm, openFullScreenSettings } =
+  const { canFullScreen, notificationsAllowed, previewReminder, openFullScreenSettings } =
     useAlarmPermissions();
   const [offsetPopupVisible, setOffsetPopupVisible] = useState(false);
   const [typePopupVisible, setTypePopupVisible] = useState(false);
@@ -116,8 +116,8 @@ export default function NotificationSettings() {
         visible={typePopupVisible}
         currentType={reminderType}
         onSelect={selectReminderType}
-        onTestAlarm={testAlarm}
-        testDisabled={!notificationsAllowed}
+        onPreview={() => previewReminder(reminderType)}
+        previewDisabled={!notificationsAllowed}
         onClose={() => setTypePopupVisible(false)}
       />
       <ConfirmPopup

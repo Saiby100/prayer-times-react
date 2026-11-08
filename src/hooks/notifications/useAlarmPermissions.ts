@@ -7,6 +7,8 @@ import {
   testAlarm as nativeTestAlarm,
 } from '@/services/alarms/alarm';
 import { getNotificationPermission } from '@/services/notifications/notification';
+import { sendPreviewNotification } from '@/services/notifications/testNotification';
+import type { ReminderType } from '@/stores';
 import log from '@/utils/logger';
 
 /**
@@ -38,17 +40,19 @@ function useAlarmPermissions() {
     return () => subscription.remove();
   }, [refresh]);
 
-  // Rings the real alarm 5 seconds from now, whichever reminder type is picked.
-  async function testAlarm() {
+  // Sends a reminder of this type 5 seconds from now: the test alarm or a preview notification.
+  async function previewReminder(type: ReminderType) {
     try {
-      await nativeTestAlarm();
-      ToastAndroid.show('Test alarm rings in 5 seconds', ToastAndroid.SHORT);
+      if (type === 'alarm') await nativeTestAlarm();
+      else await sendPreviewNotification();
+      ToastAndroid.show('Reminder preview in 5 seconds', ToastAndroid.SHORT);
     } catch (error) {
-      log.warn('useAlarmPermissions: failed to schedule test alarm', {
-        type: 'test-alarm',
+      log.warn('useAlarmPermissions: failed to schedule reminder preview', {
+        type: 'preview-reminder',
+        reminderType: type,
         error: String(error),
       });
-      ToastAndroid.show("Couldn't set the test alarm", ToastAndroid.SHORT);
+      ToastAndroid.show("Couldn't send the reminder preview", ToastAndroid.SHORT);
     }
   }
 
@@ -61,7 +65,7 @@ function useAlarmPermissions() {
     });
   }
 
-  return { canFullScreen, notificationsAllowed, testAlarm, openFullScreenSettings };
+  return { canFullScreen, notificationsAllowed, previewReminder, openFullScreenSettings };
 }
 
 export default useAlarmPermissions;

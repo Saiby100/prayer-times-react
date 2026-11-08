@@ -9,10 +9,10 @@ type ReminderTypePopupProps = {
   currentType: ReminderType;
   /** Called with the type the user taps; the popup closes itself. */
   onSelect: (type: ReminderType) => void;
-  /** Called when the user taps Test alarm; the popup closes itself. */
-  onTestAlarm: () => void;
-  /** Disables Test alarm (notifications blocked, so it couldn't ring). */
-  testDisabled: boolean;
+  /** Called when the user taps Preview reminder; the popup closes itself. */
+  onPreview: () => void;
+  /** Disables Preview reminder (notifications blocked, so nothing would show). */
+  previewDisabled: boolean;
   /** Called when the popup is dismissed. */
   onClose: () => void;
 };
@@ -51,8 +51,8 @@ const ReminderTypePopup = ({
   visible,
   currentType,
   onSelect,
-  onTestAlarm,
-  testDisabled,
+  onPreview,
+  previewDisabled,
   onClose,
 }: ReminderTypePopupProps) => {
   const { theme } = useTheme();
@@ -100,17 +100,17 @@ const ReminderTypePopup = ({
           );
         })}
         <Button
-          title="Test alarm"
+          title="Preview reminder"
           type="outline"
           radius="md"
-          disabled={testDisabled}
+          disabled={previewDisabled}
           onPress={() => {
             onClose();
-            onTestAlarm();
+            onPreview();
           }}
           titleStyle={styles.buttonTitle}
-          buttonStyle={styles.testButton}
-          containerStyle={styles.testContainer}
+          buttonStyle={styles.previewButton}
+          containerStyle={styles.previewContainer}
         />
       </View>
     </Overlay>
@@ -152,10 +152,10 @@ const styles = StyleSheet.create({
     opacity: 0.6,
     marginTop: 2,
   },
-  testContainer: {
+  previewContainer: {
     marginTop: 4,
   },
-  testButton: {
+  previewButton: {
     borderWidth: 1,
   },
   buttonTitle: {
