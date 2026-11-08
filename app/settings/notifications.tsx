@@ -82,17 +82,14 @@ export default function NotificationSettings() {
           {isEnabled && (
             <SettingsToggleRow
               label="Reminder time"
-              iconName="clock"
-              title={` ${reminderOffset} min before`}
+              title={`${reminderOffset} min before`}
               onPress={() => setOffsetPopupVisible(true)}
             />
           )}
           {showReminderType && (
             <SettingsToggleRow
               label="Reminder type"
-              iconName={reminderType === 'alarm' ? 'alarm-outline' : 'bell'}
-              iconType={reminderType === 'alarm' ? 'ionicon' : 'feather'}
-              title={reminderType === 'alarm' ? ' Alarm' : ' Notification'}
+              title={reminderType === 'alarm' ? 'Alarm' : 'Notification'}
               onPress={() => setTypePopupVisible(true)}
             />
           )}

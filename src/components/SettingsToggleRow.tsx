@@ -4,10 +4,6 @@ import { Button, Text } from '@rneui/themed';
 type SettingsToggleRowProps = {
   /** Descriptive text shown below the title. */
   label: string;
-  /** Icon name displayed next to the title. */
-  iconName: string;
-  /** Icon set `iconName` belongs to (registered in `app/_layout.tsx`); feather by default. */
-  iconType?: 'feather' | 'ionicon' | 'material';
   /** Heading text for the row. */
   title: string;
   /** Called when the toggle button is pressed. */
@@ -20,8 +16,6 @@ type SettingsToggleRowProps = {
 
 export default function SettingsToggleRow({
   label,
-  iconName,
-  iconType = 'feather',
   title,
   onPress,
   loading,
@@ -34,11 +28,6 @@ export default function SettingsToggleRow({
         type="outline"
         size="sm"
         radius="md"
-        icon={{
-          name: iconName,
-          type: iconType,
-          size: 18,
-        }}
         title={title}
         titleStyle={styles.title}
         buttonStyle={styles.button}
@@ -64,5 +53,6 @@ const styles = StyleSheet.create({
   },
   button: {
     borderWidth: 1,
+    paddingHorizontal: 12,
   },
 });
