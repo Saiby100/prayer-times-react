@@ -50,14 +50,30 @@ object AlarmNotification {
     return channel.importance != NotificationManager.IMPORTANCE_NONE
   }
 
+  /**
+   * Whether the system lets the app show its ringing screen over the lock screen. Android 14+
+   * can take this away (Play, or the user in settings); then alarms ring with the heads-up only.
+   */
+  fun canUseFullScreenIntent(context: Context): Boolean {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) return true
+    return context.getSystemService(NotificationManager::class.java).canUseFullScreenIntent()
+  }
+
+  /** The line under the prayer name: "Prayer at 05:12", or "Rings at 14:03" for the test alarm. */
+  fun subtitle(alarm: Alarm): String =
+    if (alarm.prayer == TEST_PRAYER) "Rings at ${alarm.prayerTime}" else "Prayer at ${alarm.prayerTime}"
+
   fun build(context: Context, alarm: Alarm): Notification {
-    val isTest = alarm.prayer == TEST_PRAYER
-    val text = if (isTest) "Rings at ${alarm.prayerTime}" else "Prayer at ${alarm.prayerTime}"
     val dismiss = serviceIntent(context, AlarmRingService.ACTION_DISMISS)
+    val screen = screenIntent(context)
     val builder = NotificationCompat.Builder(context, CHANNEL_ID)
       .setSmallIcon(smallIcon(context))
       .setContentTitle(alarm.prayer)
-      .setContentText(text)
+      .setContentText(subtitle(alarm))
+      // Locked / screen off: opens the ringing screen. In use: Android shows the heads-up instead,
+      // and tapping it opens the screen.
+      .setFullScreenIntent(screen, true)
+      .setContentIntent(screen)
       .setCategory(NotificationCompat.CATEGORY_ALARM)
       .setPriority(NotificationCompat.PRIORITY_MAX)
       .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
@@ -70,6 +86,18 @@ object AlarmNotification {
       .addAction(0, "Dismiss", dismiss)
     iconColor(context)?.let { builder.setColor(it) }
     return builder.build()
+  }
+
+  // The screen reads the ringing alarm from AlarmRingService, so the intent carries nothing.
+  private fun screenIntent(context: Context): PendingIntent {
+    val intent = Intent(context, AlarmActivity::class.java)
+      .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    return PendingIntent.getActivity(
+      context,
+      0,
+      intent,
+      PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+    )
   }
 
   private fun serviceIntent(context: Context, action: String): PendingIntent {

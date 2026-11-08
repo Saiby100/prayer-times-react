@@ -32,6 +32,24 @@ type PrayerAlarmNativeModule = {
   list(): Promise<ScheduledAlarm[]>;
   /** Rings a test alarm 5 seconds from now, replacing a pending snooze. */
   test(): Promise<void>;
+  /** Saves the theme colours the ringing screen uses. */
+  setTheme(colors: AlarmThemeColors): Promise<void>;
+  /** Whether the ringing screen may show over the lock screen. */
+  canUseFullScreenIntent(): boolean;
+  /** Opens Android's full-screen notification setting for the app. */
+  openFullScreenIntentSettings(): Promise<void>;
+};
+
+/** The theme colours the native ringing screen uses, as `#RRGGBB`. */
+export type AlarmThemeColors = {
+  /** Screen background. */
+  background: string;
+  /** Clock and secondary text. */
+  text: string;
+  /** Prayer name, Snooze outline and the Dismiss button. */
+  primary: string;
+  /** Snooze button fill. */
+  bgLight: string;
 };
 
 // Null on iOS and web, and on builds made before the module existed.
@@ -72,4 +90,31 @@ export async function getScheduledAlarms(): Promise<ScheduledAlarm[]> {
 export async function testAlarm(): Promise<void> {
   if (!native) return;
   await native.test();
+}
+
+/**
+ * Saves the current theme's colours for the native ringing screen, which can't read the app's
+ * theme itself (it shows before JS starts, even before the first unlock).
+ */
+export async function setAlarmTheme(colors: AlarmThemeColors): Promise<void> {
+  if (!native) return;
+  await native.setTheme(colors);
+}
+
+/**
+ * Whether a ringing alarm can show its full-screen screen over the lock screen. False only on
+ * Android 14+ when Play or the user took the permission away; alarms then ring with a heads-up
+ * notification only. True when alarms aren't available.
+ */
+export function canUseFullScreenIntent(): boolean {
+  return native?.canUseFullScreenIntent() ?? true;
+}
+
+/**
+ * Opens Android's "full-screen notifications" setting for the app (Android 14+), or the app's
+ * notification settings on older versions. Does nothing when alarms aren't available.
+ */
+export async function openFullScreenIntentSettings(): Promise<void> {
+  if (!native) return;
+  await native.openFullScreenIntentSettings();
 }

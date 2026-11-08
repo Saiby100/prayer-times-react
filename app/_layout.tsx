@@ -13,7 +13,11 @@ import {
   getScheduledAlarms,
   scheduleAlarm,
   testAlarm,
+  setAlarmTheme,
+  canUseFullScreenIntent,
+  openFullScreenIntentSettings,
 } from '@/services/alarms/alarm';
+import log from '@/utils/logger';
 
 // Dev-only: lets the native alarm module be tried from the React Native DevTools console
 // (`__prayerAlarms.schedule(...)`) until the reminder sync uses it. Remove with task 04.
@@ -23,6 +27,8 @@ if (__DEV__) {
     cancel: cancelAlarms,
     list: getScheduledAlarms,
     test: testAlarm,
+    canFullScreen: canUseFullScreenIntent,
+    openFullScreenSettings: openFullScreenIntentSettings,
   };
 }
 
@@ -47,6 +53,19 @@ function InnerLayout() {
   useEffect(() => {
     SystemUI.setBackgroundColorAsync(theme.colors.background);
   }, [theme.colors.background]);
+
+  // The native ringing screen can't read the JS theme, so save the colours shown now: on every
+  // open (also when following the system colour scheme) and on each theme change.
+  const { background, text, primary, bgLight } = theme.colors;
+  useEffect(() => {
+    // On failure the ringing screen keeps the colours it saved last.
+    setAlarmTheme({ background, text, primary, bgLight }).catch((error) => {
+      log.warn('alarmTheme: failed to save theme colours', {
+        type: 'save-alarm-theme',
+        error: String(error),
+      });
+    });
+  }, [background, text, primary, bgLight]);
 
   useEffect(() => {
     const expoSub = Notifications.addNotificationResponseReceivedListener((response) => {

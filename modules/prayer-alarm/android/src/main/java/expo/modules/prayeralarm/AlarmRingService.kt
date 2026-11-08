@@ -31,6 +31,10 @@ class AlarmRingService : Service() {
   }
 
   private var current: Alarm? = null
+    set(value) {
+      field = value
+      ringing = value
+    }
   private var player: MediaPlayer? = null
   private var vibrator: Vibrator? = null
   private var focusRequest: AudioFocusRequest? = null
@@ -59,6 +63,10 @@ class AlarmRingService : Service() {
   }
 
   override fun onDestroy() {
+    if (current != null) {
+      current = null
+      notifyRingChanged()
+    }
     handler.removeCallbacks(autoStop)
     stopSound()
     releaseWakeLock()
@@ -70,6 +78,8 @@ class AlarmRingService : Service() {
     handler.removeCallbacks(autoStop)
     AlarmScheduler(this).cancelOneOff()
     current = alarm
+    // An open ringing screen switches to this alarm; otherwise the full-screen intent opens it.
+    notifyRingChanged()
 
     AlarmNotification.ensureChannel(this)
     val notification = AlarmNotification.build(this, alarm)
@@ -117,9 +127,15 @@ class AlarmRingService : Service() {
     handler.removeCallbacks(autoStop)
     stopSound()
     current = null
+    notifyRingChanged()
     ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
     releaseWakeLock()
     stopSelf()
+  }
+
+  // Tells an open ringing screen to show the new alarm, or to close when nothing rings.
+  private fun notifyRingChanged() {
+    sendBroadcast(Intent(ACTION_RING_CHANGED).setPackage(packageName))
   }
 
   private fun stopSound() {
@@ -182,6 +198,19 @@ class AlarmRingService : Service() {
 
     /** Stops sound and vibration but keeps ringing silently (volume buttons on the screen). */
     const val ACTION_SILENCE = "expo.modules.prayeralarm.SILENCE"
+
+    /** Broadcast (to this app only) when the ringing alarm changes or ringing stops. */
+    const val ACTION_RING_CHANGED = "expo.modules.prayeralarm.RING_CHANGED"
+
+    /** The alarm ringing now, or null. Read by [AlarmActivity]. */
+    @Volatile
+    var ringing: Alarm? = null
+      private set
+
+    /** Sends [action] (snooze, dismiss or silence) to the ringing alarm. */
+    fun send(context: Context, action: String) {
+      context.startService(Intent(context, AlarmRingService::class.java).setAction(action))
+    }
 
     private const val EXTRA_ALARM = "alarm"
     private const val AUTO_STOP_MS = 10 * 60_000L
