@@ -2,6 +2,12 @@
   <!-- Exact-alarm permissions are declared by plugins/withExactAlarmPermission.js. Never add
        SCHEDULE_EXACT_ALARM here: it must stay capped at maxSdkVersion 32. -->
   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+  <!-- The ringing service. systemExempted is allowed for apps holding USE_EXACT_ALARM /
+       SCHEDULE_EXACT_ALARM that keep alarms ringing in a foreground service. -->
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SYSTEM_EXEMPTED" />
+  <uses-permission android:name="android.permission.WAKE_LOCK" />
+  <uses-permission android:name="android.permission.VIBRATE" />
 
   <application>
     <!-- Direct-boot aware so alarms still fire after a restart before the phone is unlocked. -->
@@ -21,5 +27,12 @@
         <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
       </intent-filter>
     </receiver>
+
+    <!-- Plays the alarm tone and shows the ringing notification; also before the first unlock. -->
+    <service
+      android:name=".AlarmRingService"
+      android:directBootAware="true"
+      android:exported="false"
+      android:foregroundServiceType="systemExempted" />
   </application>
 </manifest>

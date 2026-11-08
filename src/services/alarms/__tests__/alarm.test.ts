@@ -2,6 +2,7 @@ const mockNative = {
   schedule: jest.fn(async () => {}),
   cancel: jest.fn(async () => {}),
   list: jest.fn(async () => [] as unknown[]),
+  test: jest.fn(async () => {}),
 };
 let mockAvailable = true;
 
@@ -36,7 +37,8 @@ beforeEach(() => {
 });
 
 describe('with the native module', () => {
-  const { alarmsAvailable, scheduleAlarm, cancelAlarms, getScheduledAlarms } = loadAlarm(true);
+  const { alarmsAvailable, scheduleAlarm, cancelAlarms, getScheduledAlarms, testAlarm } =
+    loadAlarm(true);
 
   it('reports alarms as available', () => {
     expect(alarmsAvailable()).toBe(true);
@@ -70,18 +72,31 @@ describe('with the native module', () => {
     mockNative.schedule.mockRejectedValueOnce(new Error('not allowed'));
     await expect(scheduleAlarm(alarm)).rejects.toThrow('not allowed');
   });
+
+  it('rings a test alarm through native code', async () => {
+    await testAlarm();
+    expect(mockNative.test).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects when the test alarm cannot be scheduled', async () => {
+    mockNative.test.mockRejectedValueOnce(new Error('not allowed'));
+    await expect(testAlarm()).rejects.toThrow('not allowed');
+  });
 });
 
 describe('without the native module (iOS, web, older builds)', () => {
-  const { alarmsAvailable, scheduleAlarm, cancelAlarms, getScheduledAlarms } = loadAlarm(false);
+  const { alarmsAvailable, scheduleAlarm, cancelAlarms, getScheduledAlarms, testAlarm } =
+    loadAlarm(false);
 
   it('does nothing', async () => {
     expect(alarmsAvailable()).toBe(false);
     await expect(scheduleAlarm(alarm)).resolves.toBeNull();
     await expect(cancelAlarms(['a'])).resolves.toBeUndefined();
     await expect(getScheduledAlarms()).resolves.toEqual([]);
+    await expect(testAlarm()).resolves.toBeUndefined();
     expect(mockNative.schedule).not.toHaveBeenCalled();
     expect(mockNative.cancel).not.toHaveBeenCalled();
     expect(mockNative.list).not.toHaveBeenCalled();
+    expect(mockNative.test).not.toHaveBeenCalled();
   });
 });

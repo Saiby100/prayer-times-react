@@ -56,5 +56,10 @@ class PrayerAlarmModule : Module() {
     AsyncFunction("list") {
       scheduler.list().map { it.toMap() }
     }
+
+    // Rings a test alarm 5 seconds from now, replacing a pending snooze.
+    AsyncFunction("test") {
+      scheduler.scheduleTest()
+    }
   }
 }

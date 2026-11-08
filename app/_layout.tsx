@@ -8,7 +8,12 @@ import * as Notifications from 'expo-notifications';
 import createAppTheme from '@/theme';
 import { getThemeId } from '@/stores';
 import { getPresetById } from '@/theme/presets';
-import { cancelAlarms, getScheduledAlarms, scheduleAlarm } from '@/services/alarms/alarm';
+import {
+  cancelAlarms,
+  getScheduledAlarms,
+  scheduleAlarm,
+  testAlarm,
+} from '@/services/alarms/alarm';
 
 // Dev-only: lets the native alarm module be tried from the React Native DevTools console
 // (`__prayerAlarms.schedule(...)`) until the reminder sync uses it. Remove with task 04.
@@ -17,6 +22,7 @@ if (__DEV__) {
     schedule: scheduleAlarm,
     cancel: cancelAlarms,
     list: getScheduledAlarms,
+    test: testAlarm,
   };
 }
 

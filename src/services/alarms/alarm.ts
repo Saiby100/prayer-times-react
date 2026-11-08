@@ -30,6 +30,8 @@ type PrayerAlarmNativeModule = {
   cancel(ids: string[]): Promise<void>;
   /** Saved alarms that haven't fired yet, soonest first. */
   list(): Promise<ScheduledAlarm[]>;
+  /** Rings a test alarm 5 seconds from now, replacing a pending snooze. */
+  test(): Promise<void>;
 };
 
 // Null on iOS and web, and on builds made before the module existed.
@@ -60,4 +62,14 @@ export async function cancelAlarms(ids: string[]): Promise<void> {
 export async function getScheduledAlarms(): Promise<ScheduledAlarm[]> {
   if (!native) return [];
   return await native.list();
+}
+
+/**
+ * Rings a test alarm 5 seconds from now (sound, vibration, Snooze and Dismiss), whichever
+ * reminder type is picked. Does nothing when alarms aren't available. Rejects if the system won't
+ * allow exact alarms.
+ */
+export async function testAlarm(): Promise<void> {
+  if (!native) return;
+  await native.test();
 }
