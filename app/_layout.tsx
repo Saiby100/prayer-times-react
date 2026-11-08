@@ -6,29 +6,18 @@ import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as SystemUI from 'expo-system-ui';
 import * as Notifications from 'expo-notifications';
 import createAppTheme from '@/theme';
-import { getThemeId } from '@/stores';
+import { getThemeId, setReminderType, type ReminderType } from '@/stores';
 import { getPresetById } from '@/theme/presets';
-import {
-  cancelAlarms,
-  getScheduledAlarms,
-  scheduleAlarm,
-  testAlarm,
-  setAlarmTheme,
-  canUseFullScreenIntent,
-  openFullScreenIntentSettings,
-} from '@/services/alarms/alarm';
+import { setAlarmTheme } from '@/services/alarms/alarm';
+import { syncPrayerReminders } from '@/services/notifications/scheduleReminders';
 import log from '@/utils/logger';
 
-// Dev-only: lets the native alarm module be tried from the React Native DevTools console
-// (`__prayerAlarms.schedule(...)`) until the reminder sync uses it. Remove with task 04.
+// Dev-only: switch the reminder type from the React Native DevTools console
+// (`__setReminderType('alarm')`) until Settings has the Reminder type row. Remove with task 05.
 if (__DEV__) {
-  (globalThis as Record<string, unknown>).__prayerAlarms = {
-    schedule: scheduleAlarm,
-    cancel: cancelAlarms,
-    list: getScheduledAlarms,
-    test: testAlarm,
-    canFullScreen: canUseFullScreenIntent,
-    openFullScreenSettings: openFullScreenIntentSettings,
+  (globalThis as Record<string, unknown>).__setReminderType = (type: ReminderType) => {
+    setReminderType(type);
+    return syncPrayerReminders();
   };
 }
 
