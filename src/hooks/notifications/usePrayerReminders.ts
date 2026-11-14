@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { ToastAndroid } from 'react-native';
 import {
   getNotificationPermission,
   requestNotificationPermission,
 } from '@/services/notifications/notification';
 import { ensureChannelsExist } from '@/services/notifications/setup';
 import { syncPrayerReminders } from '@/services/notifications/scheduleReminders';
+import { sendPreviewNotification } from '@/services/notifications/testNotification';
 import {
   isRemindersEnabled,
   setRemindersEnabled,
@@ -14,7 +16,7 @@ import {
   setReminderType as storeSetReminderType,
   type ReminderType,
 } from '@/stores';
-import { alarmsAvailable } from '@/services/alarms/alarm';
+import { alarmsAvailable, testAlarm } from '@/services/alarms/alarm';
 import log from '@/utils/logger';
 
 /** Outcome of turning reminders on: `blocked` means only Android settings can allow them. */
@@ -77,6 +79,22 @@ function usePrayerReminders() {
     syncPrayerReminders();
   }
 
+  // Sends a reminder of this type 5 seconds from now: the test alarm or a preview notification.
+  async function previewReminder(type: ReminderType) {
+    try {
+      if (type === 'alarm') await testAlarm();
+      else await sendPreviewNotification();
+      ToastAndroid.show('Reminder preview in 5 seconds', ToastAndroid.SHORT);
+    } catch (error) {
+      log.warn('usePrayerReminders: failed to schedule reminder preview', {
+        type: 'preview-reminder',
+        reminderType: type,
+        error: String(error),
+      });
+      ToastAndroid.show("Couldn't send the reminder preview", ToastAndroid.SHORT);
+    }
+  }
+
   return {
     isEnabled,
     enable,
@@ -85,6 +103,7 @@ function usePrayerReminders() {
     setReminderOffset,
     reminderType,
     setReminderType,
+    previewReminder,
     // False on iOS/web and builds without the alarm module: hide the Reminder type row.
     canUseAlarms: alarmsAvailable(),
   };
