@@ -2,6 +2,7 @@ import type { MonthTimes } from '../monthTimes';
 import {
   buildReminders,
   diffReminders,
+  planSync,
   upcomingDays,
   type ReminderPlan,
   type ScheduledReminder,
@@ -57,6 +58,7 @@ describe('buildReminders', () => {
     expect(reminders[0].fireAt).toEqual(new Date(2026, 9, 15, 19, 50));
     expect(reminders[0].title).toBe('Isha Reminder');
     expect(reminders[0].body).toBe('Isha prayer at 20:00.');
+    expect(reminders[0].prayerTime).toBe('20:00');
   });
 
   it('leaves out a reminder whose fire time has passed even if the prayer has not', () => {
@@ -176,5 +178,80 @@ describe('diffReminders', () => {
     const old = { id: '3f2a-uuid', body: 'Fajr prayer at 05:00.' };
     const { toCancel } = diffReminders(plan, [...asScheduled(plan), old]);
     expect(toCancel).toEqual(['3f2a-uuid']);
+  });
+});
+
+describe('planSync', () => {
+  const months = new Map([[9, month(9)]]);
+  const now = new Date(2026, 9, 15, 0, 0);
+  const off: ReminderPlan = { reminders: [], missingDays: [] };
+
+  it('switching to alarms schedules every alarm and cancels every notification', () => {
+    const plan = build(now, months);
+    const changes = planSync({
+      plan,
+      type: 'alarm',
+      notifications: asScheduled(plan),
+      alarms: [],
+    });
+    expect(changes.toSchedule).toHaveLength(21);
+    expect(changes.cancelNotifications).toHaveLength(21);
+    expect(changes.cancelAlarms).toEqual([]);
+  });
+
+  it('switching back to notifications schedules every notification and cancels every alarm', () => {
+    const plan = build(now, months);
+    const changes = planSync({
+      plan,
+      type: 'notification',
+      notifications: [],
+      alarms: asScheduled(plan),
+    });
+    expect(changes.toSchedule).toHaveLength(21);
+    expect(changes.cancelNotifications).toEqual([]);
+    expect(changes.cancelAlarms).toHaveLength(21);
+  });
+
+  it('cancels both types when reminders are off', () => {
+    const before = asScheduled(build(now, months));
+    for (const type of ['notification', 'alarm'] as const) {
+      const changes = planSync({ plan: off, type, notifications: before, alarms: before });
+      expect(changes.toSchedule).toEqual([]);
+      expect(changes.cancelNotifications).toHaveLength(21);
+      expect(changes.cancelAlarms).toHaveLength(21);
+    }
+  });
+
+  it('changes nothing on a second run', () => {
+    const plan = build(now, months);
+    const changes = planSync({ plan, type: 'alarm', notifications: [], alarms: asScheduled(plan) });
+    expect(changes).toEqual({ toSchedule: [], cancelNotifications: [], cancelAlarms: [] });
+  });
+
+  it('applies an offset change to the alarms', () => {
+    const before = asScheduled(build(now, months, [], 10));
+    const plan = build(now, months, [], 15);
+    const changes = planSync({ plan, type: 'alarm', notifications: [], alarms: before });
+    expect(changes.toSchedule).toHaveLength(21);
+    expect(changes.toSchedule[0].fireAt).toEqual(new Date(2026, 9, 15, 4, 45));
+    expect(changes.cancelAlarms).toEqual([]);
+  });
+
+  it('keeps missing days only for the chosen type', () => {
+    const both = new Map([
+      [9, month(9)],
+      [10, month(10)],
+    ]);
+    const late = new Date(2026, 9, 28, 0, 0);
+    const before = asScheduled(build(late, both));
+    const offline = build(late, months);
+    const changes = planSync({
+      plan: offline,
+      type: 'alarm',
+      notifications: before,
+      alarms: before,
+    });
+    expect(changes.cancelAlarms).toEqual([]);
+    expect(changes.cancelNotifications).toHaveLength(before.length);
   });
 });

@@ -10,7 +10,11 @@ import {
   setRemindersEnabled,
   getReminderOffset,
   setReminderOffset as storeSetReminderOffset,
+  getReminderType,
+  setReminderType as storeSetReminderType,
+  type ReminderType,
 } from '@/stores';
+import { alarmsAvailable } from '@/services/alarms/alarm';
 import log from '@/utils/logger';
 
 /** Outcome of turning reminders on: `blocked` means only Android settings can allow them. */
@@ -64,12 +68,25 @@ function usePrayerReminders() {
     syncPrayerReminders();
   }
 
+  const [reminderType, setReminderTypeState] = useState(getReminderType);
+
+  // Saves the type and re-syncs, which cancels the reminders of the other type.
+  function setReminderType(type: ReminderType) {
+    storeSetReminderType(type);
+    setReminderTypeState(type);
+    syncPrayerReminders();
+  }
+
   return {
     isEnabled,
     enable,
     disable,
     reminderOffset,
     setReminderOffset,
+    reminderType,
+    setReminderType,
+    // False on iOS/web and builds without the alarm module: hide the Reminder type row.
+    canUseAlarms: alarmsAvailable(),
   };
 }
 

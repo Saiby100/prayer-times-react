@@ -22,8 +22,7 @@ export default function PreferenceSettings() {
         <Card gap={16}>
           <SettingsToggleRow
             label="Hidden prayers"
-            iconName="eye-off"
-            title={` ${disabledPrayers.length} hidden`}
+            title={`${disabledPrayers.length} hidden`}
             disabled={disabledPrayers.length === 0}
             onPress={() => setResetPopupVisible(true)}
           />

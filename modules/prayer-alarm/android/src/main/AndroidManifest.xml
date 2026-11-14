@@ -1,0 +1,55 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- Exact-alarm permissions are declared by plugins/withExactAlarmPermission.js. Never add
+       SCHEDULE_EXACT_ALARM here: it must stay capped at maxSdkVersion 32. -->
+  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+  <!-- The ringing service. systemExempted is allowed for apps holding USE_EXACT_ALARM /
+       SCHEDULE_EXACT_ALARM that keep alarms ringing in a foreground service. -->
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SYSTEM_EXEMPTED" />
+  <uses-permission android:name="android.permission.WAKE_LOCK" />
+  <uses-permission android:name="android.permission.VIBRATE" />
+  <!-- Shows the ringing screen over the lock screen. On Android 14+ Play keeps it only for alarm
+       and calling apps (declared on Play Console); the user can also turn it off. -->
+  <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+
+  <application>
+    <!-- Direct-boot aware so alarms still fire after a restart before the phone is unlocked. -->
+    <receiver
+      android:name=".AlarmReceiver"
+      android:directBootAware="true"
+      android:exported="false" />
+
+    <!-- Re-registers saved alarms after a restart (before and after unlock) and an app update. -->
+    <receiver
+      android:name=".RescheduleReceiver"
+      android:directBootAware="true"
+      android:exported="false">
+      <intent-filter>
+        <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+        <action android:name="android.intent.action.BOOT_COMPLETED" />
+        <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+      </intent-filter>
+    </receiver>
+
+    <!-- Plays the alarm tone and shows the ringing notification; also before the first unlock. -->
+    <service
+      android:name=".AlarmRingService"
+      android:directBootAware="true"
+      android:exported="false"
+      android:foregroundServiceType="systemExempted" />
+
+    <!-- The ringing screen, over the lock screen and before the first unlock. Its own task, kept
+         out of Recents, so Back / Home return to wherever the phone was, not into the app. -->
+    <activity
+      android:name=".AlarmActivity"
+      android:directBootAware="true"
+      android:excludeFromRecents="true"
+      android:exported="false"
+      android:launchMode="singleInstance"
+      android:screenOrientation="portrait"
+      android:showWhenLocked="true"
+      android:taskAffinity=""
+      android:theme="@android:style/Theme.DeviceDefault.NoActionBar"
+      android:turnScreenOn="true" />
+  </application>
+</manifest>

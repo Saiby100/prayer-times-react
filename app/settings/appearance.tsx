@@ -33,8 +33,7 @@ export default function AppearanceSettings() {
         <Card gap={16}>
           <SettingsToggleRow
             label="Theme"
-            iconName="image"
-            title={` ${themeLabel}`}
+            title={themeLabel ?? ''}
             onPress={() => setThemePickerVisible(true)}
           />
           <SettingsSwitchRow
