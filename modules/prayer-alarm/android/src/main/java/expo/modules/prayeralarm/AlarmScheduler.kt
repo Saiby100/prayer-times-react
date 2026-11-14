@@ -109,6 +109,21 @@ class AlarmScheduler(context: Context) {
     Log.i(TAG, "Restored ${alarms.size} alarm(s)")
   }
 
+  /**
+   * Runs [restoreAll] only when a force-stop has cancelled the alarms, so a normal app start
+   * doesn't register every alarm again. A force-stop also deletes the app's PendingIntents, so
+   * if the soonest saved alarm still has its PendingIntent, the alarms are intact.
+   */
+  fun restoreIfCancelled() {
+    val now = System.currentTimeMillis()
+    val soonest = store.all().firstOrNull { it.fireAt > now }
+      ?: oneOff.get()?.takeIf { it.fireAt > now }
+    if (soonest != null && firePendingIntent(soonest.id, PendingIntent.FLAG_NO_CREATE) != null) {
+      return
+    }
+    restoreAll()
+  }
+
   private fun register(alarm: Alarm) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
       throw ExactAlarmNotAllowedException()
