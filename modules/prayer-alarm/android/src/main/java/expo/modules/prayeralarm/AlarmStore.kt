@@ -78,11 +78,14 @@ class AlarmStore(context: Context) {
     .mapNotNull { (it as? String)?.let(Alarm::fromJson) }
     .sortedBy { it.fireAt }
 
-  /** Drops alarms whose time has passed (missed while the phone was off) and unreadable entries. */
-  fun prune(now: Long) {
+  /**
+   * Drops alarms due at or before [before] (missed, e.g. while the phone was off) and unreadable
+   * entries.
+   */
+  fun prune(before: Long) {
     val stale = prefs.all.filter { (_, value) ->
       val alarm = (value as? String)?.let(Alarm::fromJson)
-      alarm == null || alarm.fireAt <= now
+      alarm == null || alarm.fireAt <= before
     }.keys
     if (stale.isNotEmpty()) remove(stale)
   }
