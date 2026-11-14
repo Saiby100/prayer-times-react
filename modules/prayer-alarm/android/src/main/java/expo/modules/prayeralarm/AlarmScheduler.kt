@@ -25,8 +25,17 @@ class AlarmScheduler(context: Context) {
   private val store = AlarmStore(this.context)
   private val oneOff = OneOffAlarmStore(this.context)
 
-  /** Registers the alarm, replacing any with the same id, then saves it. */
+  /**
+   * Registers the alarm, replacing any with the same id, then saves it. An alarm whose time has
+   * passed isn't registered (AlarmManager would ring it at once) and replaces the old one by
+   * cancelling it.
+   */
   fun schedule(alarm: Alarm) {
+    if (alarm.fireAt <= System.currentTimeMillis()) {
+      Log.i(TAG, "Not scheduling ${alarm.id}: its time has passed")
+      cancel(listOf(alarm.id))
+      return
+    }
     AlarmNotification.ensureChannel(context)
     register(alarm)
     store.put(alarm)
