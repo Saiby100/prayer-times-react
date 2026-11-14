@@ -89,7 +89,7 @@ async function getScheduledReminders(): Promise<ScheduledReminder[]> {
 
 // The reminders that should be scheduled, or null when they can't be worked out and the
 // scheduled ones should be left as they are. Reminders off → none, so all are cancelled.
-async function planReminders(now: Date): Promise<ReminderPlan | null> {
+async function planReminders(): Promise<ReminderPlan | null> {
   if (!isRemindersEnabled()) {
     return { reminders: [], missingDays: [] };
   }
@@ -107,14 +107,16 @@ async function planReminders(now: Date): Promise<ReminderPlan | null> {
     return null;
   }
 
-  const months = await loadMonths(upcomingDays(now), area);
+  const months = await loadMonths(upcomingDays(new Date()), area);
   if (months.size === 0) {
     log.warn('scheduleReminders: could not fetch prayer times', { type: 'sync-reminders' });
     return null;
   }
 
+  // Read the time after loading: a reminder that fired during a slow fetch is no longer
+  // scheduled, so with an older time it would look missing and be scheduled again in the past.
   return buildReminders({
-    now,
+    now: new Date(),
     months,
     minutesBefore: getReminderOffset(),
     hidden: getDisabledPrayers(),
@@ -187,7 +189,7 @@ async function sync(): Promise<void> {
   const startedAt = Date.now();
 
   try {
-    const plan = await planReminders(new Date());
+    const plan = await planReminders();
     if (!plan) return;
 
     const reminderType = effectiveReminderType();
