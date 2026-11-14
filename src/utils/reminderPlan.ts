@@ -1,3 +1,4 @@
+import type { ReminderType } from '@/stores';
 import { addDays } from './date';
 import { dayKey, getTimesForDay, type MonthTimes } from './monthTimes';
 
@@ -9,10 +10,15 @@ export const REMINDER_TYPE = 'prayer_reminder';
 
 /** A prayer reminder that should be scheduled. */
 export type Reminder = {
-  /** Notification id, `prayer_reminder:YYYY-MM-DD:<prayer>`, so scheduling it again replaces it. */
+  /**
+   * Notification or alarm id, `prayer_reminder:YYYY-MM-DD:<prayer>`, so scheduling it again
+   * replaces it. Both types use the same id; they live in separate schedulers.
+   */
   id: string;
   /** Prayer display name. */
   prayer: string;
+  /** Prayer time text, e.g. "05:12"; shown by the alarm. */
+  prayerTime: string;
   /** When the reminder fires: the prayer time minus the reminder offset. */
   fireAt: Date;
   /** Notification title. */
@@ -100,6 +106,7 @@ export function buildReminders({
       reminders.push({
         id: reminderId(day, prayer),
         prayer,
+        prayerTime: time,
         fireAt,
         title: `${prayer} Reminder`,
         body: `${prayer} prayer at ${time}.`,
@@ -142,4 +149,42 @@ export function diffReminders(plan: ReminderPlan, scheduled: ScheduledReminder[]
     .map((s) => s.id);
 
   return { toSchedule, toCancel };
+}
+
+type PlanSyncOptions = {
+  /** The reminders a run wants. */
+  plan: ReminderPlan;
+  /** The type to deliver them as; everything of the other type is cancelled. */
+  type: ReminderType;
+  /** Prayer reminder notifications scheduled now. */
+  notifications: ScheduledReminder[];
+  /** Prayer alarms scheduled now. */
+  alarms: ScheduledReminder[];
+};
+
+/** What a run has to change in both schedulers. */
+export type SyncChanges = {
+  /** Reminders to schedule as the chosen type, soonest first. */
+  toSchedule: Reminder[];
+  /** Ids of notifications to cancel. */
+  cancelNotifications: string[];
+  /** Ids of alarms to cancel. */
+  cancelAlarms: string[];
+};
+
+/**
+ * Diffs the plan against the chosen type's scheduler and cancels every reminder of the other
+ * type (also on days the plan had no times for), so only one type is ever scheduled.
+ */
+export function planSync({ plan, type, notifications, alarms }: PlanSyncOptions): SyncChanges {
+  const chosen = type === 'alarm' ? alarms : notifications;
+  const other = type === 'alarm' ? notifications : alarms;
+  const { toSchedule, toCancel } = diffReminders(plan, chosen);
+  const otherIds = other.map((s) => s.id);
+
+  return {
+    toSchedule,
+    cancelNotifications: type === 'alarm' ? otherIds : toCancel,
+    cancelAlarms: type === 'alarm' ? toCancel : otherIds,
+  };
 }

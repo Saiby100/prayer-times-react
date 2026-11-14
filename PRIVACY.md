@@ -16,7 +16,7 @@ This policy explains what information the Reminder app ("the app") uses, what le
 The following is saved only on your phone and is removed when you uninstall the app:
 
 - Your selected area
-- Your reminder settings (on/off, minutes before prayer, hidden prayers)
+- Your reminder settings (on/off, reminder type, minutes before prayer, hidden prayers)
 - Your theme and wallpaper choice
 - Cached prayer times for months you have viewed
 - A randomly generated device ID (see below)

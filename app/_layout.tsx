@@ -8,6 +8,8 @@ import * as Notifications from 'expo-notifications';
 import createAppTheme from '@/theme';
 import { getThemeId } from '@/stores';
 import { getPresetById } from '@/theme/presets';
+import { setAlarmTheme } from '@/services/alarms/alarm';
+import log from '@/utils/logger';
 
 // RNEUI v5 looks for the modular @react-native-vector-icons/* packages, which aren't installed.
 // Use @expo/vector-icons instead so no extra native modules or font linking are needed.
@@ -30,6 +32,19 @@ function InnerLayout() {
   useEffect(() => {
     SystemUI.setBackgroundColorAsync(theme.colors.background);
   }, [theme.colors.background]);
+
+  // The native ringing screen can't read the JS theme, so save the colours shown now: on every
+  // open (also when following the system colour scheme) and on each theme change.
+  const { background, text, primary, bgLight } = theme.colors;
+  useEffect(() => {
+    // On failure the ringing screen keeps the colours it saved last.
+    setAlarmTheme({ background, text, primary, bgLight }).catch((error) => {
+      log.warn('alarmTheme: failed to save theme colours', {
+        type: 'save-alarm-theme',
+        error: String(error),
+      });
+    });
+  }, [background, text, primary, bgLight]);
 
   useEffect(() => {
     const expoSub = Notifications.addNotificationResponseReceivedListener((response) => {
