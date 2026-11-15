@@ -21,7 +21,8 @@ export type LogType =
   | 'unregister-task'
   | 'save-alarm-theme'
   | 'preview-reminder'
-  | 'open-full-screen-settings';
+  | 'open-full-screen-settings'
+  | 'apply-update';
 
 type LogData = {
   /** Action being carried out when the log was written. */
