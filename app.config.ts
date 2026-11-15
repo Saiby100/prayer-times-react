@@ -60,7 +60,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       {
         backgroundColor: '#EEE2D6',
         image: './assets/images/splash-icon.png',
-        // Fills the 288dp Android 12+ icon slot; the star's tips stay inside its 192dp visible circle.
+        // Fills the 288dp Android 12+ icon slot; the emblem stays inside its 192dp visible circle.
         imageWidth: 288,
         dark: {
           image: './assets/images/splash-icon.png',
@@ -79,7 +79,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'expo-notifications',
       {
         icon: './assets/images/notification-icon.png',
-        color: '#0D7C5F',
+        color: '#E3B464',
       },
     ],
     './plugins/withExactAlarmPermission',
@@ -108,7 +108,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
     adaptiveIcon: {
       foregroundImage: './assets/images/adaptive-icon.png',
-      backgroundColor: '#08182f',
+      backgroundColor: '#061837',
     },
   },
   owner: 'salasaiet',
