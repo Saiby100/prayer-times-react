@@ -22,6 +22,8 @@ export type LogType =
   | 'save-alarm-theme'
   | 'preview-reminder'
   | 'open-full-screen-settings'
+  | 'draw-widget'
+  | 'refresh-widgets'
   | 'apply-update';
 
 type LogData = {

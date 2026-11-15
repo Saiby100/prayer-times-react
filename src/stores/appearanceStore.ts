@@ -63,14 +63,19 @@ function getSystemThemeId(): ThemePresetId {
   return systemThemeId;
 }
 
-export function getThemeId(): ThemePresetId {
+/** The theme the user picked in Settings → Appearance, or null when none is picked. */
+export function getPickedThemeId(): ThemePresetId | null {
   migrateLegacyKeys();
   const storage = getStorage();
   const savedId = storage.getString(THEME_ID_KEY);
   if (savedId && getPresetById(savedId)) return savedId as ThemePresetId;
   // Drop ids of removed themes so the system default applies until the user picks again.
   if (savedId) storage.delete(THEME_ID_KEY);
-  return getSystemThemeId();
+  return null;
+}
+
+export function getThemeId(): ThemePresetId {
+  return getPickedThemeId() ?? getSystemThemeId();
 }
 
 export function setThemeId(id: ThemePresetId): void {

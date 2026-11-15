@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
 import { setArea } from '@/stores';
 import { syncPrayerReminders } from '@/services/notifications/scheduleReminders';
+import { refreshWidgets } from '@/widgets/refreshWidgets';
 import * as SplashScreen from 'expo-splash-screen';
 import Page from '@/components/Page';
 import usePTAreas from '@/hooks/usePTAreas';
@@ -23,6 +24,7 @@ export default function Areas() {
     setArea(area);
     // Move scheduled reminders to the new area's times.
     syncPrayerReminders();
+    refreshWidgets();
     if (router.canDismiss()) router.dismissAll();
     router.replace('/home');
   };

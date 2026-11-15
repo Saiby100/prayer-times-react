@@ -1,6 +1,8 @@
 import { supabase } from '@/utils/supabase';
 import log from '@/utils/logger';
-import { monthRange, type MonthTimes } from '@/utils/monthTimes';
+import { getCachedTimes, setCachedTimes } from '@/stores';
+import { toDisplayNames } from '@/utils/prayerNames';
+import { mapDays, monthRange, type MonthTimes } from '@/utils/monthTimes';
 
 export type Area = {
   /** URL-friendly identifier. */
@@ -74,4 +76,31 @@ function sortTimesByTime(times: Record<string, string>): Record<string, string> 
 
 export function areaToSlug(area: string): string {
   return area.replaceAll("'", '').replaceAll(' ', '').toLowerCase();
+}
+
+/**
+ * A date's month for an area, with display names (`Fajr`, `Thur`, `Asr(S)`…): from the cache,
+ * else fetched and cached. Null when it isn't cached and can't be fetched (e.g. offline).
+ */
+export async function loadMonth(date: Date, area: string): Promise<MonthTimes | null> {
+  const cached = getCachedTimes(date, area);
+  if (cached) return cached;
+
+  try {
+    const mapped = mapDays(await fetchTimes(areaToSlug(area), date), toDisplayNames);
+
+    if (Object.keys(mapped).length > 0) {
+      setCachedTimes(date, area, mapped);
+      return mapped;
+    }
+  } catch (error) {
+    log.error('prayerTimes: error loading month', {
+      type: 'load-prayer-times',
+      error: String(error),
+      area,
+      month: date.getMonth(),
+    });
+  }
+
+  return null;
 }

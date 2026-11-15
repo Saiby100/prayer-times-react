@@ -1,8 +1,6 @@
 import log from '@/utils/logger';
 import {
   getArea,
-  getCachedTimes,
-  setCachedTimes,
   isRemindersEnabled,
   getReminderOffset,
   getDisabledPrayers,
@@ -15,9 +13,8 @@ import {
   getScheduledAlarms,
   scheduleAlarm,
 } from '@/services/alarms/alarm';
-import { fetchTimes, areaToSlug } from '@/services/prayerTimes';
-import { toDisplayNames } from '@/utils/prayerNames';
-import { mapDays, type MonthTimes } from '@/utils/monthTimes';
+import { loadMonth } from '@/services/prayerTimes';
+import type { MonthTimes } from '@/utils/monthTimes';
 import {
   REMINDER_DAYS,
   REMINDER_TYPE,
@@ -35,29 +32,6 @@ import {
   getScheduledNotifications,
   notificationPermissionGranted,
 } from './notification';
-
-// Load a date's month for an area: from the cache, else fetched and cached.
-async function loadMonth(date: Date, area: string): Promise<MonthTimes | null> {
-  const cached = getCachedTimes(date, area);
-  if (cached) return cached;
-
-  try {
-    const data = await fetchTimes(areaToSlug(area), date);
-    const mapped = mapDays(data, toDisplayNames);
-
-    if (Object.keys(mapped).length > 0) {
-      setCachedTimes(date, area, mapped);
-      return mapped;
-    }
-  } catch (error) {
-    log.error('scheduleReminders: error fetching times', {
-      type: 'sync-reminders',
-      error: String(error),
-    });
-  }
-
-  return null;
-}
 
 // Load each month the reminder window touches once, keyed by 0-based month.
 async function loadMonths(days: Date[], area: string): Promise<Map<number, MonthTimes>> {

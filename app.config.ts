@@ -83,6 +83,30 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     './plugins/withExactAlarmPermission',
+    [
+      'react-native-android-widget',
+      {
+        fonts: [
+          './assets/fonts/Inter-Medium.ttf',
+          './assets/fonts/Inter-SemiBold.ttf',
+          './node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Feather.ttf',
+        ],
+        widgets: [
+          {
+            name: 'NextPrayer',
+            label: 'Next prayer',
+            description: 'The next prayer time for your area',
+            minWidth: '110dp',
+            minHeight: '40dp',
+            targetCellWidth: 2,
+            targetCellHeight: 1,
+            resizeMode: 'horizontal',
+            // Android's own refresh, at its 30-minute minimum; switching at prayer time is separate.
+            updatePeriodMillis: 1800000,
+          },
+        ],
+      },
+    ],
   ],
   experiments: {
     typedRoutes: true,

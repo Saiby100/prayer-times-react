@@ -9,6 +9,7 @@ import {
   setWallpaperEnabled,
 } from '@/stores';
 import { getPresetById, type ThemePresetId } from '@/theme/presets';
+import { refreshWidgets } from '@/widgets/refreshWidgets';
 
 type UseAppearance = {
   /** Currently selected theme preset ID. */
@@ -31,6 +32,7 @@ export default function useAppearance(): UseAppearance {
 
   const updateThemeId = useCallback((id: ThemePresetId) => {
     setThemeId(id);
+    refreshWidgets();
   }, []);
 
   const updateWallpaperEnabled = useCallback((enabled: boolean) => {
