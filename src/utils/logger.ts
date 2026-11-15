@@ -23,6 +23,7 @@ export type LogType =
   | 'preview-reminder'
   | 'open-full-screen-settings'
   | 'draw-widget'
+  | 'refresh-widgets'
   | 'apply-update';
 
 type LogData = {

@@ -12,6 +12,7 @@ import { toDisplayNames } from '@/utils/prayerNames';
 import { getTimesForDay, mapDays, type MonthTimes } from '@/utils/monthTimes';
 import { getNextPrayer } from '@/utils/nextPrayer';
 import log from '@/utils/logger';
+import { refreshWidgets } from '@/widgets/refreshWidgets';
 
 function usePTApi({ area }: { area: string }) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -58,6 +59,8 @@ function usePTApi({ area }: { area: string }) {
         area,
       });
       setCachedTimes(date, area, data);
+      // A widget may be showing "Open the app to load prayer times".
+      refreshWidgets();
     }
     return data;
   };
