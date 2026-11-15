@@ -1,16 +1,22 @@
 import { Tabs } from 'expo-router';
 import { Icon, useTheme } from '@rneui/themed';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+/** Extra space between the tab labels and the system navigation bar */
+const EXTRA_BOTTOM_SPACE = 6;
 
 export default function TabsLayout() {
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
+      safeAreaInsets={{ bottom: insets.bottom + EXTRA_BOTTOM_SPACE }}
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.text + '80',
-        // The navigator applies the bottom inset itself with edge-to-edge
+        // The navigator pads the bar by safeAreaInsets.bottom with edge-to-edge
         tabBarStyle: {
           backgroundColor: theme.colors.bgLight,
           borderTopWidth: 0,

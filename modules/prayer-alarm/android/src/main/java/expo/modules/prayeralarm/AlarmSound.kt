@@ -30,10 +30,12 @@ object AlarmSound {
 
   /**
    * Follows the ringer: normal rings and vibrates, vibrate only vibrates, silent stays quiet.
-   * Do Not Disturb and a phone or VoIP call (any audio mode but normal) also keep it quiet.
+   * Do Not Disturb keeps it quiet only when it blocks alarms, so Bedtime and other modes that
+   * allow alarms (the default) still ring. A phone or VoIP call (any audio mode but normal)
+   * also keeps it quiet.
    */
   fun ringMode(context: Context): RingMode {
-    if (inCall(context) || dndOn(context)) return RingMode.QUIET
+    if (inCall(context) || dndBlocksAlarms(context)) return RingMode.QUIET
     return when (context.getSystemService(AudioManager::class.java).ringerMode) {
       AudioManager.RINGER_MODE_NORMAL -> RingMode.SOUND_AND_VIBRATION
       AudioManager.RINGER_MODE_VIBRATE -> RingMode.VIBRATION
@@ -93,9 +95,28 @@ object AlarmSound {
     return vibrator
   }
 
-  private fun dndOn(context: Context): Boolean {
-    val filter = context.getSystemService(NotificationManager::class.java).currentInterruptionFilter
-    return filter != NotificationManager.INTERRUPTION_FILTER_ALL &&
-      filter != NotificationManager.INTERRUPTION_FILTER_UNKNOWN
+  /**
+   * Whether Do Not Disturb is on and blocks alarms: total silence, or a priority mode with
+   * alarms turned off. "Alarms only" and priority modes that allow alarms don't block them.
+   */
+  private fun dndBlocksAlarms(context: Context): Boolean {
+    val manager = context.getSystemService(NotificationManager::class.java)
+    return when (manager.currentInterruptionFilter) {
+      NotificationManager.INTERRUPTION_FILTER_NONE -> true
+      NotificationManager.INTERRUPTION_FILTER_PRIORITY -> !priorityAllowsAlarms(manager)
+      else -> false
+    }
+  }
+
+  // Before Android 9, priority mode always lets alarms through.
+  private fun priorityAllowsAlarms(manager: NotificationManager): Boolean {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return true
+    return try {
+      manager.notificationPolicy.priorityCategories and
+        NotificationManager.Policy.PRIORITY_CATEGORY_ALARMS != 0
+    } catch (e: Exception) {
+      Log.w(AlarmScheduler.TAG, "Could not read the Do Not Disturb policy", e)
+      false
+    }
   }
 }

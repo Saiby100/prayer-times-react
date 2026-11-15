@@ -25,8 +25,17 @@ class AlarmScheduler(context: Context) {
   private val store = AlarmStore(this.context)
   private val oneOff = OneOffAlarmStore(this.context)
 
-  /** Registers the alarm, replacing any with the same id, then saves it. */
+  /**
+   * Registers the alarm, replacing any with the same id, then saves it. An alarm whose time has
+   * passed isn't registered (AlarmManager would ring it at once) and replaces the old one by
+   * cancelling it.
+   */
   fun schedule(alarm: Alarm) {
+    if (alarm.fireAt <= System.currentTimeMillis()) {
+      Log.i(TAG, "Not scheduling ${alarm.id}: its time has passed")
+      cancel(listOf(alarm.id))
+      return
+    }
     AlarmNotification.ensureChannel(context)
     register(alarm)
     store.put(alarm)
@@ -37,10 +46,13 @@ class AlarmScheduler(context: Context) {
     store.remove(ids)
   }
 
-  /** Saved alarms that haven't fired yet, soonest first. */
+  /**
+   * Saved alarms that haven't fired yet, soonest first. Deletes nothing: an alarm that's due may
+   * not have reached [AlarmReceiver] yet, which needs it saved to ring.
+   */
   fun list(): List<Alarm> {
-    store.prune(System.currentTimeMillis())
-    return store.all()
+    val now = System.currentTimeMillis()
+    return store.all().filter { it.fireAt > now }
   }
 
   /** Registers a snooze or the test alarm, replacing the one pending. */
@@ -71,15 +83,22 @@ class AlarmScheduler(context: Context) {
   }
 
   /**
-   * Drops saved alarms whose time has passed and registers the rest again. Used after a restart
-   * or app update, and when the module loads, since a force-stop cancels every alarm the app
-   * set. Registering an alarm that's already set just replaces it.
+   * Registers the saved alarms that haven't fired yet again. Used after a restart or app update,
+   * and when the module loads, since a force-stop cancels every alarm the app set. Registering
+   * an alarm that's already set just replaces it.
+   *
+   * Alarms whose time passed are missed (the app was force-stopped or the phone was off), so
+   * they're dropped, not rung late. Normally [AlarmReceiver] forgets an alarm when it fires;
+   * this is the only other cleanup, and it waits [STALE_AFTER_MS] past the alarm's time so it
+   * can't delete one that's due but hasn't reached the receiver yet.
    */
   fun restoreAll() {
     val now = System.currentTimeMillis()
-    store.prune(now)
-    val alarms = store.all().toMutableList()
-    oneOff.get()?.let { if (it.fireAt > now) alarms.add(it) else oneOff.clear() }
+    store.prune(now - STALE_AFTER_MS)
+    val alarms = store.all().filter { it.fireAt > now }.toMutableList()
+    oneOff.get()?.let {
+      if (it.fireAt > now) alarms.add(it) else if (it.fireAt <= now - STALE_AFTER_MS) oneOff.clear()
+    }
     for (alarm in alarms) {
       try {
         register(alarm)
@@ -88,6 +107,21 @@ class AlarmScheduler(context: Context) {
       }
     }
     Log.i(TAG, "Restored ${alarms.size} alarm(s)")
+  }
+
+  /**
+   * Runs [restoreAll] only when a force-stop has cancelled the alarms, so a normal app start
+   * doesn't register every alarm again. A force-stop also deletes the app's PendingIntents, so
+   * if the soonest saved alarm still has its PendingIntent, the alarms are intact.
+   */
+  fun restoreIfCancelled() {
+    val now = System.currentTimeMillis()
+    val soonest = store.all().firstOrNull { it.fireAt > now }
+      ?: oneOff.get()?.takeIf { it.fireAt > now }
+    if (soonest != null && firePendingIntent(soonest.id, PendingIntent.FLAG_NO_CREATE) != null) {
+      return
+    }
+    restoreAll()
   }
 
   private fun register(alarm: Alarm) {
@@ -130,5 +164,8 @@ class AlarmScheduler(context: Context) {
     private const val ACTION_FIRE = "expo.modules.prayeralarm.FIRE"
     private const val URI_SCHEME = "prayeralarm"
     private const val TEST_DELAY_MS = 5_000L
+
+    /** How long past its time a saved alarm is kept for [AlarmReceiver] before it's dropped. */
+    private const val STALE_AFTER_MS = 60_000L
   }
 }

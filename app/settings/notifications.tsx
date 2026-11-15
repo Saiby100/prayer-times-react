@@ -23,10 +23,10 @@ export default function NotificationSettings() {
     setReminderOffset,
     reminderType,
     setReminderType,
+    previewReminder,
     canUseAlarms,
   } = usePrayerReminders();
-  const { canFullScreen, notificationsAllowed, previewReminder, openFullScreenSettings } =
-    useAlarmPermissions();
+  const { canFullScreen, notificationsAllowed, openFullScreenSettings } = useAlarmPermissions();
   const [offsetPopupVisible, setOffsetPopupVisible] = useState(false);
   const [typePopupVisible, setTypePopupVisible] = useState(false);
   const [blockedPopupVisible, setBlockedPopupVisible] = useState(false);

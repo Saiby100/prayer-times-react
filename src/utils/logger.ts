@@ -22,7 +22,8 @@ export type LogType =
   | 'save-alarm-theme'
   | 'preview-reminder'
   | 'open-full-screen-settings'
-  | 'draw-widget';
+  | 'draw-widget'
+  | 'apply-update';
 
 type LogData = {
   /** Action being carried out when the log was written. */

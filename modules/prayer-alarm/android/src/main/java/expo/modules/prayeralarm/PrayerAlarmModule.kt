@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.util.Log
 import expo.modules.kotlin.exception.Exceptions
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
@@ -59,9 +60,14 @@ class PrayerAlarmModule : Module() {
     Name("PrayerAlarm")
 
     // A force-stop cancels every alarm the app set while the saved list keeps them, so
-    // register them again whenever the app (or its background task) starts.
+    // register them again when the app (or its background task) starts after one. A failure
+    // here must not stop the module from loading.
     OnCreate {
-      scheduler.restoreAll()
+      try {
+        scheduler.restoreIfCancelled()
+      } catch (e: Exception) {
+        Log.w(AlarmScheduler.TAG, "Could not restore alarms on start", e)
+      }
     }
 
     AsyncFunction("schedule") { alarm: AlarmRecord ->
